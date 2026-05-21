@@ -1,28 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-const VIDEO_MOBILE = '/video/intro-bg-compressed.mp4'
-const VIDEO_HQ = '/video/intro-bg-hq.mp4'
-const INTRO_DURATION_MS = 6000
-const CSS_FALLBACK_MS = 3000
-
-function detectVideoSrc() {
-  if (typeof window === 'undefined') return VIDEO_MOBILE
-  const isMobileViewport = window.innerWidth < 768
-  const conn =
-    navigator.connection || navigator.mozConnection || navigator.webkitConnection
-  const saveData = conn?.saveData === true
-  const slow =
-    conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g')
-  if (saveData || slow) return VIDEO_MOBILE
-  return isMobileViewport ? VIDEO_MOBILE : VIDEO_HQ
-}
+const INTRO_DURATION_MS = 3000
 
 export default function CinematicIntro({ onComplete, onStartExit }) {
-  const videoRef = useRef(null)
   const [reducedMotion, setReducedMotion] = useState(false)
-  const [mode, setMode] = useState('loading')
   const completedRef = useRef(false)
-  const videoSrc = useMemo(detectVideoSrc, [])
 
   const finalize = () => {
     if (completedRef.current) return
@@ -37,42 +19,10 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
   }, [])
 
   useEffect(() => {
-    if (reducedMotion) {
-      const t = setTimeout(finalize, 1000)
-      return () => clearTimeout(t)
-    }
-
-    const v = videoRef.current
-    if (!v) {
-      setMode('css')
-      return
-    }
-
-    v.muted = true
-    v.defaultMuted = true
-    v.setAttribute('muted', '')
-    v.setAttribute('playsinline', '')
-    v.setAttribute('webkit-playsinline', '')
-    v.removeAttribute('controls')
-
-    const p = v.play()
-    if (p && typeof p.then === 'function') {
-      p.then(() => setMode('video')).catch(() => setMode('css'))
-    } else {
-      setMode('css')
-    }
+    const duration = reducedMotion ? 800 : INTRO_DURATION_MS
+    const t = setTimeout(finalize, duration)
+    return () => clearTimeout(t)
   }, [reducedMotion])
-
-  useEffect(() => {
-    if (mode === 'video') {
-      const safety = setTimeout(finalize, INTRO_DURATION_MS + 2000)
-      return () => clearTimeout(safety)
-    }
-    if (mode === 'css') {
-      const t = setTimeout(finalize, CSS_FALLBACK_MS)
-      return () => clearTimeout(t)
-    }
-  }, [mode])
 
   if (reducedMotion) {
     return (
@@ -101,56 +51,6 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
         minHeight: '100vh',
         backgroundColor: '#0A0A0A',
         zIndex: 9999,
-        overflow: 'hidden',
-        pointerEvents: 'none'
-      }}
-    >
-      {mode !== 'css' && (
-        <video
-          ref={videoRef}
-          src={videoSrc}
-          autoPlay
-          muted
-          defaultMuted
-          loop={false}
-          playsInline
-          webkit-playsinline="true"
-          x5-playsinline="true"
-          x5-video-player-type="h5"
-          x-webkit-airplay="deny"
-          disableRemotePlayback
-          disablePictureInPicture
-          controls={false}
-          preload="auto"
-          onEnded={finalize}
-          onError={() => setMode('css')}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            backgroundColor: '#0A0A0A',
-            pointerEvents: 'none',
-            opacity: mode === 'video' ? 1 : 0,
-            transition: 'opacity 0.3s ease'
-          }}
-        />
-      )}
-
-      {mode === 'css' && <CssIntro />}
-    </div>
-  )
-}
-
-function CssIntro() {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundColor: '#0A0A0A',
         overflow: 'hidden',
         pointerEvents: 'none'
       }}
@@ -184,7 +84,7 @@ function CssIntro() {
           transform: 'translate(-50%, -50%)',
           fontFamily: 'Unbounded, system-ui, sans-serif',
           fontWeight: 700,
-          fontSize: 'clamp(28px, 8vw, 48px)',
+          fontSize: 'clamp(36px, 11vw, 64px)',
           letterSpacing: '0.25em',
           color: '#F5F1EA',
           opacity: 0,
@@ -203,9 +103,9 @@ function CssIntro() {
         }
         @keyframes velionTitle {
           0%   { opacity: 0; letter-spacing: 0.4em; }
-          50%  { opacity: 1; letter-spacing: 0.25em; }
-          85%  { opacity: 1; letter-spacing: 0.25em; }
-          100% { opacity: 0.95; letter-spacing: 0.22em; }
+          50%  { opacity: 1; letter-spacing: 0.28em; }
+          85%  { opacity: 1; letter-spacing: 0.28em; }
+          100% { opacity: 0.95; letter-spacing: 0.25em; }
         }
       `}</style>
     </div>
