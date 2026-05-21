@@ -51,7 +51,7 @@ export function markDayCompleted(dayNumber) {
   write(state)
 }
 
-const ALWAYS_UNLOCKED = new Set([8, 9, 10, 11, 21, 22, 23, 24, 25])
+const ALWAYS_UNLOCKED = new Set([8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 25])
 
 export function isDayUnlocked(dayNumber) {
   if (dayNumber <= 1) return true
