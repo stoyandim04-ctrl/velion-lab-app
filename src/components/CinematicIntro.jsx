@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
-const INTRO_DURATION_MS = 3000
+const VIDEO_SRC = '/video/intro-vertical.mp4'
+const INTRO_DURATION_MS = 4000
+const SAFETY_TIMEOUT_MS = 6000
 
 export default function CinematicIntro({ onComplete, onStartExit }) {
+  const videoRef = useRef(null)
   const [reducedMotion, setReducedMotion] = useState(false)
+  const [videoPlaying, setVideoPlaying] = useState(false)
   const completedRef = useRef(false)
 
   const finalize = () => {
@@ -19,9 +23,33 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
   }, [])
 
   useEffect(() => {
-    const duration = reducedMotion ? 800 : INTRO_DURATION_MS
-    const t = setTimeout(finalize, duration)
-    return () => clearTimeout(t)
+    if (reducedMotion) {
+      const t = setTimeout(finalize, 1000)
+      return () => clearTimeout(t)
+    }
+
+    const v = videoRef.current
+    if (v) {
+      v.muted = true
+      v.defaultMuted = true
+      v.setAttribute('muted', '')
+      v.setAttribute('playsinline', '')
+      v.setAttribute('webkit-playsinline', '')
+      v.removeAttribute('controls')
+
+      const p = v.play()
+      if (p && typeof p.then === 'function') {
+        p.then(() => setVideoPlaying(true)).catch(() => setVideoPlaying(false))
+      }
+    }
+
+    const main = setTimeout(finalize, INTRO_DURATION_MS)
+    const safety = setTimeout(finalize, SAFETY_TIMEOUT_MS)
+
+    return () => {
+      clearTimeout(main)
+      clearTimeout(safety)
+    }
   }, [reducedMotion])
 
   if (reducedMotion) {
@@ -55,27 +83,62 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
         pointerEvents: 'none'
       }}
     >
-      <div
+      <video
+        ref={videoRef}
+        src={VIDEO_SRC}
+        autoPlay
+        muted
+        defaultMuted
+        loop={false}
+        playsInline
+        webkit-playsinline="true"
+        x5-playsinline="true"
+        x5-video-player-type="h5"
+        x-webkit-airplay="deny"
+        disableRemotePlayback
+        disablePictureInPicture
+        controls={false}
+        preload="auto"
+        onError={() => setVideoPlaying(false)}
         style={{
           position: 'absolute',
-          bottom: '-30%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '180%',
-          height: '120%',
-          background: 'radial-gradient(ellipse at center, rgba(255,106,0,0.55) 0%, rgba(255,106,0,0.25) 25%, rgba(255,106,0,0.08) 45%, transparent 65%)',
-          animation: 'velionEmber 3s ease-out forwards',
-          filter: 'blur(40px)'
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          backgroundColor: '#0A0A0A',
+          pointerEvents: 'none',
+          opacity: videoPlaying ? 1 : 0,
+          transition: 'opacity 0.4s ease'
         }}
       />
+
+      {!videoPlaying && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-30%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '180%',
+            height: '120%',
+            background: 'radial-gradient(ellipse at center, rgba(255,106,0,0.55) 0%, rgba(255,106,0,0.25) 25%, rgba(255,106,0,0.08) 45%, transparent 65%)',
+            animation: 'velionEmber 3s ease-out forwards',
+            filter: 'blur(40px)'
+          }}
+        />
+      )}
+
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle at 50% 60%, transparent 0%, transparent 40%, #0A0A0A 90%)',
-          opacity: 0.7
+          background: 'radial-gradient(circle at 50% 50%, transparent 0%, transparent 35%, rgba(10,10,10,0.55) 80%)',
+          pointerEvents: 'none'
         }}
       />
+
       <div
         style={{
           position: 'absolute',
@@ -85,16 +148,18 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
           fontFamily: 'Unbounded, system-ui, sans-serif',
           fontWeight: 700,
           fontSize: 'clamp(36px, 11vw, 64px)',
-          letterSpacing: '0.25em',
           color: '#F5F1EA',
           opacity: 0,
-          animation: 'velionTitle 3s ease-out forwards',
+          animation: 'velionTitle 3.5s ease-out forwards',
           textAlign: 'center',
-          whiteSpace: 'nowrap'
+          whiteSpace: 'nowrap',
+          textShadow: '0 0 24px rgba(0,0,0,0.6)',
+          pointerEvents: 'none'
         }}
       >
         VELION
       </div>
+
       <style>{`
         @keyframes velionEmber {
           0%   { transform: translate(-50%, 30%) scale(0.7); opacity: 0; }
@@ -103,7 +168,7 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
         }
         @keyframes velionTitle {
           0%   { opacity: 0; letter-spacing: 0.4em; }
-          50%  { opacity: 1; letter-spacing: 0.28em; }
+          40%  { opacity: 1; letter-spacing: 0.28em; }
           85%  { opacity: 1; letter-spacing: 0.28em; }
           100% { opacity: 0.95; letter-spacing: 0.25em; }
         }
