@@ -9,8 +9,8 @@ export default function WelcomeScreen() {
   const navigate = useNavigate()
   const [toast, setToast] = useState('')
 
-  const goToDashboard = () => {
-    navigate(ROUTES.dashboard)
+  const goToAuth = () => {
+    navigate(ROUTES.auth)
   }
 
   return (
@@ -50,7 +50,7 @@ export default function WelcomeScreen() {
           className="flex flex-col gap-3"
         >
           <Button onClick={() => navigate(ROUTES.goals)}>ЗАПОЧНИ</Button>
-          <Button variant="ghost" onClick={goToDashboard}>
+          <Button variant="ghost" onClick={goToAuth}>
             ВЕЧЕ ИМАМ АКАУНТ
           </Button>
         </motion.div>

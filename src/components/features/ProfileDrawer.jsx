@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Camera, Check, Flame } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { X, Camera, Check, Flame, LogOut } from 'lucide-react'
 import { setProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
+import { useAuth } from '../../state/AuthContext.jsx'
+import { ROUTES } from '../../lib/routes.js'
 
 export default function ProfileDrawer({
   open,
@@ -12,9 +15,17 @@ export default function ProfileDrawer({
   totalDays,
   completedDaysList = []
 }) {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
   const [name, setName] = useState(profile.name || '')
   const [saved, setSaved] = useState(false)
   const fileRef = useRef(null)
+
+  const handleSignOut = async () => {
+    await signOut()
+    onClose()
+    navigate(ROUTES.auth, { replace: true })
+  }
 
   const handleSaveName = () => {
     const trimmed = name.trim()
@@ -165,6 +176,17 @@ export default function ProfileDrawer({
                 </div>
               </div>
 
+              {user?.email && (
+                <div className="px-5 mb-5">
+                  <div className="rounded-2xl border border-forest-line bg-forest-card/60 px-4 py-3">
+                    <div className="font-display font-semibold text-ink-muted text-[10px] tracking-[0.12em] uppercase mb-1">
+                      Акаунт
+                    </div>
+                    <div className="text-ink text-[14px] truncate">{user.email}</div>
+                  </div>
+                </div>
+              )}
+
               {completedDaysList.length > 0 && (
                 <div className="px-5 mb-6">
                   <h3 className="font-display font-semibold text-ink-muted text-[10px] tracking-[0.12em] uppercase mb-3">
@@ -188,6 +210,19 @@ export default function ProfileDrawer({
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {user && (
+                <div className="px-5 mb-2">
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full min-h-[48px] flex items-center justify-center gap-2 rounded-2xl border border-forest-line bg-forest-card text-ink-muted text-[14px] active:bg-forest active:text-ink transition-colors"
+                    style={{ touchAction: 'manipulation' }}
+                  >
+                    <LogOut size={16} />
+                    Изход
+                  </button>
                 </div>
               )}
             </div>

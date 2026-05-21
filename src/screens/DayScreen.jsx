@@ -1,5 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useAuth } from '../state/AuthContext.jsx'
+import { syncDayCompletion, syncLastOpened, pushFromLocal } from '../lib/progressSync.js'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, Check } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
@@ -94,11 +96,26 @@ export default function DayScreen() {
 
 function DayContent({ data }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const userId = user?.id
   const initial = useMemo(() => getDayProgress(data.dayNumber), [data.dayNumber])
   const [tracker, setTracker] = useState(initial.tracker)
   const [journal, setJournalText] = useState(initial.journal)
   const [completed, setCompleted] = useState(initial.completed)
   const [toast, setToast] = useState('')
+  const pushTimerRef = useRef(null)
+
+  useEffect(() => {
+    if (userId) syncLastOpened(userId, data.dayNumber)
+  }, [userId, data.dayNumber])
+
+  const schedulePush = () => {
+    if (!userId) return
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current)
+    pushTimerRef.current = setTimeout(() => pushFromLocal(userId), 1200)
+  }
+
+  useEffect(() => () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current) }, [])
 
   const requiredItems = data.tracker.items.filter((i) => !i.optional)
   const requiredDone = requiredItems.filter((i) => tracker[i.id]).length
@@ -108,11 +125,13 @@ function DayContent({ data }) {
   const handleToggleTracker = (id, value) => {
     setTracker((s) => ({ ...s, [id]: value }))
     setTrackerItem(data.dayNumber, id, value)
+    schedulePush()
   }
 
   const handleJournalChange = (text) => {
     setJournalText(text)
     setJournal(data.dayNumber, text)
+    schedulePush()
   }
 
   const handleMarkRead = () => {
@@ -123,6 +142,7 @@ function DayContent({ data }) {
     if (!allRequiredDone) return
     markDayCompleted(data.dayNumber)
     setCompleted(true)
+    if (userId) syncDayCompletion(userId, data.dayNumber)
     const nextRoute = getNextDayRoute(data.dayNumber)
     if (nextRoute) {
       setToast(`Ден ${data.dayNumber} завършен · Ден ${data.dayNumber + 1} е отключен`)

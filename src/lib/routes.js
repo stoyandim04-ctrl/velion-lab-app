@@ -1,5 +1,6 @@
 export const ROUTES = {
   welcome: '/',
+  auth: '/auth',
   goals: '/goals',
   notAlone: '/not-alone',
   quiz: '/quiz/:step',

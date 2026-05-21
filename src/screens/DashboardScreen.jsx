@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Flame } from 'lucide-react'
@@ -10,14 +10,34 @@ import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
 import { buildDays, MODULES, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
 import { getProfile } from '../lib/profile.js'
+import { useAuth } from '../state/AuthContext.jsx'
+import { pullToLocal, pushFromLocal } from '../lib/progressSync.js'
 
 export default function DashboardScreen() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const userId = user?.id
   const [toast, setToast] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [profile, setProfileState] = useState(() => getProfile())
+  const [syncTick, setSyncTick] = useState(0)
 
-  const days = useMemo(() => buildDays((n) => getDayProgress(n)), [profile])
+  useEffect(() => {
+    if (!userId) return
+    let active = true
+    ;(async () => {
+      const remote = await pullToLocal(userId)
+      if (!active) return
+      if (remote && remote.completedDays.length > 0) {
+        setSyncTick((t) => t + 1)
+      } else {
+        await pushFromLocal(userId)
+      }
+    })()
+    return () => { active = false }
+  }, [userId])
+
+  const days = useMemo(() => buildDays((n) => getDayProgress(n)), [profile, syncTick])
   const completed = days.filter((d) => d.status === 'completed' && d.day > 0).length
   const completedDaysList = days.filter((d) => d.status === 'completed' && d.day > 0)
   const currentModule = MODULES[0]
