@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Screen from '../components/layout/Screen.jsx'
@@ -6,29 +6,59 @@ import Button from '../components/ui/Button.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { ROUTES } from '../lib/routes.js'
 
+function mapAuthError(err) {
+  if (!err) return ''
+  const msg = err.message || ''
+  const code = err.code || err.error || ''
+  if (/email not confirmed/i.test(msg) || code === 'email_not_confirmed') {
+    return 'Акаунтът ти не е потвърден. Провери имейла си за линка за потвърждение.'
+  }
+  if (/invalid login|invalid_credentials|invalid grant/i.test(msg) || code === 'invalid_credentials') {
+    return 'Грешен имейл или парола.'
+  }
+  if (/user already registered|already exists|user_already_exists/i.test(msg) || code === 'user_already_exists') {
+    return 'Този имейл вече е регистриран. Влез вместо това.'
+  }
+  if (/over_email_send_rate_limit|rate limit/i.test(msg)) {
+    return 'Твърде много опити. Изчакай малко.'
+  }
+  if (/weak password|password should be/i.test(msg)) {
+    return 'Паролата е твърде слаба. Поне 6 символа.'
+  }
+  if (/valid email|email format/i.test(msg)) {
+    return 'Невалиден имейл адрес.'
+  }
+  return msg || 'Възникна грешка. Опитай отново.'
+}
+
 export default function AuthScreen() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn, signUp, isAuthenticated } = useAuth()
+  const { signIn, signUp, isAuthenticated, loading } = useAuth()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
 
   const redirectTo = location.state?.from && location.state.from !== '/auth'
     ? location.state.from
     : ROUTES.dashboard
 
-  if (isAuthenticated) {
-    navigate(redirectTo, { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate(redirectTo, { replace: true })
+    }
+  }, [loading, isAuthenticated, navigate, redirectTo])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!email.trim() || !password) {
+    setInfo('')
+
+    const trimmedEmail = email.trim().toLowerCase()
+    if (!trimmedEmail || !password) {
       setError('Имейл и парола са задължителни.')
       return
     }
@@ -36,19 +66,54 @@ export default function AuthScreen() {
       setError('Паролата трябва да е поне 6 символа.')
       return
     }
+
     setBusy(true)
-    const fn = mode === 'login' ? signIn : signUp
-    const { error: err } = await fn(email.trim(), password)
-    setBusy(false)
-    if (err) {
-      const msg = err.message || 'Възникна грешка.'
-      if (/invalid login/i.test(msg)) setError('Грешен имейл или парола.')
-      else if (/already registered|already exists/i.test(msg)) setError('Този имейл вече е регистриран. Влез вместо това.')
-      else if (/email/i.test(msg) && /valid/i.test(msg)) setError('Невалиден имейл адрес.')
-      else setError(msg)
+
+    if (mode === 'signup') {
+      const { data, error: err } = await signUp(trimmedEmail, password)
+      setBusy(false)
+      if (err) {
+        console.error('[Velion] signUp error:', err)
+        setError(mapAuthError(err))
+        return
+      }
+      // Signup succeeded. Two cases:
+      //  A) session present → user is logged in immediately → redirect
+      //  B) session null but user exists → email confirmation required → show check-email message
+      if (data?.session) {
+        navigate(redirectTo, { replace: true })
+        return
+      }
+      if (data?.user && !data.session) {
+        setInfo('Провери имейла си, за да потвърдиш акаунта. След потвърждение се върни тук и влез.')
+        setMode('login')
+        setPassword('')
+        return
+      }
+      // Fallback: no error, no session, no user — try to sign in directly
+      const { data: signInData, error: signInErr } = await signIn(trimmedEmail, password)
+      if (signInErr) {
+        console.error('[Velion] post-signup signIn error:', signInErr)
+        setError(mapAuthError(signInErr))
+        return
+      }
+      if (signInData?.session) navigate(redirectTo, { replace: true })
       return
     }
-    navigate(redirectTo, { replace: true })
+
+    // mode === 'login'
+    const { data, error: err } = await signIn(trimmedEmail, password)
+    setBusy(false)
+    if (err) {
+      console.error('[Velion] signIn error:', err)
+      setError(mapAuthError(err))
+      return
+    }
+    if (data?.session) {
+      navigate(redirectTo, { replace: true })
+    } else {
+      setError('Възникна грешка при влизане. Опитай отново.')
+    }
   }
 
   return (
@@ -96,7 +161,7 @@ export default function AuthScreen() {
               placeholder="имейл"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink text-base placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
+              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
               style={{ fontSize: 16 }}
             />
             <input
@@ -105,12 +170,18 @@ export default function AuthScreen() {
               placeholder="парола"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink text-base placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
+              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
               style={{ fontSize: 16 }}
             />
 
+            {info && (
+              <div className="text-[13px] text-accent bg-accent/10 border border-accent/30 rounded-xl px-4 py-2.5 leading-[1.5]">
+                {info}
+              </div>
+            )}
+
             {error && (
-              <div className="text-[13px] text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
+              <div className="text-[13px] text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5 leading-[1.5]">
                 {error}
               </div>
             )}
@@ -121,7 +192,7 @@ export default function AuthScreen() {
           </motion.form>
 
           <button
-            onClick={() => { setError(''); setMode(mode === 'login' ? 'signup' : 'login') }}
+            onClick={() => { setError(''); setInfo(''); setMode(mode === 'login' ? 'signup' : 'login') }}
             className="w-full min-h-[44px] text-ink-muted text-[14px] active:text-ink"
             style={{ touchAction: 'manipulation' }}
           >
