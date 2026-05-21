@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" fill="none">
+  <defs>
+    <linearGradient id="shieldStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF8A2E"/>
+      <stop offset="100%" stop-color="#FF6A00"/>
+    </linearGradient>
+    <filter id="shieldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <path d="M100 10 L185 50 L185 120 Q185 175 100 210 Q15 175 15 120 L15 50 Z"
+        stroke="url(#shieldStroke)"
+        stroke-width="6"
+        stroke-linejoin="round"
+        filter="url(#shieldGlow)"/>
+  <path d="M55 75 L100 165 L145 75"
+        stroke="#FF6A00"
+        stroke-width="10"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        filter="url(#shieldGlow)"/>
+</svg>

@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-forest-deep text-ink font-body antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-display;
+  }
+
+  button,
+  a,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  video::-webkit-media-controls,
+  video::-webkit-media-controls-enclosure,
+  video::-webkit-media-controls-panel,
+  video::-webkit-media-controls-play-button,
+  video::-webkit-media-controls-start-playback-button,
+  video::-webkit-media-controls-overlay-play-button,
+  video::-internal-media-controls-overlay-cast-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  video {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+@layer components {
+  .screen-pad {
+    @apply px-6 py-8;
+  }
+
+  .glow-orange {
+    box-shadow: 0 0 40px rgba(255, 106, 0, 0.35);
+  }
+
+  .bg-cinema {
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(255, 106, 0, 0.12), transparent 60%),
+      radial-gradient(80% 60% at 50% 100%, rgba(10, 20, 16, 1), rgba(6, 13, 10, 1));
+  }
+
+  .bg-cinema-soft {
+    background:
+      radial-gradient(100% 50% at 50% 0%, rgba(255, 106, 0, 0.08), transparent 60%),
+      linear-gradient(180deg, #0A1410 0%, #060D0A 100%);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
