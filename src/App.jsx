@@ -114,6 +114,11 @@ export default function App() {
                   <Route path="/course/day-38" element={protectedDay} />
                   <Route path="/course/day-39" element={protectedDay} />
                   <Route path="/course/day-40" element={protectedDay} />
+                  <Route path="/course/day-41" element={protectedDay} />
+                  <Route path="/course/day-42" element={protectedDay} />
+                  <Route path="/course/day-43" element={protectedDay} />
+                  <Route path="/course/day-44" element={protectedDay} />
+                  <Route path="/course/day-45" element={protectedDay} />
                   <Route path={ROUTES.day} element={protectedDay} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                 </Routes>

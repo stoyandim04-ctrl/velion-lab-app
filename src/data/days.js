@@ -38,6 +38,11 @@ import { DAY_37 } from './day37.js'
 import { DAY_38 } from './day38.js'
 import { DAY_39 } from './day39.js'
 import { DAY_40 } from './day40.js'
+import { DAY_41 } from './day41.js'
+import { DAY_42 } from './day42.js'
+import { DAY_43 } from './day43.js'
+import { DAY_44 } from './day44.js'
+import { DAY_45 } from './day45.js'
 
 export const DAYS = {
   1: DAY_1,
@@ -79,10 +84,15 @@ export const DAYS = {
   37: DAY_37,
   38: DAY_38,
   39: DAY_39,
-  40: DAY_40
+  40: DAY_40,
+  41: DAY_41,
+  42: DAY_42,
+  43: DAY_43,
+  44: DAY_44,
+  45: DAY_45
 }
 
-export const ALWAYS_UNLOCKED_DAYS = new Set([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40])
+export const ALWAYS_UNLOCKED_DAYS = new Set([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45])
 
 export const AVAILABLE_DAYS = Object.keys(DAYS).map(Number).sort((a, b) => a - b)
 export const MAX_AVAILABLE_DAY = Math.max(...AVAILABLE_DAYS)
