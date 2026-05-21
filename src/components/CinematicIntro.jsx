@@ -1,14 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-const VIDEO_VERTICAL = '/video/intro-vertical.mp4'
-const INTRO_DURATION_MS = 3800
+const VIDEO_MOBILE = '/video/intro-bg-compressed.mp4'
+const VIDEO_HQ = '/video/intro-bg-hq.mp4'
+const INTRO_DURATION_MS = 6000
 const CSS_FALLBACK_MS = 3000
+
+function detectVideoSrc() {
+  if (typeof window === 'undefined') return VIDEO_MOBILE
+  const isMobileViewport = window.innerWidth < 768
+  const conn =
+    navigator.connection || navigator.mozConnection || navigator.webkitConnection
+  const saveData = conn?.saveData === true
+  const slow =
+    conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g')
+  if (saveData || slow) return VIDEO_MOBILE
+  return isMobileViewport ? VIDEO_MOBILE : VIDEO_HQ
+}
 
 export default function CinematicIntro({ onComplete, onStartExit }) {
   const videoRef = useRef(null)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [mode, setMode] = useState('loading')
   const completedRef = useRef(false)
+  const videoSrc = useMemo(detectVideoSrc, [])
 
   const finalize = () => {
     if (completedRef.current) return
@@ -94,7 +108,7 @@ export default function CinematicIntro({ onComplete, onStartExit }) {
       {mode !== 'css' && (
         <video
           ref={videoRef}
-          src={VIDEO_VERTICAL}
+          src={videoSrc}
           autoPlay
           muted
           defaultMuted
