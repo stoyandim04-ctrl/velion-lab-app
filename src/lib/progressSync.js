@@ -1,20 +1,27 @@
 import { supabase } from './supabaseClient.js'
+import { replaceAllProgress } from './courseProgress.js'
 
-const LOCAL_KEY = 'velion_course_progress'
+// Per-user scoped progress sync between Supabase user_progress and localStorage.
+// All Supabase queries filter by user_id. Local cache key is scoped by user id.
 
-function readLocal() {
-  if (typeof window === 'undefined') return {}
+function localKey(userId) {
+  return `velion_course_progress_${userId}`
+}
+
+function readLocal(userId) {
+  if (!userId || typeof window === 'undefined') return {}
   try {
-    const raw = window.localStorage.getItem(LOCAL_KEY)
+    const raw = window.localStorage.getItem(localKey(userId))
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-function writeLocal(state) {
+function writeLocal(userId, state) {
+  if (!userId || typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(LOCAL_KEY, JSON.stringify(state))
+    window.localStorage.setItem(localKey(userId), JSON.stringify(state))
   } catch {}
 }
 
@@ -23,7 +30,7 @@ function progressFromRow(row) {
   const state = {}
   const lessons = row.completed_lessons || {}
   for (const dayNum of row.completed_days || []) {
-    const day = lessons[dayNum] || lessons[`day${dayNum}`] || {}
+    const day = lessons[`day${dayNum}`] || lessons[dayNum] || {}
     state[`day${dayNum}`] = {
       tracker: day.tracker || {},
       journal: day.journal || '',
@@ -31,7 +38,6 @@ function progressFromRow(row) {
       completedAt: day.completedAt || null
     }
   }
-  // Also include in-progress days from lessons jsonb
   for (const key of Object.keys(lessons)) {
     if (!key.startsWith('day')) continue
     if (state[key]) continue
@@ -56,7 +62,7 @@ function rowFromLocal(local) {
   const completedLessons = {}
   let maxDay = 1
 
-  for (const [key, value] of Object.entries(local)) {
+  for (const [key, value] of Object.entries(local || {})) {
     const match = /^day(\d+)$/.exec(key)
     if (!match) continue
     const dayNum = parseInt(match[1], 10)
@@ -96,19 +102,23 @@ export async function fetchRemoteProgress(userId) {
   return progressFromRow(data)
 }
 
+// Pull remote into local cache for this user. Overwrites the local cache for
+// the same userId — does NOT merge with another user's data.
 export async function pullToLocal(userId) {
+  if (!userId) return null
   const remote = await fetchRemoteProgress(userId)
-  if (!remote) return null
-  // Merge: remote completion is source of truth, but keep local in-progress data if richer
-  const local = readLocal()
-  const merged = { ...local, ...remote.state }
-  writeLocal(merged)
+  if (!remote) {
+    // No remote row → ensure local cache is empty so we don't leak old data.
+    replaceAllProgress(userId, {})
+    return null
+  }
+  replaceAllProgress(userId, remote.state)
   return remote
 }
 
 export async function pushFromLocal(userId) {
   if (!userId) return
-  const local = readLocal()
+  const local = readLocal(userId)
   const row = rowFromLocal(local)
   const { error } = await supabase
     .from('user_progress')
@@ -121,21 +131,13 @@ export async function pushFromLocal(userId) {
 
 export async function syncDayCompletion(userId, dayNumber) {
   if (!userId) return
-  const local = readLocal()
+  const local = readLocal(userId)
   local[`day${dayNumber}`] = {
     ...(local[`day${dayNumber}`] || {}),
     completed: true,
     completedAt: new Date().toISOString()
   }
-  writeLocal(local)
-  await pushFromLocal(userId)
-}
-
-export async function syncDayState(userId, dayNumber, patch) {
-  if (!userId) return
-  const local = readLocal()
-  local[`day${dayNumber}`] = { ...(local[`day${dayNumber}`] || {}), ...patch }
-  writeLocal(local)
+  writeLocal(userId, local)
   await pushFromLocal(userId)
 }
 
@@ -150,8 +152,9 @@ export async function syncLastOpened(userId, dayNumber) {
   if (error) console.warn('[Velion] syncLastOpened error:', error.message)
 }
 
-export function clearLocalProgress() {
+export function clearLocalProgress(userId) {
+  if (!userId || typeof window === 'undefined') return
   try {
-    window.localStorage.removeItem(LOCAL_KEY)
+    window.localStorage.removeItem(localKey(userId))
   } catch {}
 }

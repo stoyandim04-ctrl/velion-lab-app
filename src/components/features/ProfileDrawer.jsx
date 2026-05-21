@@ -1,14 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { X, Camera, Check, Flame, LogOut } from 'lucide-react'
-import { setProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
+import { saveProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
 import { useAuth } from '../../state/AuthContext.jsx'
 import { ROUTES } from '../../lib/routes.js'
 
 export default function ProfileDrawer({
   open,
   onClose,
+  userId,
   profile,
   onProfileChange,
   completedDays,
@@ -17,9 +18,15 @@ export default function ProfileDrawer({
 }) {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const [name, setName] = useState(profile.name || '')
+  const [name, setName] = useState(profile?.name || '')
   const [saved, setSaved] = useState(false)
   const fileRef = useRef(null)
+
+  // Reset local input state when the underlying profile changes
+  // (account switch, fresh fetch from Supabase, etc).
+  useEffect(() => {
+    setName(profile?.name || '')
+  }, [profile?.name, userId])
 
   const handleSignOut = async () => {
     await signOut()
@@ -27,10 +34,12 @@ export default function ProfileDrawer({
     navigate(ROUTES.auth, { replace: true })
   }
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
+    if (!userId) return
     const trimmed = name.trim()
-    const updated = setProfile({ name: trimmed })
-    onProfileChange(updated)
+    if (trimmed === (profile?.name || '')) return
+    const updated = await saveProfile(userId, { name: trimmed })
+    onProfileChange({ ...profile, ...updated })
     setSaved(true)
     setTimeout(() => setSaved(false), 1200)
   }
@@ -38,13 +47,14 @@ export default function ProfileDrawer({
   const handleAvatarPick = () => fileRef.current?.click()
 
   const handleFileChange = async (e) => {
+    if (!userId) return
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) return
     if (file.size > 5 * 1024 * 1024) return
     const dataURL = await readFileAsDataURL(file)
-    const updated = setProfile({ avatar: dataURL })
-    onProfileChange(updated)
+    const updated = await saveProfile(userId, { avatar: dataURL })
+    onProfileChange({ ...profile, ...updated })
     setSaved(true)
     setTimeout(() => setSaved(false), 1200)
   }

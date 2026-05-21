@@ -9,35 +9,53 @@ import ProfileButton from '../components/features/ProfileButton.jsx'
 import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
 import { buildDays, MODULES, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
-import { getProfile } from '../lib/profile.js'
+import { getCachedProfile, fetchProfile } from '../lib/profile.js'
 import { useAuth } from '../state/AuthContext.jsx'
 import { pullToLocal, pushFromLocal } from '../lib/progressSync.js'
+
+const EMPTY_PROFILE = { name: '', avatar: '', createdAt: null }
 
 export default function DashboardScreen() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const userId = user?.id
+
   const [toast, setToast] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [profile, setProfileState] = useState(() => getProfile())
+  const [profile, setProfileState] = useState(EMPTY_PROFILE)
   const [syncTick, setSyncTick] = useState(0)
 
+  // Whenever the authenticated user changes (signup, login, switch, logout),
+  // reset all in-memory state to defaults FIRST, then load only this user's data.
   useEffect(() => {
+    setProfileState(userId ? getCachedProfile(userId) : EMPTY_PROFILE)
+    setSyncTick((t) => t + 1)
+
     if (!userId) return
+
     let active = true
     ;(async () => {
-      const remote = await pullToLocal(userId)
+      const [remote, fresh] = await Promise.all([
+        pullToLocal(userId),
+        fetchProfile(userId)
+      ])
       if (!active) return
-      if (remote && remote.completedDays.length > 0) {
-        setSyncTick((t) => t + 1)
-      } else {
-        await pushFromLocal(userId)
+      setProfileState(fresh)
+      if (!remote || remote.completedDays.length === 0) {
+        // No remote progress yet → no local push (start clean).
+        // Old behavior of pushing local-as-starting-state caused account A's
+        // progress to leak into account B. Removed.
       }
+      setSyncTick((t) => t + 1)
     })()
+
     return () => { active = false }
   }, [userId])
 
-  const days = useMemo(() => buildDays((n) => getDayProgress(n)), [profile, syncTick])
+  const days = useMemo(
+    () => buildDays((n) => getDayProgress(userId, n)),
+    [userId, syncTick]
+  )
   const completed = days.filter((d) => d.status === 'completed' && d.day > 0).length
   const completedDaysList = days.filter((d) => d.status === 'completed' && d.day > 0)
   const currentModule = MODULES[0]
@@ -125,6 +143,7 @@ export default function DashboardScreen() {
       <ProfileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        userId={userId}
         profile={profile}
         onProfileChange={setProfileState}
         completedDays={completed}

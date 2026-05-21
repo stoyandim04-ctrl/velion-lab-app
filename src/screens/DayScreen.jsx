@@ -45,6 +45,8 @@ export default function DayScreen() {
     return NaN
   }, [params.day, location.pathname])
 
+  const { user } = useAuth()
+  const userId = user?.id
   const data = getDayData(dayNumber)
 
   if (!data) {
@@ -69,7 +71,7 @@ export default function DayScreen() {
     )
   }
 
-  if (!isDayUnlocked(dayNumber)) {
+  if (!isDayUnlocked(userId, dayNumber)) {
     return (
       <Screen background="bg-forest-deep">
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
@@ -91,14 +93,12 @@ export default function DayScreen() {
     )
   }
 
-  return <DayContent data={data} key={dayNumber} />
+  return <DayContent data={data} userId={userId} key={`${userId || 'anon'}-${dayNumber}`} />
 }
 
-function DayContent({ data }) {
+function DayContent({ data, userId }) {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const userId = user?.id
-  const initial = useMemo(() => getDayProgress(data.dayNumber), [data.dayNumber])
+  const initial = useMemo(() => getDayProgress(userId, data.dayNumber), [userId, data.dayNumber])
   const [tracker, setTracker] = useState(initial.tracker)
   const [journal, setJournalText] = useState(initial.journal)
   const [completed, setCompleted] = useState(initial.completed)
@@ -124,13 +124,13 @@ function DayContent({ data }) {
 
   const handleToggleTracker = (id, value) => {
     setTracker((s) => ({ ...s, [id]: value }))
-    setTrackerItem(data.dayNumber, id, value)
+    setTrackerItem(userId, data.dayNumber, id, value)
     schedulePush()
   }
 
   const handleJournalChange = (text) => {
     setJournalText(text)
-    setJournal(data.dayNumber, text)
+    setJournal(userId, data.dayNumber, text)
     schedulePush()
   }
 
@@ -140,7 +140,7 @@ function DayContent({ data }) {
 
   const handleComplete = () => {
     if (!allRequiredDone) return
-    markDayCompleted(data.dayNumber)
+    markDayCompleted(userId, data.dayNumber)
     setCompleted(true)
     if (userId) syncDayCompletion(userId, data.dayNumber)
     const nextRoute = getNextDayRoute(data.dayNumber)

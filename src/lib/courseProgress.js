@@ -1,23 +1,30 @@
-const STORAGE_KEY = 'velion_course_progress'
+// Per-user scoped course progress.
+// Every function REQUIRES a userId. If userId is falsy, reads return defaults
+// and writes are no-ops (so we never leak data between accounts).
 
-function read() {
-  if (typeof window === 'undefined') return {}
+function storageKey(userId) {
+  return `velion_course_progress_${userId}`
+}
+
+function read(userId) {
+  if (!userId || typeof window === 'undefined') return {}
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = window.localStorage.getItem(storageKey(userId))
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-function write(state) {
+function write(userId, state) {
+  if (!userId || typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    window.localStorage.setItem(storageKey(userId), JSON.stringify(state))
   } catch {}
 }
 
-export function getDayProgress(dayNumber) {
-  const state = read()
+export function getDayProgress(userId, dayNumber) {
+  const state = read(userId)
   const day = state[`day${dayNumber}`] || {}
   return {
     tracker: day.tracker || {},
@@ -26,36 +33,51 @@ export function getDayProgress(dayNumber) {
   }
 }
 
-export function setTrackerItem(dayNumber, itemId, value) {
-  const state = read()
+export function setTrackerItem(userId, dayNumber, itemId, value) {
+  if (!userId) return
+  const state = read(userId)
   const key = `day${dayNumber}`
   state[key] = state[key] || {}
   state[key].tracker = { ...(state[key].tracker || {}), [itemId]: value }
-  write(state)
+  write(userId, state)
 }
 
-export function setJournal(dayNumber, text) {
-  const state = read()
+export function setJournal(userId, dayNumber, text) {
+  if (!userId) return
+  const state = read(userId)
   const key = `day${dayNumber}`
   state[key] = state[key] || {}
   state[key].journal = text
-  write(state)
+  write(userId, state)
 }
 
-export function markDayCompleted(dayNumber) {
-  const state = read()
+export function markDayCompleted(userId, dayNumber) {
+  if (!userId) return
+  const state = read(userId)
   const key = `day${dayNumber}`
   state[key] = state[key] || {}
   state[key].completed = true
   state[key].completedAt = new Date().toISOString()
-  write(state)
+  write(userId, state)
 }
 
 const ALWAYS_UNLOCKED = new Set([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25])
 
-export function isDayUnlocked(dayNumber) {
+export function isDayUnlocked(userId, dayNumber) {
   if (dayNumber <= 1) return true
   if (ALWAYS_UNLOCKED.has(dayNumber)) return true
-  const prev = getDayProgress(dayNumber - 1)
+  const prev = getDayProgress(userId, dayNumber - 1)
   return prev.completed
+}
+
+export function replaceAllProgress(userId, state) {
+  if (!userId) return
+  write(userId, state || {})
+}
+
+export function clearProgress(userId) {
+  if (!userId || typeof window === 'undefined') return
+  try {
+    window.localStorage.removeItem(storageKey(userId))
+  } catch {}
 }
