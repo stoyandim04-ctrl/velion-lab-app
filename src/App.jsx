@@ -70,6 +70,9 @@ export default function App() {
                 <Route path="/course/day-5" element={<DayScreen />} />
                 <Route path="/course/day-6" element={<DayScreen />} />
                 <Route path="/course/day-7" element={<DayScreen />} />
+                <Route path="/course/day-8" element={<DayScreen />} />
+                <Route path="/course/day-9" element={<DayScreen />} />
+                <Route path="/course/day-10" element={<DayScreen />} />
                 <Route path="/course/day-21" element={<DayScreen />} />
                 <Route path="/course/day-22" element={<DayScreen />} />
                 <Route path="/course/day-23" element={<DayScreen />} />

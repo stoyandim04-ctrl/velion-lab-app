@@ -26,6 +26,7 @@ import NavigationCard from '../components/features/course/NavigationCard.jsx'
 import MythsList from '../components/features/course/MythsList.jsx'
 import TriggerCategories from '../components/features/course/TriggerCategories.jsx'
 import ArousalScale from '../components/features/course/ArousalScale.jsx'
+import SignalsList from '../components/features/course/SignalsList.jsx'
 
 export default function DayScreen() {
   const params = useParams()
@@ -209,6 +210,9 @@ function DayContent({ data }) {
               )}
               {data.arousalScale && (
                 <div className="pt-2"><ArousalScale scale={data.arousalScale} /></div>
+              )}
+              {data.signals && (
+                <div className="pt-2"><SignalsList signals={data.signals} /></div>
               )}
             </LessonBody>
 
