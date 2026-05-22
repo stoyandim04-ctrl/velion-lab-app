@@ -20,7 +20,7 @@
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    touch-action: pan-y;
   }
 
   h1,

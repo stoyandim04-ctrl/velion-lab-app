@@ -20,6 +20,7 @@ import ResultScreen from './screens/ResultScreen.jsx'
 import SocialProofScreen from './screens/SocialProofScreen.jsx'
 import PaywallScreen from './screens/PaywallScreen.jsx'
 import SuccessScreen from './screens/SuccessScreen.jsx'
+import DailyOnboardingScreen from './screens/DailyOnboardingScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import DayScreen from './screens/DayScreen.jsx'
 
@@ -73,6 +74,7 @@ export default function App() {
                   <Route path={ROUTES.social} element={<SocialProofScreen />} />
                   <Route path={ROUTES.paywall} element={<PaywallScreen />} />
                   <Route path={ROUTES.success} element={<SuccessScreen />} />
+                  <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute><DailyOnboardingScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dashboard} element={<ProtectedRoute><DashboardScreen /></ProtectedRoute>} />
                   <Route path="/course/day-1" element={protectedDay} />
                   <Route path="/course/day-2" element={protectedDay} />
@@ -119,6 +121,21 @@ export default function App() {
                   <Route path="/course/day-43" element={protectedDay} />
                   <Route path="/course/day-44" element={protectedDay} />
                   <Route path="/course/day-45" element={protectedDay} />
+                  <Route path="/course/day-46" element={protectedDay} />
+                  <Route path="/course/day-47" element={protectedDay} />
+                  <Route path="/course/day-48" element={protectedDay} />
+                  <Route path="/course/day-49" element={protectedDay} />
+                  <Route path="/course/day-50" element={protectedDay} />
+                  <Route path="/course/day-51" element={protectedDay} />
+                  <Route path="/course/day-52" element={protectedDay} />
+                  <Route path="/course/day-53" element={protectedDay} />
+                  <Route path="/course/day-54" element={protectedDay} />
+                  <Route path="/course/day-55" element={protectedDay} />
+                  <Route path="/course/day-56" element={protectedDay} />
+                  <Route path="/course/day-57" element={protectedDay} />
+                  <Route path="/course/day-58" element={protectedDay} />
+                  <Route path="/course/day-59" element={protectedDay} />
+                  <Route path="/course/day-60" element={protectedDay} />
                   <Route path={ROUTES.day} element={protectedDay} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                 </Routes>

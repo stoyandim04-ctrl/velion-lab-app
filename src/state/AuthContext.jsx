@@ -19,6 +19,7 @@ function purgeUserScopedKeys(userId) {
   try {
     window.localStorage.removeItem(`velion_course_progress_${userId}`)
     window.localStorage.removeItem(`velion_profile_${userId}`)
+    window.localStorage.removeItem(`velion_engagement_${userId}`)
   } catch {}
 }
 

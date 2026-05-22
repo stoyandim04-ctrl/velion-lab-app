@@ -34,7 +34,10 @@ export default function QuizScreen() {
         <ProgressBar value={stepNum} max={QUIZ_TOTAL} />
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide px-6 pt-6 pb-[140px]">
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide scroll-pb-[190px] px-6 pt-6 pb-[190px]"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={stepNum}

@@ -11,6 +11,7 @@ export const ROUTES = {
   social: '/social',
   paywall: '/paywall',
   success: '/success',
+  dailyOnboarding: '/daily-onboarding',
   dashboard: '/dashboard',
   day: '/course/day-:day',
   day1: '/course/day-1'

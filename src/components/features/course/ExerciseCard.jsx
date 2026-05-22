@@ -66,7 +66,7 @@ export default function ExerciseCard({ exercise, done, onToggleDone }) {
           )}
 
           {exercise.mantra && (
-            <div className="rounded-2xl bg-accent/8 border border-accent/30 p-5 mb-5">
+            <div className="rounded-2xl bg-accent/10 border border-accent/30 p-5 mb-5">
               <div className="flex items-start gap-3">
                 <span className="text-xl flex-shrink-0 leading-none mt-0.5" aria-hidden>{exercise.mantra.icon}</span>
                 <div>

@@ -8,6 +8,10 @@ function localKey(userId) {
   return `velion_course_progress_${userId}`
 }
 
+function engagementKey(userId) {
+  return `velion_engagement_${userId}`
+}
+
 function readLocal(userId) {
   if (!userId || typeof window === 'undefined') return {}
   try {
@@ -16,6 +20,23 @@ function readLocal(userId) {
   } catch {
     return {}
   }
+}
+
+function readEngagementLocal(userId) {
+  if (!userId || typeof window === 'undefined') return {}
+  try {
+    const raw = window.localStorage.getItem(engagementKey(userId))
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeEngagementLocal(userId, state) {
+  if (!userId || typeof window === 'undefined' || !state) return
+  try {
+    window.localStorage.setItem(engagementKey(userId), JSON.stringify(state))
+  } catch {}
 }
 
 function writeLocal(userId, state) {
@@ -53,14 +74,16 @@ function progressFromRow(row) {
     currentDay: row.current_day || 1,
     lastOpenedDay: row.last_opened_day || 1,
     streakCount: row.streak_count || 0,
-    completedDays: row.completed_days || []
+    completedDays: row.completed_days || [],
+    engagement: lessons.__engagement || null
   }
 }
 
-function rowFromLocal(local) {
+function rowFromLocal(userId, local) {
   const completedDays = []
   const completedLessons = {}
   let maxDay = 1
+  const engagement = readEngagementLocal(userId)
 
   for (const [key, value] of Object.entries(local || {})) {
     const match = /^day(\d+)$/.exec(key)
@@ -78,10 +101,23 @@ function rowFromLocal(local) {
     }
   }
 
+  if (engagement && Object.keys(engagement).length > 0) {
+    completedLessons.__engagement = {
+      ...engagement,
+      syncedAt: new Date().toISOString()
+    }
+  }
+
+  const lastOpenedDay = Math.min(
+    60,
+    Math.max(1, Number(engagement?.lastOpenedDay || maxDay || 1))
+  )
+
   completedDays.sort((a, b) => a - b)
   return {
     current_day: maxDay,
-    last_opened_day: maxDay,
+    last_opened_day: lastOpenedDay,
+    streak_count: engagement?.streak?.count || 0,
     completed_days: completedDays,
     completed_lessons: completedLessons,
     updated_at: new Date().toISOString()
@@ -113,13 +149,14 @@ export async function pullToLocal(userId) {
     return null
   }
   replaceAllProgress(userId, remote.state)
+  if (remote.engagement) writeEngagementLocal(userId, remote.engagement)
   return remote
 }
 
 export async function pushFromLocal(userId) {
   if (!userId) return
   const local = readLocal(userId)
-  const row = rowFromLocal(local)
+  const row = rowFromLocal(userId, local)
   const { error } = await supabase
     .from('user_progress')
     .upsert(
@@ -156,5 +193,6 @@ export function clearLocalProgress(userId) {
   if (!userId || typeof window === 'undefined') return
   try {
     window.localStorage.removeItem(localKey(userId))
+    window.localStorage.removeItem(engagementKey(userId))
   } catch {}
 }

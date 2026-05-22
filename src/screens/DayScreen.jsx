@@ -3,16 +3,23 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '../state/AuthContext.jsx'
 import { syncDayCompletion, syncLastOpened, pushFromLocal } from '../lib/progressSync.js'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, Check } from 'lucide-react'
+import { ChevronLeft, Check, Lock } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import ProgressBar from '../components/layout/ProgressBar.jsx'
 import {
   getDayProgress,
+  getCompletedDayNumbers,
   setTrackerItem,
   setJournal,
   markDayCompleted,
   isDayUnlocked
 } from '../lib/courseProgress.js'
+import {
+  addAnalyticsEvent,
+  getStreakMessage,
+  recordDayCompletion,
+  recordOpenedDay
+} from '../lib/engagement.js'
 import { getDayData, getNextDayRoute } from '../data/days.js'
 
 import ThemeCard from '../components/features/course/ThemeCard.jsx'
@@ -74,17 +81,23 @@ export default function DayScreen() {
   if (!isDayUnlocked(userId, dayNumber)) {
     return (
       <Screen background="bg-forest-deep">
-        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-          <span className="text-5xl mb-4">🔒</span>
-          <h2 className="font-display font-bold text-ink text-xl mb-2 uppercase">
-            Ден {dayNumber} е заключен
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(255,106,0,0.18),transparent_48%)]" />
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-accent/35 bg-accent/10 text-accent shadow-glow-soft">
+            <Lock size={26} strokeWidth={2.4} />
+          </div>
+          <div className="font-display text-[10px] tracking-[0.16em] text-accent uppercase mb-3">
+            Премиум отключване
+          </div>
+          <h2 className="font-display font-bold text-ink text-2xl leading-[1.12] tracking-display mb-3 uppercase">
+            Ден {dayNumber} чака своя ред
           </h2>
-          <p className="text-ink-muted text-sm mb-8">
-            Завърши Ден {dayNumber - 1}, за да отключиш този ден.
+          <p className="text-ink-muted text-[15px] leading-[1.6] mb-8 max-w-[300px]">
+            Завърши Ден {dayNumber - 1}. Следващият урок се отключва, когато ритъмът е реален.
           </p>
           <button
             onClick={() => navigate(`/course/day-${dayNumber - 1}`)}
-            className="text-accent font-display text-sm tracking-wider uppercase"
+            className="min-h-[50px] rounded-2xl bg-accent px-6 py-3 font-display text-sm font-semibold uppercase tracking-display text-forest-deep shadow-[0_0_28px_rgba(255,106,0,0.35)]"
           >
             Към Ден {dayNumber - 1}
           </button>
@@ -103,10 +116,15 @@ function DayContent({ data, userId }) {
   const [journal, setJournalText] = useState(initial.journal)
   const [completed, setCompleted] = useState(initial.completed)
   const [toast, setToast] = useState('')
+  const [celebration, setCelebration] = useState(null)
   const pushTimerRef = useRef(null)
 
   useEffect(() => {
-    if (userId) syncLastOpened(userId, data.dayNumber)
+    if (!userId) return
+    recordOpenedDay(userId, data.dayNumber)
+    addAnalyticsEvent(userId, 'lesson_screen_viewed', { dayNumber: data.dayNumber })
+    syncLastOpened(userId, data.dayNumber)
+    pushFromLocal(userId)
   }, [userId, data.dayNumber])
 
   const schedulePush = () => {
@@ -121,6 +139,8 @@ function DayContent({ data, userId }) {
   const requiredDone = requiredItems.filter((i) => tracker[i.id]).length
   const allRequiredDone = requiredDone === requiredItems.length
   const progressPct = (requiredDone / requiredItems.length) * 100
+  const completedDays = getCompletedDayNumbers(userId).length
+  const coursePct = Math.round((completedDays / 60) * 100)
 
   const handleToggleTracker = (id, value) => {
     setTracker((s) => ({ ...s, [id]: value }))
@@ -141,18 +161,30 @@ function DayContent({ data, userId }) {
   const handleComplete = () => {
     if (!allRequiredDone) return
     markDayCompleted(userId, data.dayNumber)
+    const engagement = recordDayCompletion(userId, data.dayNumber)
     setCompleted(true)
     if (userId) syncDayCompletion(userId, data.dayNumber)
     const nextRoute = getNextDayRoute(data.dayNumber)
+    const nextDayNumber = Math.min(60, data.dayNumber + 1)
+    setCelebration({
+      dayNumber: data.dayNumber,
+      nextDayNumber,
+      streak: engagement.streak.count || 1,
+      message: getStreakMessage(engagement.streak.count || 1)
+    })
     if (nextRoute) {
       setToast(`Ден ${data.dayNumber} завършен · Ден ${data.dayNumber + 1} е отключен`)
       setTimeout(() => {
         setToast('')
+        setCelebration(null)
         navigate(nextRoute)
-      }, 1800)
+      }, 2400)
     } else {
-      setToast('Ден завършен')
-      setTimeout(() => setToast(''), 1800)
+      setToast('Денят е завършен')
+      setTimeout(() => {
+        setToast('')
+        setCelebration(null)
+      }, 2400)
     }
   }
 
@@ -174,10 +206,10 @@ function DayContent({ data, userId }) {
 
           <div className="text-center">
             <div className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
-              Ден {data.dayNumber}{data.isIntegration ? ' · Интеграция' : ''}
+              Ден {data.dayNumber}/60{data.isIntegration ? ' · Интеграция' : ''}
             </div>
             <div className="text-ink-dim text-[10px] mt-0.5">
-              {data.duration}
+              {Math.round(progressPct)}% днес · {coursePct}% курс
             </div>
           </div>
 
@@ -190,12 +222,15 @@ function DayContent({ data, userId }) {
           </div>
         </div>
         <div className="px-5 pb-3">
-          <ProgressBar value={progressPct} />
+          <ProgressBar value={progressPct} glow />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="px-5 pt-6 pb-[160px]">
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide scroll-pb-[240px]"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        <div className="px-5 pt-6 pb-[240px]">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -304,6 +339,46 @@ function DayContent({ data, userId }) {
       </div>
 
       <AnimatePresence>
+        {celebration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-forest-deep/78 px-6 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 16 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: -10 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full overflow-hidden rounded-3xl border border-accent/40 bg-forest-card p-6 text-center shadow-glow"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,106,0,0.25),transparent_55%)]" />
+              <div className="relative z-10">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-forest-deep shadow-glow">
+                  <Check size={25} strokeWidth={3} />
+                </div>
+                <div className="font-display text-[10px] tracking-[0.16em] text-accent uppercase">
+                  Малка победа
+                </div>
+                <h3 className="mt-2 font-display text-[24px] font-bold uppercase tracking-display text-ink">
+                  Ден {celebration.dayNumber} завършен
+                </h3>
+                <p className="mx-auto mt-3 max-w-[280px] text-[14px] leading-[1.55] text-ink-muted">
+                  🔥 {celebration.streak} дни поред. {celebration.message}
+                </p>
+                {celebration.dayNumber < 60 && (
+                  <div className="mt-5 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3">
+                    <div className="font-display text-[11px] font-semibold uppercase tracking-[0.13em] text-accent">
+                      Ден {celebration.nextDayNumber} отключен
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

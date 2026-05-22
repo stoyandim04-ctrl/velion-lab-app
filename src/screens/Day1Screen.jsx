@@ -96,8 +96,8 @@ export default function Day1Screen() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
-        <div className="px-5 pt-4 pb-[140px]">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="px-5 pt-4 pb-[220px]">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

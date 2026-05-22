@@ -20,7 +20,7 @@ export default function ResultScreen() {
     <Screen>
       <Header />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain scrollbar-hide px-6 pt-2 pb-[140px]">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-6 pt-2 pb-[170px]" style={{ WebkitOverflowScrolling: 'touch' }}>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

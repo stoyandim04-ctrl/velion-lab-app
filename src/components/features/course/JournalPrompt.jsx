@@ -23,6 +23,12 @@ export default function JournalPrompt({ journal, value, onChange }) {
     debounceRef.current = setTimeout(() => onChange(text), 300)
   }
 
+  const handleFocus = () => {
+    setTimeout(() => {
+      textareaRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }, 180)
+  }
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
@@ -58,9 +64,11 @@ export default function JournalPrompt({ journal, value, onChange }) {
               ref={textareaRef}
               defaultValue={value}
               onInput={handleInput}
+              onFocus={handleFocus}
               placeholder={journal.placeholder}
               rows={4}
               className="w-full bg-forest-deep border border-forest-line rounded-2xl p-5 text-ink text-[15px] leading-[1.65] placeholder:text-ink-dim placeholder:italic resize-none focus:outline-none focus:border-accent/40 transition-colors"
+              style={{ scrollMarginBottom: 240 }}
             />
             <p className="text-ink-dim text-[10px] mt-2.5">
               Записва се автоматично

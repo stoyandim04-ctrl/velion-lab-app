@@ -99,7 +99,7 @@ export default function ProfileDrawer({
             </div>
 
             <div
-              className="flex-1 overflow-y-auto overscroll-contain"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
               style={{
                 minHeight: 0,
                 WebkitOverflowScrolling: 'touch',

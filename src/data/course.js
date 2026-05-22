@@ -1,4 +1,4 @@
-import { DAYS, AVAILABLE_DAYS, ALWAYS_UNLOCKED_DAYS } from './days.js'
+import { DAYS, AVAILABLE_DAYS } from './days.js'
 
 export const MODULES = [
   { id: 'I', name: 'ОСЪЗНАТОСТ', range: [1, 7], color: 'accent' },
@@ -18,7 +18,6 @@ export function buildDays(progressFn) {
     const title = data?.title || STATIC_NAMED[i] || `Ден ${i}`
     const named = Boolean(data || STATIC_NAMED[i])
     const hasContent = i === 0 || AVAILABLE_DAYS.includes(i)
-    const alwaysUnlocked = ALWAYS_UNLOCKED_DAYS.has(i)
 
     let status = 'locked'
     if (i === 0) {
@@ -27,7 +26,7 @@ export function buildDays(progressFn) {
       const completed = progressFn ? progressFn(i)?.completed : false
       const prevCompleted = i === 1 ? true : (progressFn ? progressFn(i - 1)?.completed : false)
       if (completed) status = 'completed'
-      else if (alwaysUnlocked || prevCompleted) status = 'active'
+      else if (prevCompleted) status = 'active'
       else status = 'locked'
     }
 
