@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield, Trash2, AlertTriangle } from 'lucide-react'
+import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield, Trash2, AlertTriangle, Info } from 'lucide-react'
 import { saveProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
 import { useAuth } from '../../state/AuthContext.jsx'
 import { ROUTES } from '../../lib/routes.js'
@@ -302,7 +302,15 @@ export default function ProfileDrawer({
                 </div>
               )}
 
-              <div className="px-5 mb-3 flex items-center justify-center gap-4">
+              <div className="px-5 mb-3 flex items-center justify-center flex-wrap gap-x-3 gap-y-2">
+                <button
+                  onClick={() => { onClose(); navigate(ROUTES.about) }}
+                  className="inline-flex items-center gap-1.5 text-ink-dim text-[12px] active:text-ink"
+                >
+                  <Info size={12} />
+                  За проекта
+                </button>
+                <span className="text-forest-line">·</span>
                 <button
                   onClick={() => { onClose(); navigate(ROUTES.privacy) }}
                   className="inline-flex items-center gap-1.5 text-ink-dim text-[12px] active:text-ink"

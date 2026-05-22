@@ -22,7 +22,7 @@ export default function SocialProofScreen() {
           transition={{ duration: 0.7 }}
           className="font-display font-bold text-[28px] leading-[1.1] tracking-display text-ink uppercase mb-5"
         >
-          ХИЛЯДИ МЪЖЕ ВЕЧЕ ЗАПОЧНАХА
+          МЪЖЕ КАТО ТЕБ ВЕЧЕ ЗАПОЧНАХА
         </motion.h1>
 
         <motion.div

@@ -27,6 +27,7 @@ import DayScreen from './screens/DayScreen.jsx'
 import DaysScreen from './screens/DaysScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
+import FounderScreen from './screens/FounderScreen.jsx'
 
 const protectedDay = (
   <ProtectedRoute requirePaid>
@@ -155,6 +156,7 @@ export default function App() {
                   <Route path={ROUTES.days} element={<ProtectedRoute requirePaid><DaysScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.privacy} element={<PrivacyScreen />} />
                   <Route path={ROUTES.terms} element={<TermsScreen />} />
+                  <Route path={ROUTES.about} element={<FounderScreen />} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                 </Routes>
               </AnimatePresence>
