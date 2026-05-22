@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, BookOpen, Zap } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import ProgressBar from '../components/layout/ProgressBar.jsx'
 import ProfileButton from '../components/features/ProfileButton.jsx'
@@ -29,7 +29,10 @@ function getContinueDay(days, engagement) {
 }
 
 function getModuleForDay(dayNumber) {
-  return MODULES.find((module) => dayNumber >= module.range[0] && dayNumber <= module.range[1]) || MODULES[0]
+  return (
+    MODULES.find((m) => dayNumber >= m.range[0] && dayNumber <= m.range[1]) ||
+    MODULES[0]
+  )
 }
 
 export default function DashboardScreen() {
@@ -53,21 +56,20 @@ export default function DashboardScreen() {
 
     let active = true
     ;(async () => {
-      const [remote, fresh] = await Promise.all([
+      const [, fresh] = await Promise.all([
         pullToLocal(userId),
         fetchProfile(userId)
       ])
       if (!active) return
       setProfileState(fresh)
-      if (!remote || remote.completedDays.length === 0) {
-        // No remote progress yet -> no local push, so accounts stay isolated.
-      }
       setEngagement(getCachedEngagement(userId))
       setReady(true)
       setSyncTick((t) => t + 1)
     })()
 
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [userId])
 
   const days = useMemo(
@@ -76,11 +78,13 @@ export default function DashboardScreen() {
   )
   const completed = days.filter((d) => d.status === 'completed' && d.day > 0).length
   const completedDaysList = days.filter((d) => d.status === 'completed' && d.day > 0)
+  const lockedCount = days.filter((d) => d.status === 'locked' && d.day > 0).length
   const progressPct = Math.round((completed / TOTAL_DAYS) * 100)
   const continueDay = getContinueDay(days, engagement)
   const continueData = getDayData(continueDay)
   const currentModule = getModuleForDay(continueDay)
   const streakCount = engagement?.streak?.count || 0
+  const nextDay = Math.min(TOTAL_DAYS, completed + 1)
 
   if (!ready) {
     return (
@@ -101,9 +105,16 @@ export default function DashboardScreen() {
     return <Navigate to={ROUTES.dailyOnboarding} replace />
   }
 
-  const goToDay = (dayNumber, source = 'dashboard') => {
-    addAnalyticsEvent(userId, 'continue_tapped', { dayNumber, source })
-    navigate(`/course/day-${dayNumber}`)
+  const goToDay = () => {
+    addAnalyticsEvent(userId, 'continue_tapped', {
+      dayNumber: continueDay,
+      source: 'card_continue'
+    })
+    navigate(`/course/day-${continueDay}`)
+  }
+
+  const goToDays = () => {
+    navigate(ROUTES.days)
   }
 
   return (
@@ -115,10 +126,7 @@ export default function DashboardScreen() {
               Velion Lab
             </div>
             <div className="font-display font-bold text-ink text-[19px] tracking-display uppercase mt-1.5 leading-[1.15]">
-              Ден {continueDay}/60 · Модул {currentModule.id}
-            </div>
-            <div className="text-ink-muted text-[11px] mt-1 tracking-[0.06em] uppercase">
-              {currentModule.name}
+              Твоят протокол
             </div>
           </div>
           <ProfileButton
@@ -133,84 +141,117 @@ export default function DashboardScreen() {
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <motion.button
-          type="button"
-          onClick={() => goToDay(continueDay, 'hero_continue')}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileTap={{ scale: 0.985 }}
-          transition={{ duration: 0.45 }}
-          className="relative w-full overflow-hidden rounded-3xl border border-accent/35 bg-forest-card p-5 text-left shadow-card mb-3"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(255,106,0,0.24),transparent_42%)]" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5">
-                <Zap size={13} className="text-accent" />
-                <span className="font-display text-[10px] font-semibold tracking-[0.14em] text-accent uppercase">
-                  Продължи от Ден {continueDay}
-                </span>
-              </div>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-forest-deep shadow-glow-soft">
-                <ArrowRight size={17} strokeWidth={2.8} />
-              </span>
-            </div>
-            <h2 className="font-display text-[20px] font-bold leading-[1.12] tracking-display text-ink uppercase">
-              {continueData?.title || `Ден ${continueDay}`}
-            </h2>
-            <p className="mt-2.5 text-[13px] leading-[1.5] text-ink-muted">
-              Най-малката победа днес: отвори урока, завърши стъпките и отключи следващото ниво.
-            </p>
-          </div>
-        </motion.button>
-
+        {/* CARD 1: Today's day */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="rounded-2xl border border-forest-line bg-forest-card px-4 py-3 mb-3"
+          transition={{ duration: 0.45 }}
+          className="h-[160px] mb-3 rounded-2xl border border-forest-line bg-forest-card px-4 py-4 flex flex-col"
         >
-          <div className="flex items-baseline justify-between mb-2">
+          <div className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
+            Ден {continueDay}/60 · Модул {currentModule.id}
+          </div>
+          <h2
+            className="mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {continueData?.title || `Ден ${continueDay}`}
+          </h2>
+          <button
+            type="button"
+            onClick={goToDay}
+            className="mt-auto self-start inline-flex items-center gap-2 rounded-full bg-accent text-forest-deep font-display text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2.5 shadow-glow-soft active:scale-95 transition"
+          >
+            Продължи
+            <ArrowRight size={14} strokeWidth={3} />
+          </button>
+        </motion.div>
+
+        {/* CARD 2: Progress */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.05 }}
+          className="h-[160px] mb-3 rounded-2xl border border-forest-line bg-forest-card px-4 py-4 flex flex-col"
+        >
+          <div className="flex items-start justify-between">
             <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
               Прогрес
             </span>
-            <span className="text-accent font-display font-bold text-[13px]">{progressPct}%</span>
-          </div>
-          <ProgressBar value={completed} max={TOTAL_DAYS} glow />
-          <div className="mt-2 flex items-center justify-between text-[11px] text-ink-muted">
-            <span>
-              <span className="text-ink font-display font-semibold">{completed}</span>
-              <span className="text-ink-dim">/{TOTAL_DAYS}</span> завършени
+            <span className="font-display font-bold text-accent text-[28px] leading-none tracking-display">
+              {progressPct}%
             </span>
+          </div>
+          <div className="mt-4">
+            <ProgressBar value={completed} max={TOTAL_DAYS} glow />
+          </div>
+          <div className="mt-auto pt-3 flex items-center justify-between gap-2 text-[10.5px] text-ink-muted">
+            <span>
+              <span className="text-ink font-display font-semibold">
+                {completed}/{TOTAL_DAYS}
+              </span>{' '}
+              завършени
+            </span>
+            <span className="text-ink-dim">·</span>
             <span className="flex items-center gap-1">
-              🔥 <span className="text-ink font-display font-semibold">{streakCount}</span> серия
+              🔥{' '}
+              <span className="text-ink font-display font-semibold">
+                {streakCount}
+              </span>{' '}
+              серия
+            </span>
+            <span className="text-ink-dim">·</span>
+            <span>
+              Ден{' '}
+              <span className="text-ink font-display font-semibold">
+                {nextDay}
+              </span>{' '}
+              следващ
             </span>
           </div>
         </motion.div>
 
+        {/* CARD 3: All days */}
         <motion.button
           type="button"
-          onClick={() => navigate(ROUTES.days)}
+          onClick={goToDays}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           whileTap={{ scale: 0.985 }}
           transition={{ duration: 0.45, delay: 0.1 }}
-          className="flex w-full items-center justify-between rounded-2xl border border-forest-line bg-forest-card px-4 py-3.5 text-left"
+          className="h-[160px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col"
         >
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 text-accent border border-accent/30">
-              <BookOpen size={15} strokeWidth={2.4} />
+          <div className="flex items-start justify-between gap-3">
+            <span className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
+              60-дневен протокол
             </span>
-            <div>
-              <div className="font-display text-[13px] font-semibold uppercase tracking-display text-ink">
-                Всички дни ({completed}/{TOTAL_DAYS})
-              </div>
-              <div className="text-[11px] text-ink-muted mt-0.5">
-                Виж и отвори всеки ден
-              </div>
-            </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 border border-accent/30 shrink-0">
+              <ArrowRight size={15} className="text-accent" strokeWidth={2.6} />
+            </span>
           </div>
-          <ArrowRight size={16} className="text-ink-muted" strokeWidth={2.2} />
+          <h2 className="mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase">
+            📚 Всички дни
+          </h2>
+          <div className="mt-auto flex items-center gap-2 text-[12px] text-ink-muted">
+            <span>
+              <span className="text-ink font-display font-semibold">
+                {completed}
+              </span>{' '}
+              завършени
+            </span>
+            <span className="text-ink-dim">·</span>
+            <span>
+              <span className="text-ink font-display font-semibold">
+                {lockedCount}
+              </span>{' '}
+              заключени
+            </span>
+          </div>
         </motion.button>
       </div>
 

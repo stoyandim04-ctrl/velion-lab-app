@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { Check, ChevronLeft, Lock } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
-import Header from '../components/layout/Header.jsx'
-import DayRow from '../components/features/DayRow.jsx'
 import { buildDays, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
 import { useAuth } from '../state/AuthContext.jsx'
 import { addAnalyticsEvent } from '../lib/engagement.js'
+import { ROUTES } from '../lib/routes.js'
 
 export default function DaysScreen() {
   const navigate = useNavigate()
@@ -35,23 +35,35 @@ export default function DaysScreen() {
       showToast('Завърши предишния ден, за да отключиш този')
       return
     }
-    addAnalyticsEvent(userId, 'continue_tapped', { dayNumber: day.day, source: 'days_screen' })
+    addAnalyticsEvent(userId, 'continue_tapped', {
+      dayNumber: day.day,
+      source: 'days_grid'
+    })
     navigate(`/course/day-${day.day}`)
   }
 
   return (
     <Screen background="bg-forest-deep">
-      <Header />
-
-      <div className="px-5 pb-3">
-        <div className="font-display text-accent text-[11px] tracking-[0.15em] uppercase mb-2">
+      <div className="px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0">
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.dashboard)}
+          className="inline-flex items-center gap-1 text-ink-muted active:text-ink text-[13px] -ml-1"
+        >
+          <ChevronLeft size={18} strokeWidth={2.4} />
+          Назад
+        </button>
+        <div className="mt-3 font-display text-accent text-[10px] tracking-[0.15em] uppercase">
           Velion Lab
         </div>
-        <h1 className="font-display font-bold text-ink text-[24px] leading-[1.1] tracking-display uppercase">
-          Всички дни
+        <h1 className="mt-1.5 font-display font-bold text-ink text-[22px] leading-[1.1] tracking-display uppercase">
+          60-дневен протокол
         </h1>
-        <div className="mt-2 text-[12px] text-ink-muted">
-          {completed}/{TOTAL_DAYS} завършени
+        <div className="mt-1.5 text-[12px] text-ink-muted">
+          <span className="text-ink font-display font-semibold">
+            {completed}
+          </span>{' '}
+          / {TOTAL_DAYS} завършени
         </div>
       </div>
 
@@ -59,16 +71,14 @@ export default function DaysScreen() {
         className="flex-1 min-h-0 px-5 overflow-y-auto overscroll-contain scrollbar-hide"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="flex flex-col gap-2.5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]">
+        <div className="grid grid-cols-2 gap-2.5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]">
           {days.map((d, i) => (
-            <motion.div
+            <DayCard
               key={d.day}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: Math.min(i, 10) * 0.02 }}
-            >
-              <DayRow day={d} onClick={handleDayClick} />
-            </motion.div>
+              day={d}
+              index={i}
+              onClick={handleDayClick}
+            />
           ))}
         </div>
       </div>
@@ -84,5 +94,71 @@ export default function DaysScreen() {
         </motion.div>
       )}
     </Screen>
+  )
+}
+
+function DayCard({ day, index, onClick }) {
+  const isCompleted = day.status === 'completed'
+  const isActive = day.status === 'active'
+  const isLocked = day.status === 'locked'
+
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: Math.min(index, 12) * 0.02 }}
+      whileTap={isLocked ? {} : { scale: 0.97 }}
+      onClick={() => onClick(day)}
+      className={[
+        'h-[112px] rounded-2xl border px-3 py-3 text-left flex flex-col justify-between transition-all',
+        isActive
+          ? 'border-accent bg-forest-card shadow-[0_0_20px_rgba(255,106,0,0.18)]'
+          : isCompleted
+          ? 'border-forest-line bg-forest-card'
+          : 'border-forest-line/60 bg-forest-card/35'
+      ].join(' ')}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className={[
+            'font-display text-[10px] tracking-[0.12em] uppercase font-semibold',
+            isLocked ? 'text-ink-dim' : 'text-accent'
+          ].join(' ')}
+        >
+          Ден {day.day}
+        </span>
+        <span
+          className={[
+            'flex h-6 w-6 items-center justify-center rounded-full shrink-0',
+            isCompleted
+              ? 'bg-accent/15 text-accent border border-accent/40'
+              : isActive
+              ? 'bg-accent text-forest-deep'
+              : 'bg-forest-line/60 text-ink-dim'
+          ].join(' ')}
+        >
+          {isCompleted ? (
+            <Check size={12} strokeWidth={3} />
+          ) : isLocked ? (
+            <Lock size={11} strokeWidth={2.4} />
+          ) : null}
+        </span>
+      </div>
+      <div
+        className={[
+          'font-display text-[11.5px] leading-[1.25] uppercase tracking-display',
+          isLocked ? 'text-ink-dim' : 'text-ink'
+        ].join(' ')}
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}
+      >
+        {day.title}
+      </div>
+    </motion.button>
   )
 }
