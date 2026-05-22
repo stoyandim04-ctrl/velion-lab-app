@@ -1,0 +1,38 @@
+{
+  "appId": "bg.velion.lab",
+  "appName": "Velion Lab",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "always",
+    "scrollEnabled": true,
+    "backgroundColor": "#060D0A"
+  },
+  "android": {
+    "backgroundColor": "#060D0A",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "launchAutoHide": true,
+      "backgroundColor": "#060D0A",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP",
+      "splashFullScreen": true,
+      "splashImmersive": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#060D0A",
+      "style": "DARK",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "native",
+      "resizeOnFullScreen": true
+    }
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  }
+}

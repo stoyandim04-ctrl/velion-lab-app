@@ -15,3 +15,26 @@ yarn-debug.log*
 yarn-error.log*
 
 intro mp.4mp.4.mp4
+
+# Capacitor — keep source, ignore build artifacts
+ios/App/build/
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/.gradle/
+ios/DerivedData/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/release/
+android/captures/
+android/.idea/
+android/*.iml
+android/app/*.iml
+
+# Capacitor copies web assets here on sync — regenerated each build
+ios/App/App/public/
+android/app/src/main/assets/public/

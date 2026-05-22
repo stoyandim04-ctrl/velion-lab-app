@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js'
+import { openExternalUrl } from './capacitor.js'
 
 export async function startCheckout({ priceId, mode }) {
   if (!priceId) {
@@ -30,5 +31,8 @@ export async function startCheckout({ priceId, mode }) {
     throw new Error('Stripe не върна URL за checkout')
   }
 
-  window.location.href = url
+  // On native (iOS/Android) Capacitor opens the URL inside Safari View
+  // Controller / Chrome Custom Tabs so the user can return to the app
+  // via universal/app links. On web it just navigates the tab.
+  await openExternalUrl(url)
 }

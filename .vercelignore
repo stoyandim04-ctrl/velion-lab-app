@@ -2,3 +2,7 @@ node_modules
 dist
 .git
 .preview
+
+# Capacitor native projects shouldn't be uploaded to Vercel
+ios
+android
