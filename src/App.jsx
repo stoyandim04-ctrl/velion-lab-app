@@ -23,6 +23,8 @@ import SuccessScreen from './screens/SuccessScreen.jsx'
 import DailyOnboardingScreen from './screens/DailyOnboardingScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import DayScreen from './screens/DayScreen.jsx'
+import PrivacyScreen from './screens/PrivacyScreen.jsx'
+import TermsScreen from './screens/TermsScreen.jsx'
 
 const protectedDay = (
   <ProtectedRoute>
@@ -137,6 +139,8 @@ export default function App() {
                   <Route path="/course/day-59" element={protectedDay} />
                   <Route path="/course/day-60" element={protectedDay} />
                   <Route path={ROUTES.day} element={protectedDay} />
+                  <Route path={ROUTES.privacy} element={<PrivacyScreen />} />
+                  <Route path={ROUTES.terms} element={<TermsScreen />} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                 </Routes>
               </AnimatePresence>

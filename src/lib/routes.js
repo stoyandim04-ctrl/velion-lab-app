@@ -14,7 +14,9 @@ export const ROUTES = {
   dailyOnboarding: '/daily-onboarding',
   dashboard: '/dashboard',
   day: '/course/day-:day',
-  day1: '/course/day-1'
+  day1: '/course/day-1',
+  privacy: '/privacy',
+  terms: '/terms'
 }
 
 export const ONBOARDING_FLOW = [
