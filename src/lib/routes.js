@@ -15,6 +15,7 @@ export const ROUTES = {
   dashboard: '/dashboard',
   day: '/course/day-:day',
   day1: '/course/day-1',
+  days: '/days',
   privacy: '/privacy',
   terms: '/terms'
 }

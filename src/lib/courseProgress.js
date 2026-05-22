@@ -77,7 +77,8 @@ export function markDayCompleted(userId, dayNumber) {
 }
 
 export function isDayUnlocked(userId, dayNumber) {
-  if (dayNumber <= 1) return true
+  // Days 1-7 are always unlocked for every user.
+  if (dayNumber <= 7) return true
   const prev = getDayProgress(userId, dayNumber - 1)
   return prev.completed
 }

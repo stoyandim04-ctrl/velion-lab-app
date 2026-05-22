@@ -23,6 +23,7 @@ import SuccessScreen from './screens/SuccessScreen.jsx'
 import DailyOnboardingScreen from './screens/DailyOnboardingScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import DayScreen from './screens/DayScreen.jsx'
+import DaysScreen from './screens/DaysScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 
@@ -74,8 +75,8 @@ export default function App() {
                   <Route path={ROUTES.building} element={<BuildingPlanScreen />} />
                   <Route path={ROUTES.result} element={<ResultScreen />} />
                   <Route path={ROUTES.social} element={<SocialProofScreen />} />
-                  <Route path={ROUTES.paywall} element={<PaywallScreen />} />
-                  <Route path={ROUTES.success} element={<SuccessScreen />} />
+                  <Route path={ROUTES.paywall} element={<ProtectedRoute><PaywallScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.success} element={<ProtectedRoute><SuccessScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute><DailyOnboardingScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dashboard} element={<ProtectedRoute><DashboardScreen /></ProtectedRoute>} />
                   <Route path="/course/day-1" element={protectedDay} />
@@ -139,6 +140,7 @@ export default function App() {
                   <Route path="/course/day-59" element={protectedDay} />
                   <Route path="/course/day-60" element={protectedDay} />
                   <Route path={ROUTES.day} element={protectedDay} />
+                  <Route path={ROUTES.days} element={<ProtectedRoute><DaysScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.privacy} element={<PrivacyScreen />} />
                   <Route path={ROUTES.terms} element={<TermsScreen />} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />

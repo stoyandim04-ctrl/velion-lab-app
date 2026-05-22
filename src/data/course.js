@@ -24,7 +24,10 @@ export function buildDays(progressFn) {
       status = 'completed'
     } else if (hasContent) {
       const completed = progressFn ? progressFn(i)?.completed : false
-      const prevCompleted = i === 1 ? true : (progressFn ? progressFn(i - 1)?.completed : false)
+      // Days 1-7 are always unlocked for every user.
+      // From Day 8 onward, the previous day must be completed.
+      const prevCompleted =
+        i <= 7 ? true : (progressFn ? progressFn(i - 1)?.completed : false)
       if (completed) status = 'completed'
       else if (prevCompleted) status = 'active'
       else status = 'locked'

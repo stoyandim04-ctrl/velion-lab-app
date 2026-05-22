@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check, Flame } from 'lucide-react'
@@ -61,14 +61,6 @@ export default function DailyOnboardingScreen() {
   const question = QUESTIONS[step]
   const answered = Boolean(answers[question.id])
   const progress = ((step + (answered ? 1 : 0)) / QUESTIONS.length) * 100
-
-  const selectedProfile = useMemo(() => {
-    const goal = answers.goal
-    if (goal === 'presence') return 'Фокус: присъствие и спокойна сила'
-    if (goal === 'confidence') return 'Фокус: увереност и стабилен глас'
-    if (goal === 'control') return 'Фокус: контрол и нервна система'
-    return 'Персонален дневен протокол'
-  }, [answers.goal])
 
   const selectOption = (value) => {
     setAnswers((current) => ({ ...current, [question.id]: value }))
@@ -181,15 +173,6 @@ export default function DailyOnboardingScreen() {
         </motion.div>
 
         <div className="pt-5">
-          <div className="mb-3 rounded-2xl border border-forest-line bg-forest-card/70 px-4 py-3">
-            <div className="text-[10px] tracking-[0.14em] text-accent uppercase font-display">
-              {selectedProfile}
-            </div>
-            <div className="mt-1 text-[12px] leading-[1.45] text-ink-muted">
-              Утре приложението ще те върне директно към правилния ден.
-            </div>
-          </div>
-
           <motion.button
             type="button"
             onClick={goNext}
