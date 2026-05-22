@@ -31,6 +31,12 @@ export default function PaywallScreen() {
 
   const handleCheckout = async () => {
     if (!plan || loading) return
+    // If the user isn't logged in yet, send them to register/login first.
+    // After auth, they will be routed back to /paywall to finish checkout.
+    if (!user) {
+      navigate(ROUTES.auth, { state: { from: '/paywall' } })
+      return
+    }
     setError(null)
     setLoading(true)
     try {
@@ -124,6 +130,8 @@ export default function PaywallScreen() {
                 />
                 ОБРАБОТКА…
               </span>
+            ) : !user ? (
+              'РЕГИСТРИРАЙ СЕ И ПЛАТИ'
             ) : (
               'ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ'
             )}

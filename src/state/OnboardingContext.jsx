@@ -2,33 +2,26 @@ import { createContext, useContext, useState, useCallback, useMemo, useEffect } 
 
 const OnboardingContext = createContext(null)
 
-const STORAGE_KEY = 'velion_onboarding_v1'
+// Legacy storage key — we still purge it on mount in case old data is lingering
+// from before the in-memory refactor. We deliberately do NOT persist onboarding
+// answers anymore: each browser session starts with a clean quiz/goals state,
+// so a new user never sees the previous user's pre-selected answers.
+const LEGACY_STORAGE_KEY = 'velion_onboarding_v1'
 
-function loadState() {
-  if (typeof window === 'undefined') return { goals: [], answers: {} }
+function purgeLegacy() {
+  if (typeof window === 'undefined') return
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { goals: [], answers: {} }
-    const parsed = JSON.parse(raw)
-    return {
-      goals: Array.isArray(parsed.goals) ? parsed.goals : [],
-      answers: parsed.answers && typeof parsed.answers === 'object' ? parsed.answers : {}
-    }
-  } catch {
-    return { goals: [], answers: {} }
-  }
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY)
+  } catch {}
 }
 
 export function OnboardingProvider({ children }) {
-  const initial = useMemo(loadState, [])
-  const [goals, setGoals] = useState(initial.goals)
-  const [answers, setAnswers] = useState(initial.answers)
+  const [goals, setGoals] = useState([])
+  const [answers, setAnswers] = useState({})
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ goals, answers }))
-    } catch {}
-  }, [goals, answers])
+    purgeLegacy()
+  }, [])
 
   const toggleGoal = useCallback((id) => {
     setGoals((curr) => (curr.includes(id) ? curr.filter((g) => g !== id) : [...curr, id]))
@@ -41,9 +34,7 @@ export function OnboardingProvider({ children }) {
   const reset = useCallback(() => {
     setGoals([])
     setAnswers({})
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {}
+    purgeLegacy()
   }, [])
 
   const value = useMemo(

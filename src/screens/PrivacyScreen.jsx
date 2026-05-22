@@ -134,9 +134,12 @@ export default function PrivacyScreen() {
                 <p>
                   За въпроси, искания за изтриване или жалби пиши на:
                 </p>
-                <p className="text-accent mt-2 text-base">
-                  support@velion-lab.com
-                </p>
+                <a
+                  href="mailto:velionbilgaria@gmail.com"
+                  className="text-accent mt-2 text-base inline-block underline underline-offset-4 active:text-accent-soft"
+                >
+                  velionbilgaria@gmail.com
+                </a>
               </section>
 
               <section className="pt-4 border-t border-forest-line">

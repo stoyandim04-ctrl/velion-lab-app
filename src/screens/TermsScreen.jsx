@@ -57,7 +57,14 @@ export default function TermsScreen() {
                   Достъпът до пълния курс е срещу заплащане. Плащанията се
                   обработват от Stripe. Абонаментите се подновяват автоматично
                   до отказ. Можеш да отмениш по всяко време от настройките на
-                  акаунта или като пишеш на support@velion-lab.com.
+                  акаунта или като пишеш на{' '}
+                  <a
+                    href="mailto:velionbilgaria@gmail.com"
+                    className="text-accent underline underline-offset-4"
+                  >
+                    velionbilgaria@gmail.com
+                  </a>
+                  .
                 </p>
               </section>
 
@@ -123,9 +130,12 @@ export default function TermsScreen() {
                   9. Контакт
                 </h2>
                 <p>За въпроси относно тези условия:</p>
-                <p className="text-accent mt-2 text-base">
-                  support@velion-lab.com
-                </p>
+                <a
+                  href="mailto:velionbilgaria@gmail.com"
+                  className="text-accent mt-2 text-base inline-block underline underline-offset-4 active:text-accent-soft"
+                >
+                  velionbilgaria@gmail.com
+                </a>
               </section>
 
               <section className="pt-4 border-t border-forest-line">

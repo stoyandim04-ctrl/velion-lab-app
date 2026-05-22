@@ -75,7 +75,7 @@ export default function App() {
                   <Route path={ROUTES.building} element={<BuildingPlanScreen />} />
                   <Route path={ROUTES.result} element={<ResultScreen />} />
                   <Route path={ROUTES.social} element={<SocialProofScreen />} />
-                  <Route path={ROUTES.paywall} element={<ProtectedRoute><PaywallScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.paywall} element={<PaywallScreen />} />
                   <Route path={ROUTES.success} element={<ProtectedRoute><SuccessScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute requirePaid><DailyOnboardingScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dashboard} element={<ProtectedRoute requirePaid><DashboardScreen /></ProtectedRoute>} />

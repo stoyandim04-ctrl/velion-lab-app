@@ -60,7 +60,7 @@ export default function FutureScreen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.9 }}
           >
-            <Button onClick={() => navigate(ROUTES.building)}>Продължи</Button>
+            <Button onClick={() => navigate(ROUTES.paywall)}>Продължи</Button>
           </motion.div>
         </div>
       </div>

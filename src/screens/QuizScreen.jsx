@@ -22,7 +22,7 @@ export default function QuizScreen() {
     if (stepNum < QUIZ_TOTAL) {
       navigate(`/quiz/${stepNum + 1}`)
     } else {
-      navigate(ROUTES.education)
+      navigate(ROUTES.future)
     }
   }
 
