@@ -56,10 +56,10 @@ export default function DaysScreen() {
       </div>
 
       <div
-        className="flex-1 min-h-0 px-5 pb-[max(24px,env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain scrollbar-hide"
+        className="flex-1 min-h-0 px-5 overflow-y-auto overscroll-contain scrollbar-hide"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="flex flex-col gap-2.5 pb-6">
+        <div className="flex flex-col gap-2.5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]">
           {days.map((d, i) => (
             <motion.div
               key={d.day}

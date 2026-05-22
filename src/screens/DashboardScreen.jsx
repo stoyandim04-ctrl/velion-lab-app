@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, BookOpen, Flame, Lock, Trophy, Zap } from 'lucide-react'
+import { ArrowRight, BookOpen, Zap } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import ProgressBar from '../components/layout/ProgressBar.jsx'
 import ProfileButton from '../components/features/ProfileButton.jsx'
@@ -108,13 +108,13 @@ export default function DashboardScreen() {
 
   return (
     <Screen background="bg-forest-deep">
-      <div className="px-5 pt-[max(56px,env(safe-area-inset-top))] pb-4">
-        <div className="flex items-start justify-between gap-3 mb-1">
+      <div className="px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="font-display font-semibold text-accent text-[10px] tracking-[0.15em] uppercase">
               Velion Lab
             </div>
-            <div className="font-display font-bold text-ink text-[20px] tracking-display uppercase mt-1.5 leading-[1.15]">
+            <div className="font-display font-bold text-ink text-[19px] tracking-display uppercase mt-1.5 leading-[1.15]">
               Ден {continueDay}/60 · Модул {currentModule.id}
             </div>
             <div className="text-ink-muted text-[11px] mt-1 tracking-[0.06em] uppercase">
@@ -129,7 +129,10 @@ export default function DashboardScreen() {
         </div>
       </div>
 
-      <div className="px-5 pb-4">
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <motion.button
           type="button"
           onClick={() => goToDay(continueDay, 'hero_continue')}
@@ -137,11 +140,11 @@ export default function DashboardScreen() {
           animate={{ opacity: 1, y: 0 }}
           whileTap={{ scale: 0.985 }}
           transition={{ duration: 0.45 }}
-          className="relative w-full overflow-hidden rounded-3xl border border-accent/35 bg-forest-card p-5 text-left shadow-card"
+          className="relative w-full overflow-hidden rounded-3xl border border-accent/35 bg-forest-card p-5 text-left shadow-card mb-3"
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(255,106,0,0.24),transparent_42%)]" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5">
                 <Zap size={13} className="text-accent" />
                 <span className="font-display text-[10px] font-semibold tracking-[0.14em] text-accent uppercase">
@@ -152,45 +155,39 @@ export default function DashboardScreen() {
                 <ArrowRight size={17} strokeWidth={2.8} />
               </span>
             </div>
-            <h2 className="font-display text-[22px] font-bold leading-[1.12] tracking-display text-ink uppercase">
+            <h2 className="font-display text-[20px] font-bold leading-[1.12] tracking-display text-ink uppercase">
               {continueData?.title || `Ден ${continueDay}`}
             </h2>
-            <p className="mt-3 text-[14px] leading-[1.55] text-ink-muted">
+            <p className="mt-2.5 text-[13px] leading-[1.5] text-ink-muted">
               Най-малката победа днес: отвори урока, завърши стъпките и отключи следващото ниво.
             </p>
           </div>
         </motion.button>
-      </div>
 
-      <div className="px-5 pb-3">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="rounded-2xl border border-forest-line bg-forest-card px-4 py-3"
+          className="rounded-2xl border border-forest-line bg-forest-card px-4 py-3 mb-3"
         >
           <div className="flex items-baseline justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
-                Прогрес
-              </span>
-              <Flame size={11} className="text-accent" strokeWidth={2.2} />
-            </div>
-            <span className="text-accent font-display font-bold text-[11px]">{progressPct}%</span>
+            <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
+              Прогрес
+            </span>
+            <span className="text-accent font-display font-bold text-[13px]">{progressPct}%</span>
           </div>
           <ProgressBar value={completed} max={TOTAL_DAYS} glow />
-
-          <div className="mt-2.5 flex items-center justify-between gap-2">
-            <CompactMetric icon={<Trophy size={10} />} label="Завършени" value={`${completed}/${TOTAL_DAYS}`} />
-            <span className="h-6 w-px bg-forest-line shrink-0" />
-            <CompactMetric icon={<Flame size={10} />} label="Серия" value={`🔥 ${streakCount}`} />
-            <span className="h-6 w-px bg-forest-line shrink-0" />
-            <CompactMetric icon={<Lock size={10} />} label="Следващ" value={`Д.${Math.min(TOTAL_DAYS, completed + 1)}`} />
+          <div className="mt-2 flex items-center justify-between text-[11px] text-ink-muted">
+            <span>
+              <span className="text-ink font-display font-semibold">{completed}</span>
+              <span className="text-ink-dim">/{TOTAL_DAYS}</span> завършени
+            </span>
+            <span className="flex items-center gap-1">
+              🔥 <span className="text-ink font-display font-semibold">{streakCount}</span> серия
+            </span>
           </div>
         </motion.div>
-      </div>
 
-      <div className="px-5 pb-4">
         <motion.button
           type="button"
           onClick={() => navigate(ROUTES.days)}
@@ -206,18 +203,16 @@ export default function DashboardScreen() {
             </span>
             <div>
               <div className="font-display text-[13px] font-semibold uppercase tracking-display text-ink">
-                Всички дни
+                Всички дни ({completed}/{TOTAL_DAYS})
               </div>
               <div className="text-[11px] text-ink-muted mt-0.5">
-                {completed}/{TOTAL_DAYS} завършени
+                Виж и отвори всеки ден
               </div>
             </div>
           </div>
           <ArrowRight size={16} className="text-ink-muted" strokeWidth={2.2} />
         </motion.button>
       </div>
-
-      <div className="flex-1" />
 
       <ProfileDrawer
         open={drawerOpen}
@@ -230,17 +225,5 @@ export default function DashboardScreen() {
         completedDaysList={completedDaysList}
       />
     </Screen>
-  )
-}
-
-function CompactMetric({ icon, label, value }) {
-  return (
-    <div className="flex flex-col items-center min-w-0 flex-1">
-      <div className="flex items-center gap-1 text-accent">
-        {icon}
-        <span className="text-[8px] uppercase tracking-[0.1em] text-ink-dim">{label}</span>
-      </div>
-      <div className="font-display text-[11px] font-semibold text-ink mt-0.5 truncate">{value}</div>
-    </div>
   )
 }
