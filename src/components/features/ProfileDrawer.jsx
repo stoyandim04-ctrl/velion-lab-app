@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { X, Camera, Check, Flame, LogOut } from 'lucide-react'
+import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield } from 'lucide-react'
 import { saveProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
 import { useAuth } from '../../state/AuthContext.jsx'
 import { ROUTES } from '../../lib/routes.js'
@@ -17,10 +17,35 @@ export default function ProfileDrawer({
   completedDaysList = []
 }) {
   const navigate = useNavigate()
-  const { user, signOut } = useAuth()
+  const { user, signOut, refreshAccess } = useAuth()
   const [name, setName] = useState(profile?.name || '')
   const [saved, setSaved] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const [restoreMessage, setRestoreMessage] = useState('')
   const fileRef = useRef(null)
+
+  const handleRestorePurchases = async () => {
+    if (!user?.id || restoring) return
+    setRestoring(true)
+    setRestoreMessage('')
+    try {
+      const access = await refreshAccess(user.id)
+      if (access?.hasPaidAccess) {
+        setRestoreMessage('Достъпът ти е възстановен.')
+        setTimeout(() => {
+          onClose()
+          navigate(ROUTES.dashboard, { replace: true })
+        }, 1200)
+      } else {
+        setRestoreMessage('Няма активен абонамент за този акаунт.')
+      }
+    } catch {
+      setRestoreMessage('Грешка при възстановяване. Опитай отново.')
+    } finally {
+      setRestoring(false)
+      setTimeout(() => setRestoreMessage(''), 3500)
+    }
+  }
 
   // Reset local input state when the underlying profile changes
   // (account switch, fresh fetch from Supabase, etc).
@@ -222,6 +247,43 @@ export default function ProfileDrawer({
                   </div>
                 </div>
               )}
+
+              {user && (
+                <div className="px-5 mb-3">
+                  <button
+                    onClick={handleRestorePurchases}
+                    disabled={restoring}
+                    className="w-full min-h-[48px] flex items-center justify-center gap-2 rounded-2xl border border-accent/35 bg-accent/10 text-accent text-[14px] active:bg-accent/15 transition-colors disabled:opacity-60"
+                    style={{ touchAction: 'manipulation' }}
+                  >
+                    <RefreshCw size={16} className={restoring ? 'animate-spin' : ''} />
+                    {restoring ? 'Проверка…' : 'Възстанови покупките'}
+                  </button>
+                  {restoreMessage && (
+                    <div className="text-ink-muted text-[12px] text-center mt-2 leading-snug">
+                      {restoreMessage}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="px-5 mb-3 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => { onClose(); navigate(ROUTES.privacy) }}
+                  className="inline-flex items-center gap-1.5 text-ink-dim text-[12px] active:text-ink"
+                >
+                  <Shield size={12} />
+                  Поверителност
+                </button>
+                <span className="text-forest-line">·</span>
+                <button
+                  onClick={() => { onClose(); navigate(ROUTES.terms) }}
+                  className="inline-flex items-center gap-1.5 text-ink-dim text-[12px] active:text-ink"
+                >
+                  <FileText size={12} />
+                  Условия
+                </button>
+              </div>
 
               {user && (
                 <div className="px-5 mb-2">
