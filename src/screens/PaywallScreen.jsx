@@ -15,12 +15,13 @@ import { ROUTES } from '../lib/routes.js'
 
 export default function PaywallScreen() {
   const navigate = useNavigate()
-  const { user, hasPaidAccess, accessLoading } = useAuth()
+  const { user, hasPaidAccess, accessLoading, isAuthenticated } = useAuth()
   const [selected, setSelected] = useState('lifetime')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const plan = PLANS.find((p) => p.id === selected)
+  const isReturningUser = isAuthenticated && !accessLoading && !hasPaidAccess
 
   useEffect(() => {
     if (!accessLoading && hasPaidAccess) {
@@ -57,11 +58,17 @@ export default function PaywallScreen() {
           transition={{ duration: 0.7 }}
         >
           <div className="font-display text-accent text-[11px] tracking-[0.15em] uppercase mb-3">
-            Velion Lab
+            {isReturningUser ? 'Акаунт без активен план' : 'Velion Lab'}
           </div>
-          <h1 className="font-display font-bold text-[28px] leading-[1.05] tracking-display text-ink uppercase mb-6">
-            ЗАПОЧНИ ТРАНСФОРМАЦИЯТА СИ
+          <h1 className="font-display font-bold text-[28px] leading-[1.05] tracking-display text-ink uppercase mb-3">
+            {isReturningUser ? 'АКТИВИРАЙ ДОСТЪПА СИ' : 'ЗАПОЧНИ ТРАНСФОРМАЦИЯТА СИ'}
           </h1>
+          {isReturningUser && (
+            <p className="text-ink-muted text-[13px] leading-[1.55] mb-6">
+              Влязъл си в акаунта си, но нямаш активен план. Избери план, за да продължиш протокола.
+            </p>
+          )}
+          {!isReturningUser && <div className="mb-3" />}
         </motion.div>
 
         <motion.div

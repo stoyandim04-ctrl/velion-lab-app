@@ -34,7 +34,7 @@ function mapAuthError(err) {
 export default function AuthScreen() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn, signUp, isAuthenticated, loading } = useAuth()
+  const { signIn, signUp, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -42,15 +42,23 @@ export default function AuthScreen() {
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const redirectTo = location.state?.from && location.state.from !== '/auth'
+  const intendedTarget = location.state?.from && location.state.from !== '/auth'
     ? location.state.from
-    : ROUTES.dashboard
+    : null
 
+  // After login: wait for paid-access check, then route based on subscription status.
+  // - Paid → dashboard (or original intended target)
+  // - Not paid → paywall (with clear messaging)
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate(redirectTo, { replace: true })
+    if (loading) return
+    if (!isAuthenticated) return
+    if (accessLoading) return
+    if (hasPaidAccess) {
+      navigate(intendedTarget || ROUTES.dashboard, { replace: true })
+    } else {
+      navigate(ROUTES.paywall, { replace: true, state: { from: '/auth' } })
     }
-  }, [loading, isAuthenticated, navigate, redirectTo])
+  }, [loading, isAuthenticated, accessLoading, hasPaidAccess, navigate, intendedTarget])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -77,42 +85,22 @@ export default function AuthScreen() {
         setError(mapAuthError(err))
         return
       }
-      // Signup succeeded. Two cases:
-      //  A) session present → user is logged in immediately → redirect
-      //  B) session null but user exists → email confirmation required → show check-email message
-      if (data?.session) {
-        navigate(redirectTo, { replace: true })
-        return
-      }
+      // After signup, the auth state effect above handles routing once
+      // the session and paid-access check resolve.
       if (data?.user && !data.session) {
         setInfo('Провери имейла си, за да потвърдиш акаунта. След потвърждение се върни тук и влез.')
         setMode('login')
         setPassword('')
-        return
       }
-      // Fallback: no error, no session, no user — try to sign in directly
-      const { data: signInData, error: signInErr } = await signIn(trimmedEmail, password)
-      if (signInErr) {
-        console.error('[Velion] post-signup signIn error:', signInErr)
-        setError(mapAuthError(signInErr))
-        return
-      }
-      if (signInData?.session) navigate(redirectTo, { replace: true })
       return
     }
 
-    // mode === 'login'
-    const { data, error: err } = await signIn(trimmedEmail, password)
+    // mode === 'login' — routing handled by the auth state effect above.
+    const { error: err } = await signIn(trimmedEmail, password)
     setBusy(false)
     if (err) {
       console.error('[Velion] signIn error:', err)
       setError(mapAuthError(err))
-      return
-    }
-    if (data?.session) {
-      navigate(redirectTo, { replace: true })
-    } else {
-      setError('Възникна грешка при влизане. Опитай отново.')
     }
   }
 
