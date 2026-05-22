@@ -107,6 +107,17 @@ export function AuthProvider({ children }) {
     purgeLegacyKeys()
   }, [])
 
+  const resetPassword = useCallback(async (email) => {
+    const redirectTo =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/auth`
+        : undefined
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo
+    })
+    return { data, error }
+  }, [])
+
   const value = useMemo(
     () => ({
       session,
@@ -119,9 +130,10 @@ export function AuthProvider({ children }) {
       refreshAccess,
       signIn,
       signUp,
-      signOut
+      signOut,
+      resetPassword
     }),
-    [session, user, loading, accessLoading, paidAccess, refreshAccess, signIn, signUp, signOut]
+    [session, user, loading, accessLoading, paidAccess, refreshAccess, signIn, signUp, signOut, resetPassword]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

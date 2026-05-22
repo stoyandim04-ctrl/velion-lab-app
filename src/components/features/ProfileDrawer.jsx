@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield } from 'lucide-react'
+import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield, Trash2, AlertTriangle } from 'lucide-react'
 import { saveProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
 import { useAuth } from '../../state/AuthContext.jsx'
 import { ROUTES } from '../../lib/routes.js'
@@ -17,12 +17,37 @@ export default function ProfileDrawer({
   completedDaysList = []
 }) {
   const navigate = useNavigate()
-  const { user, signOut, refreshAccess } = useAuth()
+  const { user, session, signOut, refreshAccess } = useAuth()
   const [name, setName] = useState(profile?.name || '')
   const [saved, setSaved] = useState(false)
   const [restoring, setRestoring] = useState(false)
   const [restoreMessage, setRestoreMessage] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const fileRef = useRef(null)
+
+  const handleDeleteAccount = async () => {
+    if (!session?.access_token || deleting) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Грешка при изтриване.')
+      }
+      await signOut()
+      onClose()
+      navigate(ROUTES.welcome, { replace: true })
+    } catch (e) {
+      setDeleteError(e.message || 'Грешка при изтриване.')
+      setDeleting(false)
+    }
+  }
 
   const handleRestorePurchases = async () => {
     if (!user?.id || restoring) return
@@ -295,6 +320,52 @@ export default function ProfileDrawer({
                     <LogOut size={16} />
                     Изход
                   </button>
+                </div>
+              )}
+
+              {user && (
+                <div className="px-5 mb-6 mt-2">
+                  {!showDeleteConfirm ? (
+                    <button
+                      onClick={() => { setDeleteError(''); setShowDeleteConfirm(true) }}
+                      className="w-full min-h-[44px] flex items-center justify-center gap-2 text-ink-dim text-[12px] active:text-red-300"
+                      style={{ touchAction: 'manipulation' }}
+                    >
+                      <Trash2 size={13} />
+                      Изтрий акаунта си
+                    </button>
+                  ) : (
+                    <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+                      <div className="flex items-start gap-2 mb-3">
+                        <AlertTriangle size={16} className="text-red-300 shrink-0 mt-0.5" />
+                        <div className="text-ink text-[13px] leading-snug">
+                          Това действие е необратимо. Цялата ти информация,
+                          прогрес и абонамент ще бъдат изтрити завинаги.
+                        </div>
+                      </div>
+                      {deleteError && (
+                        <div className="text-red-300 text-[12px] mb-3 leading-snug">
+                          {deleteError}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          disabled={deleting}
+                          className="flex-1 min-h-[44px] rounded-xl border border-forest-line bg-forest-card text-ink-muted text-[13px] active:text-ink disabled:opacity-50"
+                        >
+                          Откажи
+                        </button>
+                        <button
+                          onClick={handleDeleteAccount}
+                          disabled={deleting}
+                          className="flex-1 min-h-[44px] rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-[13px] active:bg-red-500/30 disabled:opacity-50"
+                        >
+                          {deleting ? 'Изтриване…' : 'Изтрий'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

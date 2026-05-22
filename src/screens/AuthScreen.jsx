@@ -34,13 +34,32 @@ function mapAuthError(err) {
 export default function AuthScreen() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn, signUp, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
+  const { signIn, signUp, resetPassword, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
+  const [resetting, setResetting] = useState(false)
+
+  const handleResetPassword = async () => {
+    setError('')
+    setInfo('')
+    const trimmedEmail = email.trim().toLowerCase()
+    if (!trimmedEmail) {
+      setError('Въведи имейла си в полето отгоре.')
+      return
+    }
+    setResetting(true)
+    const { error: err } = await resetPassword(trimmedEmail)
+    setResetting(false)
+    if (err) {
+      setError(mapAuthError(err))
+      return
+    }
+    setInfo('Изпратихме ти линк за смяна на паролата. Провери имейла си.')
+  }
 
   const intendedTarget = location.state?.from && location.state.from !== '/auth'
     ? location.state.from
@@ -188,6 +207,17 @@ export default function AuthScreen() {
               ? 'Нямаш акаунт? Създай нов'
               : 'Вече имаш акаунт? Влез'}
           </button>
+
+          {mode === 'login' && (
+            <button
+              onClick={handleResetPassword}
+              disabled={resetting}
+              className="w-full min-h-[36px] text-ink-dim text-[12px] active:text-ink-muted mt-1 disabled:opacity-50"
+              style={{ touchAction: 'manipulation' }}
+            >
+              {resetting ? 'Изпращане…' : 'Забравена парола?'}
+            </button>
+          )}
         </div>
       </div>
     </Screen>
