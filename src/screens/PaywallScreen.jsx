@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
@@ -9,20 +9,34 @@ import PriceCard from '../components/features/PriceCard.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import { PLANS, PAYWALL_FEATURES } from '../data/prices.js'
 import { startCheckout } from '../lib/stripe.js'
+import { addAnalyticsEvent } from '../lib/engagement.js'
+import { useAuth } from '../state/AuthContext.jsx'
+import { ROUTES } from '../lib/routes.js'
 
 export default function PaywallScreen() {
   const navigate = useNavigate()
+  const { user, hasPaidAccess, accessLoading } = useAuth()
   const [selected, setSelected] = useState('lifetime')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const plan = PLANS.find((p) => p.id === selected)
 
+  useEffect(() => {
+    if (!accessLoading && hasPaidAccess) {
+      navigate(ROUTES.dashboard, { replace: true })
+    }
+  }, [accessLoading, hasPaidAccess, navigate])
+
   const handleCheckout = async () => {
     if (!plan || loading) return
     setError(null)
     setLoading(true)
     try {
+      addAnalyticsEvent(user?.id, 'checkout_started', {
+        plan: plan.id,
+        mode: plan.mode
+      })
       await startCheckout({ priceId: plan.priceId, mode: plan.mode })
     } catch (e) {
       setError(e.message || 'Грешка. Опитай отново.')

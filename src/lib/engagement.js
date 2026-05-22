@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient.js'
+
 const ONE_DAY = 24 * 60 * 60 * 1000
 const GRACE_DAYS = 1
 const MAX_EVENTS = 120
@@ -20,6 +22,22 @@ function daysBetween(a, b) {
 
 function nowEvent(type, payload = {}) {
   return { type, payload, at: new Date().toISOString() }
+}
+
+function sendRemoteEvent(userId, event) {
+  if (!userId || !event?.type) return
+  supabase
+    .from('user_events')
+    .insert({
+      user_id: userId,
+      event_type: event.type,
+      payload: event.payload || {}
+    })
+    .then(({ error }) => {
+      if (error && error.code !== '42P01') {
+        console.warn('[Velion] user_events insert error:', error.message)
+      }
+    })
 }
 
 function emptyEngagement() {
@@ -78,29 +96,35 @@ export function updateEngagement(userId, updater) {
 
 export function addAnalyticsEvent(userId, type, payload = {}) {
   if (!userId) return emptyEngagement()
+  const event = nowEvent(type, payload)
+  sendRemoteEvent(userId, event)
   return updateEngagement(userId, (current) => ({
     ...current,
-    analytics: [...current.analytics, nowEvent(type, payload)].slice(-MAX_EVENTS)
+    analytics: [...current.analytics, event].slice(-MAX_EVENTS)
   }))
 }
 
 export function recordOpenedDay(userId, dayNumber) {
   if (!userId || !dayNumber) return emptyEngagement()
+  const event = nowEvent('day_opened', { dayNumber })
+  sendRemoteEvent(userId, event)
   return updateEngagement(userId, (current) => ({
     ...current,
     lastOpenedDay: dayNumber,
     lastOpenedAt: new Date().toISOString(),
-    analytics: [...current.analytics, nowEvent('day_opened', { dayNumber })].slice(-MAX_EVENTS)
+    analytics: [...current.analytics, event].slice(-MAX_EVENTS)
   }))
 }
 
 export function completePremiumOnboarding(userId, answers) {
+  const event = nowEvent('onboarding_completed', answers)
+  sendRemoteEvent(userId, event)
   return updateEngagement(userId, (current) => ({
     ...current,
     onboardingCompleted: true,
     onboardingAnswers: answers,
     onboardingCompletedAt: new Date().toISOString(),
-    analytics: [...current.analytics, nowEvent('onboarding_completed', answers)].slice(-MAX_EVENTS)
+    analytics: [...current.analytics, event].slice(-MAX_EVENTS)
   }))
 }
 
@@ -127,6 +151,8 @@ export function recordDayCompletion(userId, dayNumber) {
     missedDays = gap - 1
   }
 
+  const event = nowEvent('day_completed', { dayNumber, streak: count })
+  sendRemoteEvent(userId, event)
   return updateEngagement(userId, (state) => ({
     ...state,
     streak: {
@@ -135,7 +161,7 @@ export function recordDayCompletion(userId, dayNumber) {
       lastCompletedDate: today,
       missedDays
     },
-    analytics: [...state.analytics, nowEvent('day_completed', { dayNumber, streak: count })].slice(-MAX_EVENTS)
+    analytics: [...state.analytics, event].slice(-MAX_EVENTS)
   }))
 }
 

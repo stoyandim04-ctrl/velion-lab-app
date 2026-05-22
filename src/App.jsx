@@ -28,7 +28,7 @@ import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 
 const protectedDay = (
-  <ProtectedRoute>
+  <ProtectedRoute requirePaid>
     <DayScreen />
   </ProtectedRoute>
 )
@@ -77,8 +77,8 @@ export default function App() {
                   <Route path={ROUTES.social} element={<SocialProofScreen />} />
                   <Route path={ROUTES.paywall} element={<ProtectedRoute><PaywallScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.success} element={<ProtectedRoute><SuccessScreen /></ProtectedRoute>} />
-                  <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute><DailyOnboardingScreen /></ProtectedRoute>} />
-                  <Route path={ROUTES.dashboard} element={<ProtectedRoute><DashboardScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute requirePaid><DailyOnboardingScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.dashboard} element={<ProtectedRoute requirePaid><DashboardScreen /></ProtectedRoute>} />
                   <Route path="/course/day-1" element={protectedDay} />
                   <Route path="/course/day-2" element={protectedDay} />
                   <Route path="/course/day-3" element={protectedDay} />
@@ -140,7 +140,7 @@ export default function App() {
                   <Route path="/course/day-59" element={protectedDay} />
                   <Route path="/course/day-60" element={protectedDay} />
                   <Route path={ROUTES.day} element={protectedDay} />
-                  <Route path={ROUTES.days} element={<ProtectedRoute><DaysScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.days} element={<ProtectedRoute requirePaid><DaysScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.privacy} element={<PrivacyScreen />} />
                   <Route path={ROUTES.terms} element={<TermsScreen />} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />

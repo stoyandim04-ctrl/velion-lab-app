@@ -1,11 +1,22 @@
+import { supabase } from './supabaseClient.js'
+
 export async function startCheckout({ priceId, mode }) {
   if (!priceId) {
     throw new Error('Липсва Stripe price ID — провери .env')
   }
 
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  if (!token) {
+    throw new Error('Влез в акаунта си преди плащане.')
+  }
+
   const res = await fetch('/api/create-checkout-session', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
     body: JSON.stringify({ priceId, mode })
   })
 

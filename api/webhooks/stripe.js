@@ -1,4 +1,9 @@
 import Stripe from 'stripe'
+import {
+  getSupabaseAdmin,
+  updateAccessFromSubscription,
+  upsertAccessFromCheckoutSession
+} from '../_supabase.js'
 
 export const config = {
   api: { bodyParser: false }
@@ -24,7 +29,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe is not configured' })
   }
 
-  const stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' })
+  const stripe = new Stripe(secretKey, { apiVersion: '2026-02-25.clover' })
   const sig = req.headers['stripe-signature']
 
   let event
@@ -37,11 +42,17 @@ export default async function handler(req, res) {
   }
 
   try {
+    const supabase = getSupabaseAdmin()
+
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object
+        const session = await stripe.checkout.sessions.retrieve(event.data.object.id, {
+          expand: ['subscription']
+        })
+        await upsertAccessFromCheckoutSession(supabase, session)
         console.log('[stripe-webhook] checkout.session.completed', {
           id: session.id,
+          user_id: session.metadata?.user_id || session.client_reference_id,
           mode: session.mode,
           customer: session.customer,
           email: session.customer_details?.email,
@@ -53,6 +64,7 @@ export default async function handler(req, res) {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const sub = event.data.object
+        await updateAccessFromSubscription(supabase, sub)
         console.log(`[stripe-webhook] ${event.type}`, {
           id: sub.id,
           status: sub.status,

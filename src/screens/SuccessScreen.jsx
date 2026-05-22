@@ -5,9 +5,12 @@ import { Check } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import Toast from '../components/ui/Toast.jsx'
 import { ROUTES } from '../lib/routes.js'
+import { useAuth } from '../state/AuthContext.jsx'
+import { addAnalyticsEvent } from '../lib/engagement.js'
 
 export default function SuccessScreen() {
   const navigate = useNavigate()
+  const { session, user, refreshAccess } = useAuth()
   const [params] = useSearchParams()
   const sessionId = params.get('session_id')
   const [status, setStatus] = useState('loading')
@@ -23,7 +26,12 @@ export default function SuccessScreen() {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/get-session?id=${encodeURIComponent(sessionId)}`)
+        const token = session?.access_token
+        if (!token) throw new Error('Влез в акаунта си, за да потвърдим плащането.')
+
+        const res = await fetch(`/api/get-session?id=${encodeURIComponent(sessionId)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
         if (!res.ok) throw new Error('Не можахме да потвърдим плащането')
         const data = await res.json()
         if (cancelled) return
@@ -32,24 +40,19 @@ export default function SuccessScreen() {
           data.payment_status === 'paid' ||
           (data.mode === 'subscription' && data.status === 'complete')
 
-        if (!isPaid) {
+        if (!isPaid || !data.has_access) {
           setStatus('error')
           setError('Плащането все още не е потвърдено. Провери имейла си.')
           return
         }
 
-        try {
-          localStorage.setItem(
-            'velion_subscription',
-            JSON.stringify({
-              session_id: data.id,
-              mode: data.mode,
-              email: data.customer_email,
-              activated_at: new Date().toISOString()
-            })
-          )
-          localStorage.setItem('velion_day_1_unlocked', 'true')
-        } catch {}
+        await refreshAccess(user?.id)
+        addAnalyticsEvent(user?.id, 'payment_success', {
+          sessionId: data.id,
+          mode: data.mode,
+          amount: data.amount_total,
+          currency: data.currency
+        })
 
         setStatus('success')
       } catch (e) {
@@ -62,7 +65,7 @@ export default function SuccessScreen() {
     return () => {
       cancelled = true
     }
-  }, [sessionId])
+  }, [sessionId, session?.access_token, refreshAccess, user?.id])
 
   useEffect(() => {
     if (status !== 'success') return

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
+import { fetchPaidAccess } from '../lib/paidAccess.js'
 
 const AuthContext = createContext(null)
 
@@ -27,7 +28,26 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [accessLoading, setAccessLoading] = useState(true)
+  const [paidAccess, setPaidAccess] = useState({ hasPaidAccess: false, subscription: null })
   const lastUserIdRef = useRef(null)
+
+  const refreshAccess = useCallback(async (nextUserId = lastUserIdRef.current) => {
+    if (!nextUserId) {
+      setPaidAccess({ hasPaidAccess: false, subscription: null })
+      setAccessLoading(false)
+      return { hasPaidAccess: false, subscription: null }
+    }
+
+    setAccessLoading(true)
+    const access = await fetchPaidAccess(nextUserId)
+    setPaidAccess({
+      hasPaidAccess: Boolean(access.hasPaidAccess),
+      subscription: access.subscription || null
+    })
+    setAccessLoading(false)
+    return access
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -40,6 +60,7 @@ export function AuthProvider({ children }) {
       setUser(s?.user ?? null)
       lastUserIdRef.current = s?.user?.id || null
       setLoading(false)
+      refreshAccess(s?.user?.id || null)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
@@ -60,13 +81,14 @@ export function AuthProvider({ children }) {
       setUser(s?.user ?? null)
       lastUserIdRef.current = newUserId
       setLoading(false)
+      refreshAccess(newUserId)
     })
 
     return () => {
       mounted = false
       subscription?.unsubscribe()
     }
-  }, [])
+  }, [refreshAccess])
 
   const signIn = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -86,8 +108,20 @@ export function AuthProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ session, user, loading, isAuthenticated: Boolean(user), signIn, signUp, signOut }),
-    [session, user, loading, signIn, signUp, signOut]
+    () => ({
+      session,
+      user,
+      loading,
+      accessLoading,
+      isAuthenticated: Boolean(user),
+      hasPaidAccess: paidAccess.hasPaidAccess,
+      subscription: paidAccess.subscription,
+      refreshAccess,
+      signIn,
+      signUp,
+      signOut
+    }),
+    [session, user, loading, accessLoading, paidAccess, refreshAccess, signIn, signUp, signOut]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
