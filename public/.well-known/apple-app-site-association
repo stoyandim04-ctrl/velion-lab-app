@@ -1,0 +1,28 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.bg.velion.lab"],
+        "components": [
+          {
+            "/": "/success",
+            "?": { "session_id": "?*" },
+            "comment": "Stripe checkout return — opens iOS app with active session"
+          },
+          {
+            "/": "/paywall",
+            "comment": "Stripe checkout cancel — returns user to paywall"
+          },
+          {
+            "/": "/auth",
+            "?": { "type": "recovery" },
+            "comment": "Supabase password recovery deep link"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.bg.velion.lab"]
+  }
+}

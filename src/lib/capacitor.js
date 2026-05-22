@@ -70,3 +70,29 @@ export async function openExternalUrl(url) {
     window.location.href = url
   }
 }
+
+// Listen for universal/app link openings (e.g. user returns from Stripe
+// checkout). Strips the origin so the path + search go through React Router.
+// The callback receives the in-app path like "/success?session_id=cs_...".
+export async function registerDeepLinks(onUrl) {
+  if (!isNative()) return () => {}
+  try {
+    const { App } = await import('@capacitor/app')
+    const { Browser } = await import('@capacitor/browser')
+    const handle = await App.addListener('appUrlOpen', async (event) => {
+      try {
+        const u = new URL(event.url)
+        const path = `${u.pathname}${u.search}${u.hash}`
+        // Close the in-app browser when Stripe redirects us back.
+        try { await Browser.close() } catch {}
+        if (onUrl) onUrl(path || '/')
+      } catch (err) {
+        console.warn('[Capacitor] invalid deep link:', event.url, err?.message)
+      }
+    })
+    return () => handle.remove()
+  } catch (err) {
+    console.warn('[Capacitor] deep link setup failed:', err?.message)
+    return () => {}
+  }
+}

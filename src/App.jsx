@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import PhoneFrame from './components/layout/PhoneFrame.jsx'
 import CinematicIntro from './components/CinematicIntro.jsx'
@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import { OnboardingProvider } from './state/OnboardingContext.jsx'
 import { AuthProvider } from './state/AuthContext.jsx'
 import { ROUTES } from './lib/routes.js'
+import { registerDeepLinks } from './lib/capacitor.js'
 
 import WelcomeScreen from './screens/WelcomeScreen.jsx'
 import AuthScreen from './screens/AuthScreen.jsx'
@@ -35,6 +36,7 @@ const protectedDay = (
 
 export default function App() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [showIntro, setShowIntro] = useState(true)
   const [mountApp, setMountApp] = useState(false)
   const prevPathRef = useRef(location.pathname)
@@ -48,6 +50,16 @@ export default function App() {
     }
     prevPathRef.current = curr
   }, [location.pathname])
+
+  // Native deep links: when the user returns from Stripe Checkout (or any
+  // other Universal/App Link), navigate to the path embedded in the URL.
+  useEffect(() => {
+    let cleanup = () => {}
+    registerDeepLinks((path) => {
+      navigate(path, { replace: true })
+    }).then((fn) => { cleanup = fn })
+    return () => cleanup()
+  }, [navigate])
 
   const handleIntroStartExit = () => {
     setMountApp(true)
