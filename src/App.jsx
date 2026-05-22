@@ -1,33 +1,37 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import PhoneFrame from './components/layout/PhoneFrame.jsx'
 import CinematicIntro from './components/CinematicIntro.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import RouteFallback from './components/RouteFallback.jsx'
 import { OnboardingProvider } from './state/OnboardingContext.jsx'
 import { AuthProvider } from './state/AuthContext.jsx'
 import { ROUTES } from './lib/routes.js'
 import { registerDeepLinks } from './lib/capacitor.js'
 
+// Onboarding-path screens stay eager — they're tiny and on the first paint.
 import WelcomeScreen from './screens/WelcomeScreen.jsx'
 import AuthScreen from './screens/AuthScreen.jsx'
 import GoalsScreen from './screens/GoalsScreen.jsx'
 import NotAloneScreen from './screens/NotAloneScreen.jsx'
 import QuizScreen from './screens/QuizScreen.jsx'
-import EducationScreen from './screens/EducationScreen.jsx'
 import FutureScreen from './screens/FutureScreen.jsx'
-import BuildingPlanScreen from './screens/BuildingPlanScreen.jsx'
-import ResultScreen from './screens/ResultScreen.jsx'
-import SocialProofScreen from './screens/SocialProofScreen.jsx'
 import PaywallScreen from './screens/PaywallScreen.jsx'
-import SuccessScreen from './screens/SuccessScreen.jsx'
-import DailyOnboardingScreen from './screens/DailyOnboardingScreen.jsx'
-import DashboardScreen from './screens/DashboardScreen.jsx'
-import DayScreen from './screens/DayScreen.jsx'
-import DaysScreen from './screens/DaysScreen.jsx'
-import PrivacyScreen from './screens/PrivacyScreen.jsx'
-import TermsScreen from './screens/TermsScreen.jsx'
-import FounderScreen from './screens/FounderScreen.jsx'
+
+// Less-trafficked screens lazy-loaded for a leaner initial bundle.
+const EducationScreen = lazy(() => import('./screens/EducationScreen.jsx'))
+const BuildingPlanScreen = lazy(() => import('./screens/BuildingPlanScreen.jsx'))
+const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
+const SocialProofScreen = lazy(() => import('./screens/SocialProofScreen.jsx'))
+const SuccessScreen = lazy(() => import('./screens/SuccessScreen.jsx'))
+const DailyOnboardingScreen = lazy(() => import('./screens/DailyOnboardingScreen.jsx'))
+const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'))
+const DayScreen = lazy(() => import('./screens/DayScreen.jsx'))
+const DaysScreen = lazy(() => import('./screens/DaysScreen.jsx'))
+const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen.jsx'))
+const TermsScreen = lazy(() => import('./screens/TermsScreen.jsx'))
+const FounderScreen = lazy(() => import('./screens/FounderScreen.jsx'))
 
 const protectedDay = (
   <ProtectedRoute requirePaid>
@@ -77,6 +81,7 @@ export default function App() {
           <OnboardingProvider>
             <PhoneFrame>
               <AnimatePresence mode="wait" initial={false}>
+                <Suspense fallback={<RouteFallback />}>
                 <Routes location={location} key={location.pathname}>
                   <Route path={ROUTES.welcome} element={<WelcomeScreen />} />
                   <Route path={ROUTES.auth} element={<AuthScreen />} />
@@ -159,6 +164,7 @@ export default function App() {
                   <Route path={ROUTES.about} element={<FounderScreen />} />
                   <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                 </Routes>
+                </Suspense>
               </AnimatePresence>
             </PhoneFrame>
           </OnboardingProvider>
