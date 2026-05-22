@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, ExternalLink } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import Header from '../components/layout/Header.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -12,6 +12,8 @@ import { startCheckout } from '../lib/stripe.js'
 import { addAnalyticsEvent } from '../lib/engagement.js'
 import { useAuth } from '../state/AuthContext.jsx'
 import { ROUTES } from '../lib/routes.js'
+import { READER_MODE, EXTERNAL_BILLING_URL } from '../lib/config.js'
+import { openExternalUrl } from '../lib/capacitor.js'
 
 export default function PaywallScreen() {
   const navigate = useNavigate()
@@ -93,24 +95,49 @@ export default function PaywallScreen() {
           ))}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col gap-3 mb-5"
-        >
-          {PLANS.map((p) => (
-            <PriceCard
-              key={p.id}
-              plan={p}
-              selected={selected === p.id}
-              onSelect={() => setSelected(p.id)}
-            />
-          ))}
-        </motion.div>
+        {!READER_MODE && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col gap-3 mb-5"
+          >
+            {PLANS.map((p) => (
+              <PriceCard
+                key={p.id}
+                plan={p}
+                selected={selected === p.id}
+                onSelect={() => setSelected(p.id)}
+              />
+            ))}
+          </motion.div>
+        )}
+
+        {READER_MODE && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="rounded-2xl border border-forest-line bg-forest-card px-5 py-5 mb-5"
+          >
+            <div className="font-display text-accent text-[10px] tracking-[0.15em] uppercase mb-2">
+              Активация
+            </div>
+            <p className="text-ink text-[14px] leading-[1.55] mb-3">
+              Достъпът до пълния протокол се активира на нашия сайт.
+              Регистрирай се или влез веднъж и приложението автоматично
+              отключва съдържанието на това устройство.
+            </p>
+            <p className="text-ink-muted text-[12px] leading-[1.55]">
+              След активация се връщаш тук без нужда от повторно влизане.
+            </p>
+          </motion.div>
+        )}
 
         <div className="text-ink-dim text-[11px] text-center mb-6 leading-relaxed">
-          Отмени по всяко време. Без скрити такси. Сигурно плащане през Stripe.
+          {READER_MODE
+            ? 'Управлението на абонамента се извършва на velion-lab.vercel.app.'
+            : 'Отмени по всяко време. Без скрити такси. Сигурно плащане през Stripe.'}
         </div>
 
         <div className="flex justify-center opacity-50">
@@ -120,8 +147,13 @@ export default function PaywallScreen() {
 
       <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-[max(20px,env(safe-area-inset-bottom))] bg-gradient-to-t from-forest-deep via-forest-deep/95 to-transparent pointer-events-none">
         <div className="pointer-events-auto">
-          <Button onClick={handleCheckout} disabled={loading}>
-            {loading ? (
+          <Button onClick={READER_MODE ? () => openExternalUrl(EXTERNAL_BILLING_URL) : handleCheckout} disabled={loading && !READER_MODE}>
+            {READER_MODE ? (
+              <span className="flex items-center justify-center gap-2">
+                АКТИВИРАЙ В БРАУЗЕР
+                <ExternalLink size={16} strokeWidth={2.4} />
+              </span>
+            ) : loading ? (
               <span className="flex items-center justify-center gap-3">
                 <img
                   src="/logo/velion-shield.svg"

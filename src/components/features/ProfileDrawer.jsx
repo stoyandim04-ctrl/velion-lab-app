@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield, Trash2, AlertTriangle, Info } from 'lucide-react'
+import { X, Camera, Check, Flame, LogOut, RefreshCw, FileText, Shield, Trash2, AlertTriangle, Info, ExternalLink } from 'lucide-react'
 import { saveProfile, getInitials, readFileAsDataURL } from '../../lib/profile.js'
 import { useAuth } from '../../state/AuthContext.jsx'
 import { ROUTES } from '../../lib/routes.js'
+import { READER_MODE, EXTERNAL_BILLING_URL } from '../../lib/config.js'
+import { openExternalUrl } from '../../lib/capacitor.js'
 
 export default function ProfileDrawer({
   open,
@@ -419,12 +421,22 @@ function SubscriptionCard({ hasPaidAccess, subscription, onOpenPaywall }) {
           Абонамент
         </div>
         <div className="text-ink text-[14px] mb-3">Няма активен план</div>
-        <button
-          onClick={onOpenPaywall}
-          className="w-full min-h-[40px] rounded-xl bg-accent text-forest-deep font-display text-[12px] font-bold uppercase tracking-[0.12em] active:scale-[0.98] transition"
-        >
-          Активирай достъп
-        </button>
+        {READER_MODE ? (
+          <button
+            onClick={() => openExternalUrl(EXTERNAL_BILLING_URL)}
+            className="w-full min-h-[40px] rounded-xl bg-accent text-forest-deep font-display text-[12px] font-bold uppercase tracking-[0.12em] active:scale-[0.98] transition inline-flex items-center justify-center gap-2"
+          >
+            Активирай в браузер
+            <ExternalLink size={13} strokeWidth={2.6} />
+          </button>
+        ) : (
+          <button
+            onClick={onOpenPaywall}
+            className="w-full min-h-[40px] rounded-xl bg-accent text-forest-deep font-display text-[12px] font-bold uppercase tracking-[0.12em] active:scale-[0.98] transition"
+          >
+            Активирай достъп
+          </button>
+        )}
       </div>
     )
   }
@@ -447,7 +459,7 @@ function SubscriptionCard({ hasPaidAccess, subscription, onOpenPaywall }) {
         {plan}
       </div>
       {endDate && (
-        <div className="text-ink-muted text-[12px] leading-snug">
+        <div className="text-ink-muted text-[12px] leading-snug mb-2">
           {subscription.cancel_at_period_end
             ? `Достъп до ${endDate}, без подновяване`
             : renews
@@ -456,9 +468,18 @@ function SubscriptionCard({ hasPaidAccess, subscription, onOpenPaywall }) {
         </div>
       )}
       {subscription.plan === 'lifetime' && (
-        <div className="text-ink-muted text-[12px] leading-snug">
+        <div className="text-ink-muted text-[12px] leading-snug mb-2">
           Без месечни такси, без срок.
         </div>
+      )}
+      {READER_MODE && (
+        <button
+          onClick={() => openExternalUrl(EXTERNAL_BILLING_URL)}
+          className="mt-1 w-full min-h-[36px] rounded-xl border border-forest-line bg-forest-card/60 text-ink-muted text-[11px] font-display uppercase tracking-[0.1em] active:text-ink active:bg-forest-card inline-flex items-center justify-center gap-1.5"
+        >
+          Управлявай в браузер
+          <ExternalLink size={11} strokeWidth={2.4} />
+        </button>
       )}
     </div>
   )
