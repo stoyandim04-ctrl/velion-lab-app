@@ -3,41 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="theme-color" content="#060D0A" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- iOS / PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-title" content="Velion Lab" />
+    <meta name="application-name" content="Velion Lab" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
 
-    <title>Velion Lab — Контрол, увереност, мъжка енергия</title>
+    <!-- Primary SEO -->
+    <title>Velion Lab — 60-дневен протокол за контрол и увереност</title>
     <meta
       name="description"
-      content="60-дневна персонализирана система за мъже, които искат повече контрол, увереност и по-силно присъствие. Започни безплатно."
+      content="60-дневна структурирана wellness програма за мъже, които искат повече контрол върху тялото, спокойна нервна система и стабилна увереност. На български. Без срам, без преувеличения."
     />
     <meta
       name="keywords"
-      content="мъжка увереност, контрол, мъжка енергия, личностно развитие, мъжко здраве"
+      content="мъжко здраве, контрол, увереност, нервна система, wellness, mindfulness, дишане, протокол, програма за мъже"
     />
-    <link rel="canonical" href="https://velion-lab.vercel.app" />
+    <meta name="author" content="Velion Lab" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://velion-lab.vercel.app/" />
 
-    <meta property="og:title" content="Velion Lab" />
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Velion Lab" />
+    <meta property="og:title" content="Velion Lab — 60-дневен протокол за контрол и увереност" />
     <meta
       property="og:description"
-      content="60-дневна система за мъже, които искат контрол и увереност."
+      content="Премиум 60-дневна wellness програма за мъже. Контрол, спокойна нервна система, стабилна увереност."
     />
     <meta property="og:image" content="https://velion-lab.vercel.app/og-image.jpg" />
-    <meta property="og:url" content="https://velion-lab.vercel.app" />
+    <meta property="og:image:secure_url" content="https://velion-lab.vercel.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Velion Lab — премиум 60-дневен протокол за мъже" />
+    <meta property="og:url" content="https://velion-lab.vercel.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="bg_BG" />
 
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Velion Lab" />
-    <meta name="twitter:description" content="60-дневна система за мъже" />
+    <meta name="twitter:title" content="Velion Lab — 60-дневен протокол" />
+    <meta
+      name="twitter:description"
+      content="Премиум 60-дневна wellness програма за мъже. Контрол, спокойна нервна система, стабилна увереност."
+    />
     <meta name="twitter:image" content="https://velion-lab.vercel.app/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Velion Lab — премиум 60-дневен протокол" />
 
+    <!-- Icons & manifest -->
     <link rel="icon" type="image/svg+xml" href="/logo/favicon.svg" />
     <link rel="apple-touch-icon" href="/logo/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
 
+    <!-- Performance hints -->
     <link rel="preload" as="image" href="/video/intro-poster.jpg" fetchpriority="high" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,6 +67,58 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Structured data — Organization + Product for rich search results -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://velion-lab.vercel.app/#organization",
+            "name": "Velion Lab",
+            "url": "https://velion-lab.vercel.app/",
+            "logo": "https://velion-lab.vercel.app/logo/velion-shield.svg",
+            "email": "velionbilgaria@gmail.com",
+            "areaServed": "BG",
+            "sameAs": []
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://velion-lab.vercel.app/#website",
+            "url": "https://velion-lab.vercel.app/",
+            "name": "Velion Lab",
+            "inLanguage": "bg-BG",
+            "publisher": { "@id": "https://velion-lab.vercel.app/#organization" }
+          },
+          {
+            "@type": "Product",
+            "name": "Velion Lab — 60-дневен протокол",
+            "description": "Премиум 60-дневна wellness програма за мъже. Контрол, спокойна нервна система, стабилна увереност.",
+            "brand": { "@id": "https://velion-lab.vercel.app/#organization" },
+            "image": "https://velion-lab.vercel.app/og-image.jpg",
+            "offers": [
+              {
+                "@type": "Offer",
+                "name": "Lifetime достъп",
+                "priceCurrency": "EUR",
+                "price": "69.99",
+                "availability": "https://schema.org/InStock",
+                "url": "https://velion-lab.vercel.app/paywall"
+              },
+              {
+                "@type": "Offer",
+                "name": "Месечен план",
+                "priceCurrency": "EUR",
+                "price": "24.99",
+                "availability": "https://schema.org/InStock",
+                "url": "https://velion-lab.vercel.app/paywall"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,27 @@
+{
+  "name": "Velion Lab",
+  "short_name": "Velion",
+  "description": "60-дневна wellness програма за мъже — контрол, увереност, спокойна нервна система.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060D0A",
+  "theme_color": "#060D0A",
+  "lang": "bg-BG",
+  "categories": ["health", "lifestyle", "education"],
+  "icons": [
+    {
+      "src": "/logo/velion-shield.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo/velion-shield.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
