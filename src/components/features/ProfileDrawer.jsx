@@ -17,7 +17,7 @@ export default function ProfileDrawer({
   completedDaysList = []
 }) {
   const navigate = useNavigate()
-  const { user, session, signOut, refreshAccess } = useAuth()
+  const { user, session, signOut, refreshAccess, hasPaidAccess, subscription } = useAuth()
   const [name, setName] = useState(profile?.name || '')
   const [saved, setSaved] = useState(false)
   const [restoring, setRestoring] = useState(false)
@@ -274,6 +274,16 @@ export default function ProfileDrawer({
               )}
 
               {user && (
+                <div className="px-5 mb-5">
+                  <SubscriptionCard
+                    hasPaidAccess={hasPaidAccess}
+                    subscription={subscription}
+                    onOpenPaywall={() => { onClose(); navigate(ROUTES.paywall) }}
+                  />
+                </div>
+              )}
+
+              {user && (
                 <div className="px-5 mb-3">
                   <button
                     onClick={handleRestorePurchases}
@@ -373,5 +383,75 @@ export default function ProfileDrawer({
         </>
       )}
     </AnimatePresence>
+  )
+}
+
+function formatPeriodEnd(iso) {
+  if (!iso) return null
+  try {
+    const d = new Date(iso)
+    return d.toLocaleDateString('bg-BG', { day: '2-digit', month: 'long', year: 'numeric' })
+  } catch {
+    return null
+  }
+}
+
+function planLabel(plan) {
+  if (plan === 'lifetime') return 'Lifetime достъп'
+  if (plan === 'monthly') return 'Месечен план'
+  if (plan === 'yearly') return 'Годишен план'
+  return 'Активен план'
+}
+
+function SubscriptionCard({ hasPaidAccess, subscription, onOpenPaywall }) {
+  if (!hasPaidAccess || !subscription) {
+    return (
+      <div className="rounded-2xl border border-forest-line bg-forest-card/60 p-4">
+        <div className="font-display font-semibold text-ink-muted text-[10px] tracking-[0.12em] uppercase mb-1.5">
+          Абонамент
+        </div>
+        <div className="text-ink text-[14px] mb-3">Няма активен план</div>
+        <button
+          onClick={onOpenPaywall}
+          className="w-full min-h-[40px] rounded-xl bg-accent text-forest-deep font-display text-[12px] font-bold uppercase tracking-[0.12em] active:scale-[0.98] transition"
+        >
+          Активирай достъп
+        </button>
+      </div>
+    )
+  }
+
+  const plan = planLabel(subscription.plan)
+  const renews = subscription.plan !== 'lifetime' && !subscription.cancel_at_period_end
+  const endDate = formatPeriodEnd(subscription.current_period_end)
+
+  return (
+    <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4">
+      <div className="flex items-start justify-between mb-1.5">
+        <div className="font-display font-semibold text-accent text-[10px] tracking-[0.12em] uppercase">
+          Абонамент
+        </div>
+        <span className="text-[10px] font-display font-bold uppercase tracking-[0.1em] text-accent">
+          Активен
+        </span>
+      </div>
+      <div className="font-display text-ink text-[15px] font-semibold mb-1.5">
+        {plan}
+      </div>
+      {endDate && (
+        <div className="text-ink-muted text-[12px] leading-snug">
+          {subscription.cancel_at_period_end
+            ? `Достъп до ${endDate}, без подновяване`
+            : renews
+              ? `Подновява се на ${endDate}`
+              : `До ${endDate}`}
+        </div>
+      )}
+      {subscription.plan === 'lifetime' && (
+        <div className="text-ink-muted text-[12px] leading-snug">
+          Без месечни такси, без срок.
+        </div>
+      )}
+    </div>
   )
 }
