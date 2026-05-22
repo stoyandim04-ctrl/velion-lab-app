@@ -19,7 +19,7 @@ export const DAY_55 = {
     "image": "/course/day-55/lesson.png",
     "paragraphs": [
       "Реалистично:",
-      "60-дневният интензив е било fase на изграждане След това: 365-дневна phase на maintenance",
+      "60-дневният интензив е било фаза на изграждане След това: 365-дневна phase на maintenance",
       "Не правиш 30 мин ритуал всеки ден завинаги. Това би било изтощително. Имаш minimum viable maintenance.",
       "Velion Maintenance Tiers:",
       "TIER 1: Daily minimum (5 мин) Това е non-negotiable. Дори в най-зает ден, най-стресово време, на пътуване — правиш това.",
@@ -28,14 +28,14 @@ export const DAY_55 = {
       "TIER 2: Weekly support (30-45 мин общо за седмицата) В нормална седмица правиш:",
       "2 awareness rehearsals (по 10-15 мин) 1 transition ritual преди важна вечер (10 мин) 1 weekly review (5 мин)",
       "TIER 3: Monthly review (30 мин)",
-      "Tracking за месеца — какво виждаш? 1 нов експеримент за идващия месец Аpdate на identity declaration Преглед на recovery plan",
+      "Tracking за месеца — какво виждаш? 1 нов експеримент за идващия месец Update на identity declaration Преглед на recovery plan",
       "TIER 4: Quarterly deep dive (2 часа) На всеки 3 месеца:"
     ],
     "highlight": "Реалистично:"
   },
   "fact": {
     "icon": "🔥",
-    "title": "ПИКАНТЕН ФАКТ",
+    "title": "ВАЖЕН ФАКТ",
     "text": "Maintenance е по-трудно от изграждане."
   },
   "exercise": {

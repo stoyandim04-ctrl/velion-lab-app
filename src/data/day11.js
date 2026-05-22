@@ -29,7 +29,7 @@ export const DAY_11 = {
 
   fact: {
     icon: '🔥',
-    title: 'ПИКАНТЕН ФАКТ',
+    title: 'ВАЖЕН ФАКТ',
     text: 'Редовен edge protocol постепенно увеличава контрола ти. Не за нощ. С време. Това е behavioral conditioning — тялото учи нова реакция чрез повторение.'
   },
 

@@ -21,21 +21,21 @@ export const DAY_59 = {
       "60 дни е достатъчно да изградиш base. Но има цял хоризонт от growth, който можеш да продължиш.",
       "Области за продължаващо учене:",
       "1. По-дълбока връзка и партньорство",
-      "Книги: \"Mating in Captivity\" (Esther Perel), \"The State of Affairs\" (Esther Perel) \"Come As You Are\" (Emily Nagoski) — fundamental за разбиране на женска sexuality \"Hold Me Tight\" (Sue Johnson) — attachment в романтични отношения",
+      "Книги: \"Mating in Captivity\" (Esther Perel), \"The State of Affairs\" (Esther Perel) \"Come As You Are\" (Emily Nagoski) — fundamental за разбиране на женска интимност \"Hold Me Tight\" (Sue Johnson) — attachment в романтични отношения",
       "2. По-дълбоко познаване на мъжкостта",
       "\"Iron John\" (Robert Bly) — класика на mythological masculinity \"The Way of the Superior Man\" (David Deida) — controversial, но stimulating Stoic писатели — Marcus Aurelius \"Meditations\", Seneca",
       "3. Дишане и нервна система — по-надълбоко",
-      "\"Breath\" (James Nestor) — модерен поглед \"The Body Keeps the Score\" (Bessel van der Kolk) — trauma и тяло Може да обмислиш formal medita+ion training (Vipassana, MBSR)",
+      "\"Breath\" (James Nestor) — модерен поглед \"The Body Keeps the Score\" (Bessel van der Kolk) — trauma и тяло Може да обмислиш formal meditation training (Vipassana, MBSR)",
       "4. Психотерапия и personal work",
       "Ако чувстваш, че има по-дълбоки emotional layers — терапия е полезна, не слаба CBT, somatic experiencing, IFS — модерни ефективни подходи Това не е \"treatment\" — това е continued growth",
       "5. Тяло — повишено ниво",
-      "Strength training за тестостерон и присъствие Йога за flexibility и nervous system Acupuncture/массаж за хронично tension"
+      "Strength training за тестостерон и присъствие Йога за flexibility и nervous system Acupuncture/масаж за хронично tension"
     ],
     "highlight": "60 дни е достатъчно да изградиш base"
   },
   "fact": {
     "icon": "🔥",
-    "title": "ПИКАНТЕН ФАКТ",
+    "title": "ВАЖЕН ФАКТ",
     "text": "Мъже, които посвещават 1 час седмично на personal development в средна продължителност 10 години, отчитат значително по-високо нива на удовлетвореност в живота от мъже, които правят intensive sprints периодично."
   },
   "exercise": {

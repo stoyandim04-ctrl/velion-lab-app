@@ -35,7 +35,7 @@ export const DAY_47 = {
   },
   "fact": {
     "icon": "🔥",
-    "title": "ПИКАНТЕН ФАКТ",
+    "title": "ВАЖЕН ФАКТ",
     "text": "В социална психология \"primacy effect\" показва, че първото впечатление е почти невъзможно за пълно overwriting."
   },
   "exercise": {

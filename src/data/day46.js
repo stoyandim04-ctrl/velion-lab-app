@@ -35,7 +35,7 @@ export const DAY_46 = {
   },
   "fact": {
     "icon": "🔥",
-    "title": "ПИКАНТЕН ФАКТ",
+    "title": "ВАЖЕН ФАКТ",
     "text": "Изследване в Personality and Individual Differences показва, че мъже с по-дълбоки гласове са оценявани като по-привлекателни и по-доверителни."
   },
   "exercise": {
