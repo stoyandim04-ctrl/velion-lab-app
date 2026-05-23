@@ -168,7 +168,7 @@ export default function AuthScreen() {
               placeholder="имейл"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
+              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] transition-all"
               style={{ fontSize: 16 }}
             />
             <input
@@ -177,7 +177,7 @@ export default function AuthScreen() {
               placeholder="парола"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/50 transition-colors"
+              className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] transition-all"
               style={{ fontSize: 16 }}
             />
 
