@@ -8,7 +8,6 @@ export const ROUTES = {
   future: '/future',
   building: '/building',
   result: '/result',
-  social: '/social',
   paywall: '/paywall',
   success: '/success',
   dailyOnboarding: '/daily-onboarding',

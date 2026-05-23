@@ -80,7 +80,7 @@ export default function ResultScreen() {
 
       <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-[max(20px,env(safe-area-inset-bottom))] bg-gradient-to-t from-forest-deep via-forest-deep/95 to-transparent pointer-events-none">
         <div className="pointer-events-auto">
-          <Button onClick={() => navigate(ROUTES.social)}>ПОКАЖИ МИ</Button>
+          <Button onClick={() => navigate(ROUTES.paywall)}>ПОКАЖИ МИ</Button>
         </div>
       </div>
     </Screen>

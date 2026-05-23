@@ -23,7 +23,6 @@ import PaywallScreen from './screens/PaywallScreen.jsx'
 const EducationScreen = lazy(() => import('./screens/EducationScreen.jsx'))
 const BuildingPlanScreen = lazy(() => import('./screens/BuildingPlanScreen.jsx'))
 const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
-const SocialProofScreen = lazy(() => import('./screens/SocialProofScreen.jsx'))
 const SuccessScreen = lazy(() => import('./screens/SuccessScreen.jsx'))
 const DailyOnboardingScreen = lazy(() => import('./screens/DailyOnboardingScreen.jsx'))
 const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'))
@@ -92,7 +91,6 @@ export default function App() {
                   <Route path={ROUTES.future} element={<FutureScreen />} />
                   <Route path={ROUTES.building} element={<BuildingPlanScreen />} />
                   <Route path={ROUTES.result} element={<ResultScreen />} />
-                  <Route path={ROUTES.social} element={<SocialProofScreen />} />
                   <Route path={ROUTES.paywall} element={<PaywallScreen />} />
                   <Route path={ROUTES.success} element={<ProtectedRoute><SuccessScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute requirePaid><DailyOnboardingScreen /></ProtectedRoute>} />
