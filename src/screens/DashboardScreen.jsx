@@ -162,14 +162,17 @@ export default function DashboardScreen() {
           >
             {continueData?.title || `Ден ${continueDay}`}
           </h2>
-          <button
+          <motion.button
             type="button"
             onClick={goToDay}
-            className="mt-auto self-start inline-flex items-center gap-2 rounded-full bg-accent text-forest-deep font-display text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2.5 shadow-glow-soft active:scale-95 transition"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ y: -1 }}
+            transition={{ duration: 0.15 }}
+            className="mt-auto self-start inline-flex items-center gap-2 rounded-full bg-accent text-forest-deep font-display text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2.5 shadow-[0_0_28px_rgba(255,106,0,0.45)]"
           >
             Продължи
             <ArrowRight size={14} strokeWidth={3} />
-          </button>
+          </motion.button>
         </motion.div>
 
         {/* CARD 2: Progress */}
@@ -177,7 +180,10 @@ export default function DashboardScreen() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.05 }}
-          className="h-[160px] mb-3 rounded-2xl border border-forest-line bg-forest-card px-4 py-4 flex flex-col"
+          className={[
+            'h-[160px] mb-3 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col transition-colors',
+            progressPct >= 50 ? 'border-accent/35' : 'border-forest-line'
+          ].join(' ')}
         >
           <div className="flex items-start justify-between">
             <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
@@ -223,10 +229,12 @@ export default function DashboardScreen() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           whileTap={{ scale: 0.985 }}
+          whileHover={{ y: -1 }}
           transition={{ duration: 0.45, delay: 0.1 }}
-          className="h-[160px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col"
+          className="relative h-[160px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col overflow-hidden hover:border-accent/30 transition-colors"
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(255,106,0,0.10),transparent_50%)] pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-3">
             <span className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
               60-дневен протокол
             </span>
@@ -234,10 +242,10 @@ export default function DashboardScreen() {
               <ArrowRight size={15} className="text-accent" strokeWidth={2.6} />
             </span>
           </div>
-          <h2 className="mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase">
+          <h2 className="relative mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase">
             📚 Всички дни
           </h2>
-          <div className="mt-auto flex items-center gap-2 text-[12px] text-ink-muted">
+          <div className="relative mt-auto flex items-center gap-2 text-[12px] text-ink-muted">
             <span>
               <span className="text-ink font-display font-semibold">
                 {completed}

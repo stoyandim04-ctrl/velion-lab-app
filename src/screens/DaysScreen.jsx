@@ -111,15 +111,18 @@ function DayCard({ day, index, onClick }) {
       whileTap={isLocked ? {} : { scale: 0.97 }}
       onClick={() => onClick(day)}
       className={[
-        'h-[112px] rounded-2xl border px-3 py-3 text-left flex flex-col justify-between transition-all',
+        'relative h-[112px] rounded-2xl border px-3 py-3 text-left flex flex-col justify-between transition-all overflow-hidden',
         isActive
-          ? 'border-accent bg-forest-card shadow-[0_0_20px_rgba(255,106,0,0.18)]'
+          ? 'border-accent bg-forest-card shadow-[0_0_24px_rgba(255,106,0,0.22)]'
           : isCompleted
-          ? 'border-forest-line bg-forest-card'
-          : 'border-forest-line/60 bg-forest-card/35'
+          ? 'border-forest-line bg-forest-card hover:border-accent/30'
+          : 'border-forest-line/50 bg-forest-card/30'
       ].join(' ')}
     >
-      <div className="flex items-start justify-between gap-2">
+      {isActive && (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,106,0,0.16),transparent_55%)] pointer-events-none" />
+      )}
+      <div className="relative flex items-start justify-between gap-2">
         <span
           className={[
             'font-display text-[10px] tracking-[0.12em] uppercase font-semibold',
@@ -147,7 +150,7 @@ function DayCard({ day, index, onClick }) {
       </div>
       <div
         className={[
-          'font-display text-[11.5px] leading-[1.25] uppercase tracking-display',
+          'relative font-display text-[11.5px] leading-[1.25] uppercase tracking-display',
           isLocked ? 'text-ink-dim' : 'text-ink'
         ].join(' ')}
         style={{
