@@ -122,7 +122,9 @@ export const DAYS = {
   60: DAY_60
 }
 
-export const ALWAYS_UNLOCKED_DAYS = new Set([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60])
+// Unlock policy lives in src/data/course.js + src/lib/courseProgress.js:
+// days 1-7 always unlocked, day 8+ unlocked only if the previous day is completed.
+// The legacy ALWAYS_UNLOCKED_DAYS set was dead code (not imported anywhere).
 
 export const AVAILABLE_DAYS = Object.keys(DAYS).map(Number).sort((a, b) => a - b)
 export const MAX_AVAILABLE_DAY = Math.max(...AVAILABLE_DAYS)
