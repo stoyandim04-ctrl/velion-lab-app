@@ -97,6 +97,6 @@ export const DAY_18 = {
   navigation: [
     { day: 17, title: 'Box Breathing', status: 'completed', icon: '⬅️', route: '/course/day-17' },
     { day: 18, title: 'Безопасност и граници', status: 'current', icon: '📍', route: '/course/day-18' },
-    { day: 19, title: 'Темпо и синхронизация', status: 'current', icon: '📍', route: '/course/day-19' }
+    { day: 19, title: 'Темпо и синхронизация', status: 'locked', icon: '🔒', route: '/course/day-19', hint: 'отключва се след завършване на Ден 18' }
   ]
 }

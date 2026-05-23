@@ -96,6 +96,6 @@ export const DAY_24 = {
   navigation: [
     { day: 23, title: 'Kegel упражнения', status: 'completed', icon: '⬅️', route: '/course/day-23' },
     { day: 24, title: 'Reverse Kegels', status: 'current', icon: '📍', route: '/course/day-24' },
-    { day: 25, title: 'Сън', status: 'current', icon: '📍', route: '/course/day-25' }
+    { day: 25, title: 'Сън', status: 'locked', icon: '🔒', route: '/course/day-25', hint: 'отключва се след завършване на Ден 24' }
   ]
 }

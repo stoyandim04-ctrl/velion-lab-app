@@ -99,6 +99,6 @@ export const DAY_8 = {
   navigation: [
     { day: 7, title: 'Awareness Rehearsal', status: 'completed', icon: '⬅️', route: '/course/day-7' },
     { day: 8, title: 'Картата на възбудата', status: 'current', icon: '📍', route: '/course/day-8' },
-    { day: 9, title: 'Точката на невъзвръщане', status: 'current', icon: '📍', route: '/course/day-9' }
+    { day: 9, title: 'Точката на невъзвръщане', status: 'locked', icon: '🔒', route: '/course/day-9', hint: 'отключва се след завършване на Ден 8' }
   ]
 }

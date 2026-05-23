@@ -94,6 +94,6 @@ export const DAY_35 = {
   navigation: [
     { day: 34, title: 'Ритуали на увереността', status: 'completed', icon: '⬅️', route: '/course/day-34' },
     { day: 35, title: 'Интеграция Седмица 5', status: 'current', icon: '📍', route: '/course/day-35' },
-    { day: 36, title: 'Женската възбуда vs мъжката', status: 'current', icon: '📍', route: '/course/day-36' }
+    { day: 36, title: 'Женската възбуда vs мъжката', status: 'locked', icon: '🔒', route: '/course/day-36', hint: 'отключва се след завършване на Ден 35' }
   ]
 }

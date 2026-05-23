@@ -93,6 +93,6 @@ export const DAY_12 = {
   navigation: [
     { day: 11, title: 'Edge Play', status: 'completed', icon: '⬅️', route: '/course/day-11' },
     { day: 12, title: 'Grounding 3-2-1', status: 'current', icon: '📍', route: '/course/day-12' },
-    { day: 13, title: 'Паузата като инструмент', status: 'current', icon: '📍', route: '/course/day-13' }
+    { day: 13, title: 'Паузата като инструмент', status: 'locked', icon: '🔒', route: '/course/day-13', hint: 'отключва се след завършване на Ден 12' }
   ]
 }

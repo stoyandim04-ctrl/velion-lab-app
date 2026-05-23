@@ -92,6 +92,6 @@ export const DAY_27 = {
   navigation: [
     { day: 26, title: 'Стрес и кортизол', status: 'completed', icon: '⬅️', route: '/course/day-26' },
     { day: 27, title: 'Храна, алкохол, никотин', status: 'current', icon: '📍', route: '/course/day-27' },
-    { day: 28, title: 'Интеграция Седмица 4', status: 'current', icon: '📍', route: '/course/day-28' }
+    { day: 28, title: 'Интеграция Седмица 4', status: 'locked', icon: '🔒', route: '/course/day-28', hint: 'отключва се след завършване на Ден 27' }
   ]
 }

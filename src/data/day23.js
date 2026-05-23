@@ -94,6 +94,6 @@ export const DAY_23 = {
   navigation: [
     { day: 22, title: 'Анатомия на тазовия пол', status: 'completed', icon: '⬅️', route: '/course/day-22' },
     { day: 23, title: 'Kegel упражнения', status: 'current', icon: '📍', route: '/course/day-23' },
-    { day: 24, title: 'Reverse Kegels', status: 'current', icon: '📍', route: '/course/day-24' }
+    { day: 24, title: 'Reverse Kegels', status: 'locked', icon: '🔒', route: '/course/day-24', hint: 'отключва се след завършване на Ден 23' }
   ]
 }

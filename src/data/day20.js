@@ -109,6 +109,6 @@ export const DAY_20 = {
   navigation: [
     { day: 19, title: 'Темпо и синхронизация', status: 'completed', icon: '⬅️', route: '/course/day-19' },
     { day: 20, title: 'Дишане + Squeeze', status: 'current', icon: '📍', route: '/course/day-20' },
-    { day: 21, title: 'Интеграция Седмица 3', status: 'current', icon: '📍', route: '/course/day-21' }
+    { day: 21, title: 'Интеграция Седмица 3', status: 'locked', icon: '🔒', route: '/course/day-21', hint: 'отключва се след завършване на Ден 20' }
   ]
 }

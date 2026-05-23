@@ -94,6 +94,6 @@ export const DAY_31 = {
   navigation: [
     { day: 30, title: 'Mindfulness midpoint', status: 'completed', icon: '⬅️', route: '/course/day-30' },
     { day: 31, title: 'Reframing', status: 'current', icon: '📍', route: '/course/day-31' },
-    { day: 32, title: 'Визуализация', status: 'current', icon: '📍', route: '/course/day-32' }
+    { day: 32, title: 'Визуализация', status: 'locked', icon: '🔒', route: '/course/day-32', hint: 'отключва се след завършване на Ден 31' }
   ]
 }

@@ -109,6 +109,6 @@ export const DAY_42 = {
   navigation: [
     { day: 41, title: 'Mutual rhythm', status: 'completed', icon: '⬅️', route: '/course/day-41' },
     { day: 42, title: 'Интеграция Седмица 6', status: 'current', icon: '📍', route: '/course/day-42' },
-    { day: 43, title: 'Маскулинност vs присъствие', status: 'current', icon: '📍', route: '/course/day-43' }
+    { day: 43, title: 'Маскулинност vs присъствие', status: 'locked', icon: '🔒', route: '/course/day-43', hint: 'отключва се след завършване на Ден 42' }
   ]
 }

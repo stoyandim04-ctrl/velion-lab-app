@@ -108,6 +108,6 @@ export const DAY_19 = {
   navigation: [
     { day: 18, title: 'Безопасност и граници', status: 'completed', icon: '⬅️', route: '/course/day-18' },
     { day: 19, title: 'Темпо и синхронизация', status: 'current', icon: '📍', route: '/course/day-19' },
-    { day: 20, title: 'Дишане + Squeeze комбинирано', status: 'current', icon: '📍', route: '/course/day-20' }
+    { day: 20, title: 'Дишане + Squeeze комбинирано', status: 'locked', icon: '🔒', route: '/course/day-20', hint: 'отключва се след завършване на Ден 19' }
   ]
 }

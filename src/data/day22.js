@@ -92,6 +92,6 @@ export const DAY_22 = {
   navigation: [
     { day: 21, title: 'Дишането като ритуал', status: 'completed', icon: '⬅️', route: '/course/day-21' },
     { day: 22, title: 'Анатомия на тазовия пол', status: 'current', icon: '📍', route: '/course/day-22' },
-    { day: 23, title: 'Kegel упражнения', status: 'current', icon: '📍', route: '/course/day-23' }
+    { day: 23, title: 'Kegel упражнения', status: 'locked', icon: '🔒', route: '/course/day-23', hint: 'отключва се след завършване на Ден 22' }
   ]
 }

@@ -93,6 +93,6 @@ export const DAY_43 = {
   navigation: [
     { day: 42, title: 'Интеграция Седмица 6', status: 'completed', icon: '⬅️', route: '/course/day-42' },
     { day: 43, title: 'Маскулинност vs присъствие', status: 'current', icon: '📍', route: '/course/day-43' },
-    { day: 44, title: 'Energy management', status: 'current', icon: '📍', route: '/course/day-44' }
+    { day: 44, title: 'Energy management', status: 'locked', icon: '🔒', route: '/course/day-44', hint: 'отключва се след завършване на Ден 43' }
   ]
 }

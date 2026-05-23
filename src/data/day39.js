@@ -91,6 +91,6 @@ export const DAY_39 = {
   navigation: [
     { day: 38, title: 'Комуникация', status: 'completed', icon: '⬅️', route: '/course/day-38' },
     { day: 39, title: 'Невербални сигнали', status: 'current', icon: '📍', route: '/course/day-39' },
-    { day: 40, title: 'Feedback loops', status: 'current', icon: '📍', route: '/course/day-40' }
+    { day: 40, title: 'Feedback loops', status: 'locked', icon: '🔒', route: '/course/day-40', hint: 'отключва се след завършване на Ден 39' }
   ]
 }

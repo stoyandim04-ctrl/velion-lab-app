@@ -109,6 +109,6 @@ export const DAY_30 = {
   navigation: [
     { day: 29, title: 'Performance Anxiety', status: 'completed', icon: '⬅️', route: '/course/day-29' },
     { day: 30, title: 'Mindfulness midpoint', status: 'current', icon: '📍', route: '/course/day-30' },
-    { day: 31, title: 'Reframing', status: 'current', icon: '📍', route: '/course/day-31' }
+    { day: 31, title: 'Reframing', status: 'locked', icon: '🔒', route: '/course/day-31', hint: 'отключва се след завършване на Ден 30' }
   ]
 }

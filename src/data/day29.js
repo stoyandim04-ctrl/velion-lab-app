@@ -92,6 +92,6 @@ export const DAY_29 = {
   navigation: [
     { day: 28, title: 'Интеграция Седмица 4', status: 'completed', icon: '⬅️', route: '/course/day-28' },
     { day: 29, title: 'Performance Anxiety', status: 'current', icon: '📍', route: '/course/day-29' },
-    { day: 30, title: 'Mindfulness midpoint', status: 'current', icon: '📍', route: '/course/day-30' }
+    { day: 30, title: 'Mindfulness midpoint', status: 'locked', icon: '🔒', route: '/course/day-30', hint: 'отключва се след завършване на Ден 29' }
   ]
 }

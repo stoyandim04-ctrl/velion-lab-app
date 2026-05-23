@@ -96,6 +96,6 @@ export const DAY_34 = {
   navigation: [
     { day: 33, title: 'Self-talk', status: 'completed', icon: '⬅️', route: '/course/day-33' },
     { day: 34, title: 'Ритуали на увереността', status: 'current', icon: '📍', route: '/course/day-34' },
-    { day: 35, title: 'Интеграция Седмица 5', status: 'current', icon: '📍', route: '/course/day-35' }
+    { day: 35, title: 'Интеграция Седмица 5', status: 'locked', icon: '🔒', route: '/course/day-35', hint: 'отключва се след завършване на Ден 34' }
   ]
 }

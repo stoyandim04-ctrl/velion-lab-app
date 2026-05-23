@@ -95,6 +95,6 @@ export const DAY_15 = {
   navigation: [
     { day: 14, title: 'Интеграция Седмица 2', status: 'completed', icon: '⬅️', route: '/course/day-14' },
     { day: 15, title: 'Диафрагмено дишане', status: 'current', icon: '📍', route: '/course/day-15' },
-    { day: 16, title: '4-7-8 на следващото ниво', status: 'current', icon: '📍', route: '/course/day-16' }
+    { day: 16, title: '4-7-8 на следващото ниво', status: 'locked', icon: '🔒', route: '/course/day-16', hint: 'отключва се след завършване на Ден 15' }
   ]
 }

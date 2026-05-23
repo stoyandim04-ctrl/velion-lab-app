@@ -109,6 +109,6 @@ export const DAY_32 = {
   navigation: [
     { day: 31, title: 'Reframing', status: 'completed', icon: '⬅️', route: '/course/day-31' },
     { day: 32, title: 'Визуализация', status: 'current', icon: '📍', route: '/course/day-32' },
-    { day: 33, title: 'Self-talk', status: 'current', icon: '📍', route: '/course/day-33' }
+    { day: 33, title: 'Self-talk', status: 'locked', icon: '🔒', route: '/course/day-33', hint: 'отключва се след завършване на Ден 32' }
   ]
 }

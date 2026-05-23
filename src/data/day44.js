@@ -87,6 +87,6 @@ export const DAY_44 = {
   navigation: [
     { day: 43, title: 'Присъствие', status: 'completed', icon: '⬅️', route: '/course/day-43' },
     { day: 44, title: 'Energy management', status: 'current', icon: '📍', route: '/course/day-44' },
-    { day: 45, title: 'Body language', status: 'current', icon: '📍', route: '/course/day-45' }
+    { day: 45, title: 'Body language', status: 'locked', icon: '🔒', route: '/course/day-45', hint: 'отключва се след завършване на Ден 44' }
   ]
 }

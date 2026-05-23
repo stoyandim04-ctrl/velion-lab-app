@@ -111,6 +111,6 @@ export const DAY_28 = {
   navigation: [
     { day: 27, title: 'Храна, алкохол, никотин', status: 'completed', icon: '⬅️', route: '/course/day-27' },
     { day: 28, title: 'Интеграция Седмица 4', status: 'current', icon: '📍', route: '/course/day-28' },
-    { day: 29, title: 'Performance Anxiety', status: 'current', icon: '📍', route: '/course/day-29' }
+    { day: 29, title: 'Performance Anxiety', status: 'locked', icon: '🔒', route: '/course/day-29', hint: 'отключва се след завършване на Ден 28' }
   ]
 }

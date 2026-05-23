@@ -93,6 +93,6 @@ export const DAY_26 = {
   navigation: [
     { day: 25, title: 'Сън', status: 'completed', icon: '⬅️', route: '/course/day-25' },
     { day: 26, title: 'Стрес и кортизол', status: 'current', icon: '📍', route: '/course/day-26' },
-    { day: 27, title: 'Храна, алкохол, никотин', status: 'current', icon: '📍', route: '/course/day-27' }
+    { day: 27, title: 'Храна, алкохол, никотин', status: 'locked', icon: '🔒', route: '/course/day-27', hint: 'отключва се след завършване на Ден 26' }
   ]
 }

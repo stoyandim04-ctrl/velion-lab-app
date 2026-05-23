@@ -90,6 +90,6 @@ export const DAY_16 = {
   navigation: [
     { day: 15, title: 'Диафрагмено дишане', status: 'completed', icon: '⬅️', route: '/course/day-15' },
     { day: 16, title: '4-7-8 на следващото ниво', status: 'current', icon: '📍', route: '/course/day-16' },
-    { day: 17, title: 'Box Breathing', status: 'current', icon: '📍', route: '/course/day-17' }
+    { day: 17, title: 'Box Breathing', status: 'locked', icon: '🔒', route: '/course/day-17', hint: 'отключва се след завършване на Ден 16' }
   ]
 }

@@ -92,6 +92,6 @@ export const DAY_17 = {
   navigation: [
     { day: 16, title: '4-7-8 advanced', status: 'completed', icon: '⬅️', route: '/course/day-16' },
     { day: 17, title: 'Box Breathing', status: 'current', icon: '📍', route: '/course/day-17' },
-    { day: 18, title: 'Безопасност и граници', status: 'current', icon: '📍', route: '/course/day-18' }
+    { day: 18, title: 'Безопасност и граници', status: 'locked', icon: '🔒', route: '/course/day-18', hint: 'отключва се след завършване на Ден 17' }
   ]
 }

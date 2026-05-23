@@ -94,6 +94,6 @@ export const DAY_13 = {
   navigation: [
     { day: 12, title: 'Grounding 3-2-1', status: 'completed', icon: '⬅️', route: '/course/day-12' },
     { day: 13, title: 'Паузата като инструмент', status: 'current', icon: '📍', route: '/course/day-13' },
-    { day: 14, title: 'Интеграция Седмица 2', status: 'current', icon: '📍', route: '/course/day-14' }
+    { day: 14, title: 'Интеграция Седмица 2', status: 'locked', icon: '🔒', route: '/course/day-14', hint: 'отключва се след завършване на Ден 13' }
   ]
 }

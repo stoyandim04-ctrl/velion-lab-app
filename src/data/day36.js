@@ -91,6 +91,6 @@ export const DAY_36 = {
   navigation: [
     { day: 35, title: 'Интеграция Седмица 5', status: 'completed', icon: '⬅️', route: '/course/day-35' },
     { day: 36, title: 'Женската възбуда vs мъжката', status: 'current', icon: '📍', route: '/course/day-36' },
-    { day: 37, title: 'Emotional safety', status: 'current', icon: '📍', route: '/course/day-37' }
+    { day: 37, title: 'Emotional safety', status: 'locked', icon: '🔒', route: '/course/day-37', hint: 'отключва се след завършване на Ден 36' }
   ]
 }

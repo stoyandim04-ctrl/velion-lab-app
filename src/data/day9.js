@@ -125,6 +125,6 @@ export const DAY_9 = {
   navigation: [
     { day: 8, title: 'Картата на възбудата', status: 'completed', icon: '⬅️', route: '/course/day-8' },
     { day: 9, title: 'Точката на невъзвръщане', status: 'current', icon: '📍', route: '/course/day-9' },
-    { day: 10, title: 'Squeeze Technique', status: 'current', icon: '📍', route: '/course/day-10' }
+    { day: 10, title: 'Squeeze Technique', status: 'locked', icon: '🔒', route: '/course/day-10', hint: 'отключва се след завършване на Ден 9' }
   ]
 }

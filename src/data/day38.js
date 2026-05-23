@@ -94,6 +94,6 @@ export const DAY_38 = {
   navigation: [
     { day: 37, title: 'Emotional safety', status: 'completed', icon: '⬅️', route: '/course/day-37' },
     { day: 38, title: 'Комуникация в интимност', status: 'current', icon: '📍', route: '/course/day-38' },
-    { day: 39, title: 'Невербални сигнали', status: 'current', icon: '📍', route: '/course/day-39' }
+    { day: 39, title: 'Невербални сигнали', status: 'locked', icon: '🔒', route: '/course/day-39', hint: 'отключва се след завършване на Ден 38' }
   ]
 }

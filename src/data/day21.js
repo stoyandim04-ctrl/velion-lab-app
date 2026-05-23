@@ -109,6 +109,6 @@ export const DAY_21 = {
   navigation: [
     { day: 20, title: 'Дишане + Squeeze', status: 'completed', icon: '⬅️' },
     { day: 21, title: 'Дишането като ежедневен ритуал', status: 'current', icon: '📍', route: '/course/day-21' },
-    { day: 22, title: 'Анатомия на тазовия пол', status: 'current', icon: '📍', route: '/course/day-22' }
+    { day: 22, title: 'Анатомия на тазовия пол', status: 'locked', icon: '🔒', route: '/course/day-22', hint: 'отключва се след завършване на Ден 21' }
   ]
 }
