@@ -141,7 +141,7 @@ export default function PaywallScreen() {
         </div>
 
         <div className="flex justify-center opacity-50">
-          <img src="/logo/logo.webp" alt="Velion Lab" className="w-24 h-auto" />
+          <img src="/logo/logo.webp" alt="Velion Lab" loading="lazy" decoding="async" className="w-24 h-auto" />
         </div>
       </div>
 

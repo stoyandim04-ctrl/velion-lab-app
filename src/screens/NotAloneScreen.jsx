@@ -15,6 +15,8 @@ export default function NotAloneScreen() {
         <img
           src={silhouetteImg}
           alt=""
+          decoding="async"
+          fetchpriority="high"
           className="absolute inset-0 w-full h-full object-cover opacity-95"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/20 via-transparent to-forest-deep" />

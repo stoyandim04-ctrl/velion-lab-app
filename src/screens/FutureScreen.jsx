@@ -17,6 +17,8 @@ export default function FutureScreen() {
         <img
           src={futureImg}
           alt=""
+          decoding="async"
+          fetchpriority="high"
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/40 via-forest-deep/30 to-forest-deep" />
