@@ -14,7 +14,7 @@ export const DAY_1 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-1/lesson.png',
+    image: '/course/day-1/lesson.webp',
     paragraphs: [
       'Бащата мълчи. Училището премълчава. Стимулативните медии лъжат.',
       'Резултатът е цяло поколение мъже, които мислят, че проблемът е в тях — че са дефектни, по-малко мъжествени, неспособни.',
@@ -38,7 +38,7 @@ export const DAY_1 = {
     duration: '3 мин',
     subtitle: 'Първото отписване от срама',
     goal: 'Започваш да отделяш проблема от твоята самоличност.',
-    image: '/course/day-1/exercise.png',
+    image: '/course/day-1/exercise.webp',
     steps: [
       'Седни на стол. Изправен гръб.',
       'Затвори очи. Поеми въздух през носа 4 секунди.',
@@ -92,7 +92,7 @@ export const DAY_1 = {
     dayNumber: 2,
     title: 'Защо тялото ти бяга преди ума ти',
     teaser: 'Защо тялото ти реагира толкова бързо — и защо това не е твоя вина.',
-    image: '/course/day-1/tomorrow.png'
+    image: '/course/day-1/tomorrow.webp'
   },
 
   navigation: [

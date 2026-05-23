@@ -14,7 +14,7 @@ export const DAY_5 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-5/lesson.png',
+    image: '/course/day-5/lesson.webp',
     intro: 'Преди да градиш контрол, трябва да разчистиш лъжите, които си приел за истини. Защото те те влачат назад при всеки опит за промяна.',
     outro: 'Истинският път минава през тяло, ум, дишане и постепенна практика. По-бавен, но реален.'
   },
@@ -69,7 +69,7 @@ export const DAY_5 = {
     duration: '5 мин',
     subtitle: 'Преразглеждане на убежденията',
     goal: 'Откриваш кои митове са станали твои „истини".',
-    image: '/course/day-5/exercise.png',
+    image: '/course/day-5/exercise.webp',
     steps: [
       'Напиши 3 неща, които си вярвал за бързото освобождаване преди този курс.',
       'До всяко напиши истината (от горните 7 или от собственото си размишление).',
@@ -115,7 +115,7 @@ export const DAY_5 = {
     dayNumber: 6,
     title: 'Твоята лична карта на тригерите',
     teaser: 'Кога точно губиш контрол — и защо.',
-    image: '/course/day-5/tomorrow.png'
+    image: '/course/day-5/tomorrow.webp'
   },
 
   navigation: [

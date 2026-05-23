@@ -14,7 +14,7 @@ export const DAY_36 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-36/lesson.png',
+    image: '/course/day-36/lesson.webp',
     paragraphs: [
       'Мъжката възбуда е като ключ на ел.печка. Натискаш, светва. Женската възбуда е като фурна. Загрява бавно. Поддържа топлина дълго. Това не е стереотип — това е базова физиология (Masters & Johnson, Helen Singer Kaplan, Emily Nagoski).',
       'Базови разлики:',
@@ -40,7 +40,7 @@ export const DAY_36 = {
     duration: '5 мин',
     subtitle: 'Учене на новия модел',
     goal: 'Преструктурираш разбирането си.',
-    image: '/course/day-36/exercise.png',
+    image: '/course/day-36/exercise.webp',
     steps: [
       'Какво са ме научили стимулативните медии за женска възбуда? (запиши 3 неща)',
       'Кое от тези неща е грешно? (минимум 2)',

@@ -14,7 +14,7 @@ export const DAY_25 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-25/lesson.png',
+    image: '/course/day-25/lesson.webp',
     paragraphs: [
       'Тестостеронът, който поддържа либидо и енергия, се произвежда основно по време на сън — в дълбоките фази. Кратък сън = по-нисък тестостерон. Лош сън = разрушена нервна система.',
       '1. Кортизол стои високо. Стресовият хормон, който нормално пада през нощта. При лош сън остава висок. Поддържа симпатиката активна.',
@@ -39,7 +39,7 @@ export const DAY_25 = {
     duration: '5 мин',
     subtitle: 'Sleep audit',
     goal: 'Откриваш кое в текущия ти режим саботира съня ти.',
-    image: '/course/day-25/exercise.png',
+    image: '/course/day-25/exercise.webp',
     steps: [
       'Маркирай Да/Не: Лягам и ставам в един и същ час ±30 мин.',
       'Стаята ми е напълно тъмна.',
@@ -90,7 +90,7 @@ export const DAY_25 = {
     dayNumber: 26,
     title: 'Стрес и кортизол',
     teaser: 'Защо хроничното напрежение от деня става хронично напрежение в спалнята.',
-    image: '/course/day-25/tomorrow.png'
+    image: '/course/day-25/tomorrow.webp'
   },
 
   navigation: [

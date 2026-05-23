@@ -14,7 +14,7 @@ export const DAY_19 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-19/lesson.png',
+    image: '/course/day-19/lesson.webp',
     paragraphs: [
       'Има един принцип в неврологията и тялото: по-бавният процес диктува ритъма на по-бързите процеси около него.',
       'В интимен момент има няколко „процеса" протичащи едновременно: дишане (бавен), сърдечен ритъм (среден), темпо на движение (вариабилно), мисли (бързо).',
@@ -40,7 +40,7 @@ export const DAY_19 = {
     duration: '5 мин',
     subtitle: 'Movement-breath sync',
     goal: 'Учиш тялото си движение в синхрон с дишане. Не интимно упражнение. Чиста тренировка на синхрон.',
-    image: '/course/day-19/exercise.png',
+    image: '/course/day-19/exercise.webp',
     sections: [
       {
         label: 'Етап 1 · Ходене (2 мин)',

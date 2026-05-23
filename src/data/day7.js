@@ -15,7 +15,7 @@ export const DAY_7 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-7/lesson.png',
+    image: '/course/day-7/lesson.webp',
     intro: 'Тази седмица научи:',
     bullets: [
       { day: 1, text: 'Не си счупен. Срамът е грешен учител.' },
@@ -54,7 +54,7 @@ export const DAY_7 = {
     duration: '10-15 мин',
     subtitle: 'Първи Awareness Rehearsal (Baseline)',
     goal: 'Откриваш собствената си карта на възбудата.',
-    image: '/course/day-7/exercise.png',
+    image: '/course/day-7/exercise.webp',
     sections: [
       {
         label: 'Подготовка',
@@ -126,7 +126,7 @@ export const DAY_7 = {
     dayNumber: 8,
     title: 'Картата на възбудата в детайл',
     teaser: 'Модул II: Контрол над възбудата. Учиш я като пилот учи приборите си.',
-    image: '/course/day-7/tomorrow.png',
+    image: '/course/day-7/tomorrow.webp',
     moduleStart: 'Модул II · Контрол'
   },
 

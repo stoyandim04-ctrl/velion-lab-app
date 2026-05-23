@@ -15,7 +15,7 @@ export const DAY_28 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-28/lesson.png',
+    image: '/course/day-28/lesson.webp',
     intro: 'Тази седмица научи как тялото създава или разрушава контрола.',
     bullets: [
       { day: 22, text: 'Анатомия на тазовия пол — картата на твоите мускули' },
@@ -40,7 +40,7 @@ export const DAY_28 = {
     duration: '15 мин',
     subtitle: 'Personal Body Protocol',
     goal: 'Превръщаш минимума в твоя конкретен план.',
-    image: '/course/day-28/exercise.png',
+    image: '/course/day-28/exercise.webp',
     sections: [
       {
         label: 'Стъпка 1 · Преглед (5 мин)',

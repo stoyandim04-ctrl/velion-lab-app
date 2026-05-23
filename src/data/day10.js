@@ -86,7 +86,7 @@ export const DAY_10 = {
     dayNumber: 11,
     title: 'Edge Play',
     teaser: 'По-фина техника, която тренира нервната система за дългосрочни промени.',
-    image: '/course/day-10/tomorrow.png'
+    image: '/course/day-10/tomorrow.webp'
   },
 
   navigation: [

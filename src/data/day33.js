@@ -14,7 +14,7 @@ export const DAY_33 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-33/lesson.png',
+    image: '/course/day-33/lesson.webp',
     paragraphs: [
       'Всеки човек води постоянен вътрешен разговор. Около 50 000 - 70 000 мисли на ден. Повечето автоматични. Повечето непреценени.',
       'Видове self-talk:',
@@ -41,7 +41,7 @@ export const DAY_33 = {
     duration: '5 мин',
     subtitle: 'Self-talk audit',
     goal: 'Откриваш своя доминиращ вътрешен глас и започваш съзнателен trade.',
-    image: '/course/day-33/exercise.png',
+    image: '/course/day-33/exercise.webp',
     sections: [
       {
         label: 'Стъпка 1 · Listening (2 мин)',

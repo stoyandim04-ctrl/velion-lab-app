@@ -15,7 +15,7 @@ export const DAY_60 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-60/lesson.png',
+    image: '/course/day-60/lesson.webp',
     paragraphs: [
       'Спри за момент. Не бързай към упражнението. Този ден не се чете — този ден се преживява.',
       'Преди два месеца отвори това приложение друг човек. Може да е бил уморен. Може да е бил наранен. Може да е бил тихо разочарован, че никой никога не му е говорил направо. Този човек взе едно решение — да опита още веднъж. Не на едро. Един ден.',
@@ -51,9 +51,9 @@ export const DAY_60 = {
     duration: '15 мин',
     subtitle: 'Velion Declared Identity Ceremony',
     goal: 'Затваряш 60-те дни с акт, който тялото ти ще запомни.',
-    image: '/course/day-60/exercise.png',
+    image: '/course/day-60/exercise.webp',
     carousel: {
-      image: '/course/day-60/carousel.png',
+      image: '/course/day-60/carousel.webp',
       caption: '60 дни. Един мъж. Един финал.'
     },
     sections: [

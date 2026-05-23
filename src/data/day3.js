@@ -14,7 +14,7 @@ export const DAY_3 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-3/lesson.png',
+    image: '/course/day-3/lesson.webp',
     paragraphs: [
       'Има едно изречение, което побеждава повечето мъже, преди моментът дори да започне:',
       '„Ще успея ли този път?"',
@@ -46,7 +46,7 @@ export const DAY_3 = {
     duration: '3 мин',
     subtitle: 'Сетивен скенер 5-4-3-2-1',
     goal: 'Тренираш да преместваш фокуса от ум към тяло.',
-    image: '/course/day-3/exercise.png',
+    image: '/course/day-3/exercise.webp',
     steps: [
       'Седни удобно. Затвори очи.',
       'Назови 5 неща, които чуваш.',
@@ -94,7 +94,7 @@ export const DAY_3 = {
     dayNumber: 4,
     title: 'Как стимулативните медии пренаписаха нервната ти система',
     teaser: 'Не за да те засрами — за да разбереш какво да поправиш.',
-    image: '/course/day-3/tomorrow.png'
+    image: '/course/day-3/tomorrow.webp'
   },
 
   navigation: [

@@ -14,7 +14,7 @@ export const DAY_8 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-8/lesson.png',
+    image: '/course/day-8/lesson.webp',
     intro: 'Вчера видя скалата 1-10 в общи линии. Днес я разделяш на територии — защото всяка територия изисква различен инструмент.',
     outro: 'Какво се променя при трениран мъж: прекарва повече време на 3-6, забелязва прехода 6→7 по-рано, има време за интервенция на 7. 8 е рядкост — и когато се случи, има готови техники.'
   },
@@ -45,7 +45,7 @@ export const DAY_8 = {
     duration: '3 мин',
     subtitle: 'Mental mapping',
     goal: 'Внедряваш картата в съзнанието си, преди да я ползваш в практика.',
-    image: '/course/day-8/exercise.png',
+    image: '/course/day-8/exercise.webp',
     steps: [
       'Затвори очи. Седни удобно.',
       'Визуализирай скалата като термометър — вертикална линия от 1 до 10.',
@@ -93,7 +93,7 @@ export const DAY_8 = {
     dayNumber: 9,
     title: 'Точката на невъзвръщане',
     teaser: 'Какво точно се случва там и кои сигнали те предупреждават навреме.',
-    image: '/course/day-8/tomorrow.png'
+    image: '/course/day-8/tomorrow.webp'
   },
 
   navigation: [

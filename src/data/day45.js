@@ -14,7 +14,7 @@ export const DAY_45 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-45/lesson.png',
+    image: '/course/day-45/lesson.webp',
     paragraphs: [
       'Тялото ти изразява реалното състояние, което си изградил вътре. Това не е „поза за впечатляване".',
       '6 ключови елемента на премиум body language:',
@@ -40,7 +40,7 @@ export const DAY_45 = {
     duration: '5 мин',
     subtitle: 'Body language audit',
     goal: 'Виждаш разликата между естествената си поза и upgrade-натата.',
-    image: '/course/day-45/exercise.png',
+    image: '/course/day-45/exercise.webp',
     steps: [
       'Снимай себе си стоейки нестествено (10 сек таймер).',
       'Гледай снимката.',

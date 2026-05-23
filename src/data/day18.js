@@ -14,7 +14,7 @@ export const DAY_18 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-18/lesson.png',
+    image: '/course/day-18/lesson.webp',
     paragraphs: [
       'Дотук учиш силата на дишането. Днес учиш границите. Не всички техники са за всички хора, във всеки момент.',
       'Кога дишането НЕ е препоръчително:',
@@ -42,7 +42,7 @@ export const DAY_18 = {
     duration: '5 мин',
     subtitle: 'Personal safety audit',
     goal: 'Идентифицираш своите лични безопасни и опасни условия.',
-    image: '/course/day-18/exercise.png',
+    image: '/course/day-18/exercise.webp',
     steps: [
       'Имам ли известно белодробно или сърдечно заболяване?',
       'Имам ли история с панически атаки?',

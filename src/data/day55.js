@@ -15,7 +15,7 @@ export const DAY_55 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-55/lesson.png',
+    image: '/course/day-55/lesson.webp',
     intro: 'Тази седмица научи как контролът оцелява след курса.',
     bullets: [
       { day: 50, text: 'Дизайн на дневен ритуал — твоят personal protocol' },
@@ -25,7 +25,7 @@ export const DAY_55 = {
       { day: 54, text: 'Identity shift — от поведение към идентитет' }
     ],
     outro: 'Заедно те образуват Velion Long-Term Protocol — системата, която работи без ежедневен урок. ДНЕВНО (5 мин минимум): дишане сутрин, един ред в трекера вечер. СЕДМИЧНО: преглед на 6-те метрики, едно тиха минута с Identity Declaration. МЕСЕЧНО: преглед на recovery плана, актуализация на ритуала, един нов експеримент. ПРИ РЕГРЕСИЯ: 5-стъпковият протокол — назоваване, без шамар, soft restart, един въпрос, връщане. ПРИ ТРУДЕН МОМЕНТ В БЛИЗОСТ: остани, дишай, едно изречение, преход. Това не е курс, който завършваш. Това е операционна система, която носиш.',
-    image: '/course/day-55/carousel.png'
+    image: '/course/day-55/carousel.webp'
   },
 
   fact: {
@@ -40,7 +40,7 @@ export const DAY_55 = {
     duration: '15 мин',
     subtitle: 'Velion Long-Term Protocol — една страница',
     goal: 'Слагаш всичко научено тази седмица на една страница, която носиш със себе си.',
-    image: '/course/day-55/exercise.png',
+    image: '/course/day-55/exercise.webp',
     sections: [
       {
         label: 'Минути 0–4 · Ритуалът ми',

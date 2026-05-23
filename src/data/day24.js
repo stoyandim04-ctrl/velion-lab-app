@@ -14,7 +14,7 @@ export const DAY_24 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-24/lesson.png',
+    image: '/course/day-24/lesson.webp',
     paragraphs: [
       'Ето защо много мъже правят Kegels месеци и не виждат резултат: те тренират само половината упражнение.',
       'Помисли за бицепс. Ако стискаш бицепса си 24/7, той не става по-силен. Той става свит и контузен. Същото за PC.',
@@ -41,7 +41,7 @@ export const DAY_24 = {
     duration: '3 мин',
     subtitle: 'Първата Reverse Kegel сесия',
     goal: 'Намираш „долната позиция".',
-    image: '/course/day-24/exercise.png',
+    image: '/course/day-24/exercise.webp',
     steps: [
       'Легни по гръб. Колене сгънати. Стъпала на пода.',
       'Поеми дълбок дъх в корема (4 сек).',
@@ -90,7 +90,7 @@ export const DAY_24 = {
     dayNumber: 25,
     title: 'Сън',
     teaser: 'Невидимият партньор на контрола. Защо лошият сън разрушава всичко друго, което правиш.',
-    image: '/course/day-24/tomorrow.png'
+    image: '/course/day-24/tomorrow.webp'
   },
 
   navigation: [

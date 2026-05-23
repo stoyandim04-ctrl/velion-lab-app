@@ -14,7 +14,7 @@ export const DAY_51 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-51/lesson.png',
+    image: '/course/day-51/lesson.webp',
     paragraphs: [
       'Tracking не е обсесивен контрол. Tracking е огледало. Без него работиш на сляпо — мислиш, че няма прогрес, защото забравяш откъде си тръгнал.',
       'Грешният tracking обаче е по-лош от никакъв. Той засилва точно това, което се опитваш да оставиш.',
@@ -47,7 +47,7 @@ export const DAY_51 = {
     duration: '5 мин',
     subtitle: 'Първи Velion Tracker запис',
     goal: 'Записваш baseline за днес и решаваш как ще tracking-уваш в следващите 90 дни.',
-    image: '/course/day-51/exercise.png',
+    image: '/course/day-51/exercise.webp',
     steps: [
       'Избери място — бележник, бележки в телефона или един кратък документ.',
       'Запиши днешните 6 метрики: Calm ___ / Control ___ / Confidence ___ / Ritual (да/не) / Sleep ___ ч / Energy ___.',

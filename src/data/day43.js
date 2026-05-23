@@ -14,7 +14,7 @@ export const DAY_43 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-43/lesson.png',
+    image: '/course/day-43/lesson.webp',
     paragraphs: [
       'Мъжкото присъствие не е performance — не може да се играе. То или го имаш, или още не.',
       'Петте столба на мъжко присъствие:',
@@ -40,7 +40,7 @@ export const DAY_43 = {
     duration: '5 мин',
     subtitle: 'Presence check',
     goal: 'Виждаш на кой стълб си силен и слаб.',
-    image: '/course/day-43/exercise.png',
+    image: '/course/day-43/exercise.webp',
     steps: [
       'Оцени 1-10: заземеност',
       'Оцени 1-10: пространство (тишина)',

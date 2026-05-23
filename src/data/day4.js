@@ -14,7 +14,7 @@ export const DAY_4 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-4/lesson.png',
+    image: '/course/day-4/lesson.webp',
     paragraphs: [
       'Млад мозък + стимулативни медии = пренареждане на нервната система.',
       'Когато гледаш стимулативни медии, се случват три неща:',
@@ -39,7 +39,7 @@ export const DAY_4 = {
     duration: '3 мин',
     subtitle: 'Десенсибилизация на образа',
     goal: 'Учиш мозъка си отново да реагира на реални усещания, не на визуални.',
-    image: '/course/day-4/exercise.png',
+    image: '/course/day-4/exercise.webp',
     steps: [
       'Затвори очи. Помисли за интимен момент с реална партньорка.',
       'Не визуализирай поза. Визуализирай усещане — топлина, кожа, дъх.',
@@ -87,7 +87,7 @@ export const DAY_4 = {
     dayNumber: 5,
     title: '7 мита и истината',
     teaser: '7-те най-разпространени мита за бързото освобождаване — и истината зад всеки.',
-    image: '/course/day-4/tomorrow.png'
+    image: '/course/day-4/tomorrow.webp'
   },
 
   navigation: [

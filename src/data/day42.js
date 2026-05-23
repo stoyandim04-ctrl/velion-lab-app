@@ -15,7 +15,7 @@ export const DAY_42 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-42/lesson.png',
+    image: '/course/day-42/lesson.webp',
     intro: 'Тази седмица научи:',
     bullets: [
       { day: 36, text: 'Биологични разлики' },
@@ -40,7 +40,7 @@ export const DAY_42 = {
     duration: '15 мин',
     subtitle: 'Partnership self-audit',
     goal: 'Честна оценка на текущата ти позиция.',
-    image: '/course/day-42/exercise.png',
+    image: '/course/day-42/exercise.webp',
     sections: [
       {
         label: 'Минути 0-5 · Оценки',

@@ -14,7 +14,7 @@ export const DAY_23 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-23/lesson.png',
+    image: '/course/day-23/lesson.webp',
     paragraphs: [
       'Kegel упражненията са кръстени на д-р Арнолд Кегел, разработени през 1948 г. за жени след раждане. По-късно се установява, че работят и за мъже — за контрол на уринирането, поддръжка на физическа реакция и контрол на освобождаване.',
       'Това не е псевдонаука. Призната от Mayo Clinic, NIDDK и AUA. Но има условия.',
@@ -40,7 +40,7 @@ export const DAY_23 = {
     duration: '3 мин',
     subtitle: 'Първата Velion Kegel сесия',
     goal: 'Правиш качествена, не количествена сесия.',
-    image: '/course/day-23/exercise.png',
+    image: '/course/day-23/exercise.webp',
     steps: [
       'Седни удобно. Гръб изправен. Глезените на пода.',
       'Кратки (5 повторения): Свий PC бързо. Задръж 1 сек. Отпусни 1 сек.',
@@ -88,7 +88,7 @@ export const DAY_23 = {
     dayNumber: 24,
     title: 'Reverse Kegels',
     teaser: 'Другата половина на уравнението. Мускулът, който отпускаш, не стягаш.',
-    image: '/course/day-23/tomorrow.png'
+    image: '/course/day-23/tomorrow.webp'
   },
 
   navigation: [

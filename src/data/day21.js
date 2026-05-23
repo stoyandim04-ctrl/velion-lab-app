@@ -102,7 +102,7 @@ export const DAY_21 = {
     dayNumber: 22,
     title: 'Анатомия на тазовия пол',
     teaser: 'Слизаме в тялото — без срам, без мистика.',
-    image: '/course/day-21/tomorrow.png',
+    image: '/course/day-21/tomorrow.webp',
     moduleStart: 'Модул IV · Тяло'
   },
 

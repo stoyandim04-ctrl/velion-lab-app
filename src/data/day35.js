@@ -15,7 +15,7 @@ export const DAY_35 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-35/lesson.png',
+    image: '/course/day-35/lesson.webp',
     intro: 'Тази седмица научи как психологията прави или разрушава представянето.',
     bullets: [
       { day: 29, text: 'Performance Anxiety — цикълът на страха' },
@@ -40,7 +40,7 @@ export const DAY_35 = {
     duration: '15 мин',
     subtitle: 'Първа интегрирана психо-сесия',
     goal: 'Преживяваш целия Psychology Protocol като една последователност.',
-    image: '/course/day-35/exercise.png',
+    image: '/course/day-35/exercise.webp',
     sections: [
       { label: 'Минути 0-3 · Power posture + мантра', steps: ['Power posture (2 мин) + мантрата ти.'] },
       { label: 'Минути 3-6 · Визуализация', steps: ['3 минути — сценарий с тревога → reframe → спокойствие.'] },

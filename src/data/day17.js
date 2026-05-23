@@ -14,7 +14,7 @@ export const DAY_17 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-17/lesson.png',
+    image: '/course/day-17/lesson.webp',
     paragraphs: [
       '4-7-8 е техника за парасимпатиков релакс. Долна предавка. Идеална преди сън, преди интимен момент, при тревожност.',
       'Box Breathing е различен инструмент. Тя поддържа теб алертен и спокоен едновременно. Не те приспива — изостря те.',
@@ -40,7 +40,7 @@ export const DAY_17 = {
     duration: '5 мин',
     subtitle: 'Първа Box сесия',
     goal: 'Преживяваш техниката и забелязваш как се чувстваш различно от 4-7-8.',
-    image: '/course/day-17/exercise.png',
+    image: '/course/day-17/exercise.webp',
     steps: [
       'Седни изправен — не легнал.',
       'Затвори очи или фокусирай на една точка.',

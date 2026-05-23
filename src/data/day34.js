@@ -14,7 +14,7 @@ export const DAY_34 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-34/lesson.png',
+    image: '/course/day-34/lesson.webp',
     paragraphs: [
       'Има стандартен мит: „Първо мислиш уверено, после ставаш уверен." Изследванията на тялото и мозъка показват обратното — тялото създава ума.',
       'Това е концепцията embodied cognition — мисленето не е в главата, то е в цялото тяло. Поза, дишане, физическо състояние — те диктуват менталното състояние.',
@@ -40,7 +40,7 @@ export const DAY_34 = {
     duration: '5 мин',
     subtitle: 'Дизайн на собствен pre-ритуал',
     goal: 'Създаваш ТВОЯ конкретен 5-минутен ритуал. Избери 3-4 елемента от менюто и подреди ги в последователност.',
-    image: '/course/day-34/exercise.png',
+    image: '/course/day-34/exercise.webp',
     steps: [
       'Power posture (2 мин)',
       'Cold splash на лице (30 сек)',

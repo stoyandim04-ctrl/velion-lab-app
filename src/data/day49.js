@@ -15,8 +15,8 @@ export const DAY_49 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-49/lesson.png',
-    carouselImage: '/course/day-49/carousel.png',
+    image: '/course/day-49/lesson.webp',
+    carouselImage: '/course/day-49/carousel.webp',
     intro: 'Тази седмица научи как мъжкото присъствие се изгражда отвън навътре и отвътре навън едновременно.',
     bullets: [
       { day: 43, text: 'Маскулинност vs мъжко присъствие — поза срещу състояние' },
@@ -41,7 +41,7 @@ export const DAY_49 = {
     duration: '15 мин',
     subtitle: 'Първа интегрирана премиум сесия',
     goal: 'Преживяваш цялото мъжко присъствие като едно състояние, не като списък от техники.',
-    image: '/course/day-49/exercise.png',
+    image: '/course/day-49/exercise.webp',
     sections: [
       {
         label: 'Минути 0-3 · Настройка',

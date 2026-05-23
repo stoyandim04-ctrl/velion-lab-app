@@ -14,7 +14,7 @@ export const DAY_31 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-31/lesson.png',
+    image: '/course/day-31/lesson.webp',
     paragraphs: [
       'В Ден 29 учи КАКВО е performance anxiety. Днес учиш как точно да я преобразуваш — стъпка по стъпка.',
       'Cognitive reframing е техника от cognitive behavioral therapy. Тя работи на ниво между стимула и реакцията.',
@@ -41,7 +41,7 @@ export const DAY_31 = {
     duration: '5 мин',
     subtitle: 'Catch & reframe',
     goal: 'Тренираш 4-стъпковия протокол на конкретна мисъл.',
-    image: '/course/day-31/exercise.png',
+    image: '/course/day-31/exercise.webp',
     steps: [
       'Вземи една реална мисъл, която често ти минава преди или по време на интимен момент.',
       'NOTICE — Какво си казах?',

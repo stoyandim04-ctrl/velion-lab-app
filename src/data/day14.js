@@ -15,7 +15,7 @@ export const DAY_14 = {
     icon: '📖',
     title: 'УРОК',
     duration: '~5 мин',
-    image: '/course/day-14/lesson.png',
+    image: '/course/day-14/lesson.webp',
     intro: 'Тази седмица научи:',
     bullets: [
       { day: 8, text: 'Картата на възбудата — скалата 1-10' },
@@ -40,7 +40,7 @@ export const DAY_14 = {
     duration: '15 мин',
     subtitle: 'Първа интегрирана сесия',
     goal: 'Преживяваш цялостния протокол като една сесия.',
-    image: '/course/day-14/exercise.png',
+    image: '/course/day-14/exercise.webp',
     sections: [
       {
         label: 'Минути 0-3 · Settling',
