@@ -33,6 +33,9 @@ export default defineConfig({
           if (id.includes('@supabase')) return 'vendor-supabase'
           if (id.includes('@capacitor')) return 'vendor-capacitor'
           if (id.includes('lucide-react')) return 'vendor-icons'
+          if (id.includes('three') || id.includes('@react-three')) return 'vendor-three'
+          if (id.includes('gsap')) return 'vendor-gsap'
+          if (id.includes('lottie')) return 'vendor-lottie'
           if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react'
           return 'vendor'
         }

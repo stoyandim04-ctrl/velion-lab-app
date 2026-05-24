@@ -1,11 +1,36 @@
-import { useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, Check, ChevronDown, X, Sparkles } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { MODULES_OVERVIEW, PRICE, PAYWALL_FEATURES } from '../data/prices.js'
 import { ROUTES } from '../lib/routes.js'
+import {
+  useReducedMotion,
+  STAGGER_CONTAINER,
+  STAGGER_ITEM,
+  FADE_UP,
+  SCALE_IN,
+  EASE_OUT,
+  SPRING
+} from '../lib/animations.js'
+import CountUp from '../components/animations/CountUp.jsx'
+
+// 3D shield is lazy-loaded so three.js (≈150kB gzip) doesn't block first paint.
+// Until it hydrates, the SVG fallback below renders in its place.
+const Shield3D = lazy(() => import('../components/animations/Shield3D.jsx'))
+
+function ShieldFallback({ size }) {
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="flex items-center justify-center"
+    >
+      <img src="/logo/velion-shield.svg" alt="Velion Lab" className="w-[70%] h-[70%]" />
+    </div>
+  )
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Content (single source of truth — easy to tweak copy without touching markup)
@@ -164,16 +189,26 @@ const FAQS = [
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Split headline into words for stagger reveal.
+const HERO_WORDS_LINE_1 = ['60', 'ДНИ.']
+const HERO_WORDS_LINE_2 = ['НОВА', 'ВЕРСИЯ']
+const HERO_WORDS_LINE_3 = ['НА', 'ТЕБ.']
+
 export default function LandingScreen() {
   const navigate = useNavigate()
   const { isAuthenticated, hasPaidAccess, accessLoading, user, signOut } = useAuth()
   const [openFaq, setOpenFaq] = useState(null)
   const [signingOut, setSigningOut] = useState(false)
+  const reduced = useReducedMotion()
+
+  const scrollRef = useRef(null)
+  const { scrollY } = useScroll({ container: scrollRef })
+  // Subtle hero parallax — image moves slower than scroll
+  const heroParallax = useTransform(scrollY, [0, 400], [0, reduced ? 0 : -60])
+  const heroOpacity = useTransform(scrollY, [0, 350], [0.65, reduced ? 0.65 : 0.25])
 
   const isPaidUser = isAuthenticated && !accessLoading && hasPaidAccess
 
-  // "Започни сега" винаги води към quiz — дори за платени потребители (те имат
-  // отделен бутон "Влез в профила си" по-долу). Така user-ът никога не e изненадан.
   const handleStartQuiz = () => navigate('/quiz/1')
   const handleOpenProfile = () => navigate(ROUTES.dashboard)
   const handleLogin = () => navigate(ROUTES.auth, { state: { mode: 'login' } })
@@ -186,27 +221,31 @@ export default function LandingScreen() {
   return (
     <Screen background="bg-forest-deep">
       <div
+        ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* ───── SECTION 1: HERO ───────────────────────────────────────────── */}
-        <section className="relative">
-          <div className="absolute inset-0">
-            <img
+        <section className="relative overflow-hidden">
+          <motion.div className="absolute inset-0" style={{ y: heroParallax }}>
+            <motion.img
               src="/landing/hero.webp"
               alt=""
               decoding="async"
               fetchpriority="high"
-              className="absolute inset-0 w-full h-full object-cover opacity-65"
+              style={{ opacity: heroOpacity }}
+              className="absolute inset-0 w-full h-full object-cover"
               onError={(e) => { e.currentTarget.style.display = 'none' }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/30 via-[#0A0A0A]/60 to-[#0A0A0A]" />
-          </div>
+          </motion.div>
 
           <div className="relative z-10 px-6 pt-[max(48px,env(safe-area-inset-top))] pb-12 min-h-[78vh] flex flex-col">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div className="w-12" />
-              <img src="/logo/velion-shield.svg" alt="Velion Lab" className="w-12 h-12" />
+              <Suspense fallback={<ShieldFallback size={88} />}>
+                <Shield3D size={88} />
+              </Suspense>
               {isAuthenticated ? (
                 <button
                   onClick={handleSignOut}
@@ -220,38 +259,86 @@ export default function LandingScreen() {
               )}
             </div>
             {isAuthenticated && (
-              <div className="text-center text-ink-dim text-[10.5px] mb-6 -mt-4">
+              <div className="text-center text-ink-dim text-[10.5px] mb-4">
                 Влязъл като <span className="text-ink-muted">{user?.email}</span>
               </div>
             )}
 
             <div className="flex-1 flex flex-col justify-end">
               <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                variants={STAGGER_CONTAINER}
+                initial="hidden"
+                animate="show"
               >
-                <div className="font-display text-accent text-[11px] tracking-[0.18em] uppercase mb-4">
+                <motion.div
+                  variants={STAGGER_ITEM}
+                  className="font-display text-accent text-[11px] tracking-[0.18em] uppercase mb-4"
+                >
                   Velion Lab · 60-дневен протокол
-                </div>
+                </motion.div>
                 <h1 className="font-display font-bold text-ink text-[36px] sm:text-[40px] leading-[0.95] tracking-display uppercase mb-5">
-                  60 ДНИ.
-                  <br />
-                  НОВА ВЕРСИЯ
-                  <br />
-                  <span className="text-accent">НА ТЕБ.</span>
+                  <span className="block">
+                    {HERO_WORDS_LINE_1.map((w, i) => (
+                      <motion.span
+                        key={i}
+                        variants={STAGGER_ITEM}
+                        className="inline-block mr-2"
+                      >
+                        {w}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <span className="block">
+                    {HERO_WORDS_LINE_2.map((w, i) => (
+                      <motion.span
+                        key={i}
+                        variants={STAGGER_ITEM}
+                        className="inline-block mr-2"
+                      >
+                        {w}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <span className="block text-accent">
+                    {HERO_WORDS_LINE_3.map((w, i) => (
+                      <motion.span
+                        key={i}
+                        variants={STAGGER_ITEM}
+                        className="inline-block mr-2"
+                      >
+                        {w}
+                      </motion.span>
+                    ))}
+                  </span>
                 </h1>
-                <p className="text-ink-muted text-[15px] leading-[1.55] mb-8 max-w-[340px]">
+                <motion.p
+                  variants={STAGGER_ITEM}
+                  className="text-ink-muted text-[15px] leading-[1.55] mb-8 max-w-[340px]"
+                >
                   Научна система за контрол, увереност и мъжко присъствие. Без хапчета, без срам, без обещания за чудо.
-                </p>
+                </motion.p>
 
-                <div className="flex flex-col gap-3">
+                <motion.div variants={STAGGER_ITEM} className="flex flex-col gap-3">
                   <motion.button
                     onClick={handleStartQuiz}
                     whileTap={{ scale: 0.97 }}
                     whileHover={{ y: -1 }}
-                    transition={{ duration: 0.15 }}
-                    className="w-full min-h-[56px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_36px_rgba(255,106,0,0.45)] inline-flex items-center justify-center gap-2"
+                    animate={
+                      reduced
+                        ? {}
+                        : {
+                            boxShadow: [
+                              '0 0 28px rgba(255,106,0,0.35)',
+                              '0 0 52px rgba(255,106,0,0.65)',
+                              '0 0 28px rgba(255,106,0,0.35)'
+                            ]
+                          }
+                    }
+                    transition={{
+                      boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+                      scale: { type: 'spring', stiffness: 380, damping: 26 }
+                    }}
+                    className="w-full min-h-[58px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
                   >
                     Започни сега
                     <ArrowRight size={18} strokeWidth={2.8} />
@@ -286,7 +373,7 @@ export default function LandingScreen() {
                       )}
                     </>
                   )}
-                </div>
+                </motion.div>
 
                 <div className="mt-7 flex items-center justify-center gap-2 text-ink-dim text-[11px] tracking-[0.06em] uppercase">
                   <Sparkles size={11} className="text-accent" />
@@ -498,20 +585,48 @@ export default function LandingScreen() {
         {/* ───── SECTION 8: STATS ──────────────────────────────────────────── */}
         <section className="px-6 py-14 border-t border-forest-line/40">
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { num: '60', label: 'дни съдържание' },
-              { num: '8', label: 'модула' },
-              { num: '15 мин', label: 'на ден' }
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
-                  {s.num}
-                </div>
-                <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
-                  {s.label}
-                </div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, ease: EASE_OUT }}
+              className="text-center"
+            >
+              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
+                <CountUp to={60} />
               </div>
-            ))}
+              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
+                дни съдържание
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: 0.1, ease: EASE_OUT }}
+              className="text-center"
+            >
+              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
+                <CountUp to={8} />
+              </div>
+              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
+                модула
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: 0.2, ease: EASE_OUT }}
+              className="text-center"
+            >
+              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
+                <CountUp to={15} suffix=" мин" />
+              </div>
+              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
+                на ден
+              </div>
+            </motion.div>
           </div>
         </section>
 

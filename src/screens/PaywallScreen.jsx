@@ -27,8 +27,17 @@ export default function PaywallScreen() {
     }
   }, [accessLoading, hasPaidAccess, navigate])
 
+  // Payments temporarily disabled while we redesign. The button informs
+  // the user. We keep all checkout plumbing intact so reactivation is a
+  // one-line change later.
+  const PAYMENTS_ENABLED = false
+
   const handleCheckout = async () => {
     if (loading) return
+    if (!PAYMENTS_ENABLED) {
+      setError('Плащанията са временно деактивирани, докато подготвяме новата версия. Скоро се връщаме.')
+      return
+    }
     if (!user) {
       navigate(ROUTES.auth, { state: { from: '/paywall', mode: 'signup' } })
       return
@@ -40,11 +49,6 @@ export default function PaywallScreen() {
         plan: PRICE.id,
         mode: PRICE.mode
       })
-
-      // Use Stripe Payment Link with client_reference_id so the webhook can
-      // tie the resulting checkout session back to this Supabase user.
-      // This bypasses /api/create-checkout-session entirely — works even if
-      // the server priceId env var is wrong / stale.
       if (PRICE.paymentLink) {
         const url = new URL(PRICE.paymentLink)
         url.searchParams.set('client_reference_id', user.id)
@@ -52,13 +56,10 @@ export default function PaywallScreen() {
         await openExternalUrl(url.toString())
         return
       }
-
-      // Legacy fallback (only if Payment Link is removed in the future)
       if (PRICE.priceId) {
         await startCheckout({ priceId: PRICE.priceId, mode: PRICE.mode })
         return
       }
-
       throw new Error('Платежният канал не е конфигуриран.')
     } catch (e) {
       setError(e.message || 'Грешка. Опитай отново.')

@@ -205,7 +205,17 @@ export default function DashboardScreen() {
             </span>
             <span className="text-ink-dim">·</span>
             <span className="flex items-center gap-1">
-              🔥{' '}
+              <motion.span
+                animate={{
+                  scale: [1, 1.18, 0.96, 1.08, 1],
+                  rotate: [0, -3, 3, -2, 0]
+                }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="inline-block"
+                aria-hidden="true"
+              >
+                🔥
+              </motion.span>{' '}
               <span className="text-ink font-display font-semibold">
                 {streakCount}
               </span>{' '}
