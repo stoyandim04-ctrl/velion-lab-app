@@ -34,14 +34,29 @@ function mapAuthError(err) {
 export default function AuthScreen() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn, signUp, resetPassword, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
-  const [mode, setMode] = useState('login')
+  const { signIn, signUp, signOut, resetPassword, user, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
+  // Initial mode is read from navigation state — callers send mode:'signup'
+  // when they explicitly want a new account flow (e.g. from /results CTA).
+  const initialMode = location.state?.mode === 'signup' ? 'signup' : 'login'
+  const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  // If we're in signup mode but a cached session is active, show a clean
+  // "create a different account" panel instead of auto-redirecting.
+  const blockedByCachedSession = mode === 'signup' && isAuthenticated && !loading
+
+  const handleSignOutAndStartFresh = async () => {
+    setSigningOut(true)
+    await signOut()
+    // After signOut the auth listener will re-render this component with
+    // isAuthenticated=false; the signup form then becomes usable.
+    setSigningOut(false)
+  }
 
   const handleResetPassword = async () => {
     setError('')
@@ -68,7 +83,11 @@ export default function AuthScreen() {
   // After login: wait for paid-access check, then route based on subscription status.
   // - Paid → dashboard (or original intended target)
   // - Not paid → paywall (with clear messaging)
+  // EXCEPTION: if the caller passed mode:'signup' (explicit "create new account"
+  // intent), DO NOT auto-redirect — we want the user to sign out their cached
+  // session first via the dedicated panel.
   useEffect(() => {
+    if (mode === 'signup') return
     if (loading) return
     if (!isAuthenticated) return
     if (accessLoading) return
@@ -77,7 +96,7 @@ export default function AuthScreen() {
     } else {
       navigate(ROUTES.paywall, { replace: true, state: { from: '/auth' } })
     }
-  }, [loading, isAuthenticated, accessLoading, hasPaidAccess, navigate, intendedTarget])
+  }, [mode, loading, isAuthenticated, accessLoading, hasPaidAccess, navigate, intendedTarget])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -149,10 +168,44 @@ export default function AuthScreen() {
             <p className="text-ink-muted text-[15px] leading-[1.55] mb-8 max-w-[340px]">
               {mode === 'login'
                 ? 'Продължи от мястото, на което си спрял. Прогресът ти е запазен.'
-                : 'Запиши се за безплатен акаунт. Прогресът ти ще се пази на всяко устройство.'}
+                : 'Запиши се за нов акаунт. Прогресът ти ще се пази в облака и достъпно на всяко устройство.'}
             </p>
           </motion.div>
 
+          {blockedByCachedSession ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-5 mb-4"
+            >
+              <div className="font-display font-semibold text-amber-300 text-[11px] tracking-[0.14em] uppercase mb-2">
+                Активна сесия
+              </div>
+              <p className="text-ink text-[14px] leading-[1.55] mb-1">
+                Влязъл си като:
+              </p>
+              <p className="font-display text-ink text-[15px] font-semibold mb-4 break-all">
+                {user?.email || 'непознат акаунт'}
+              </p>
+              <p className="text-ink-muted text-[12.5px] leading-[1.55] mb-4">
+                За да създадеш НОВ акаунт първо излез от текущия. Прогресът на текущия акаунт се запазва — можеш да се върнеш с „Влез" по всяко време.
+              </p>
+              <button
+                onClick={handleSignOutAndStartFresh}
+                disabled={signingOut}
+                className="w-full min-h-[48px] rounded-2xl bg-amber-400 text-forest-deep font-display text-[13px] font-bold tracking-[0.1em] uppercase active:scale-[0.98] transition disabled:opacity-60"
+              >
+                {signingOut ? 'Излизане…' : 'Излез и създай нов акаунт'}
+              </button>
+              <button
+                onClick={() => setMode('login')}
+                className="w-full min-h-[40px] text-ink-muted text-[12.5px] mt-2 active:text-ink"
+              >
+                Откажи · продължи с текущия акаунт
+              </button>
+            </motion.div>
+          ) : (
           <motion.form
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -197,18 +250,21 @@ export default function AuthScreen() {
               {busy ? 'Обработваме…' : mode === 'login' ? 'ВЛЕЗ' : 'СЪЗДАЙ АКАУНТ'}
             </Button>
           </motion.form>
+          )}
 
-          <button
-            onClick={() => { setError(''); setInfo(''); setMode(mode === 'login' ? 'signup' : 'login') }}
-            className="w-full min-h-[44px] text-ink-muted text-[14px] active:text-ink"
-            style={{ touchAction: 'manipulation' }}
-          >
-            {mode === 'login'
-              ? 'Нямаш акаунт? Създай нов'
-              : 'Вече имаш акаунт? Влез'}
-          </button>
+          {!blockedByCachedSession && (
+            <button
+              onClick={() => { setError(''); setInfo(''); setMode(mode === 'login' ? 'signup' : 'login') }}
+              className="w-full min-h-[44px] text-ink-muted text-[14px] active:text-ink"
+              style={{ touchAction: 'manipulation' }}
+            >
+              {mode === 'login'
+                ? 'Нямаш акаунт? Създай нов'
+                : 'Вече имаш акаунт? Влез'}
+            </button>
+          )}
 
-          {mode === 'login' && (
+          {mode === 'login' && !blockedByCachedSession && (
             <button
               onClick={handleResetPassword}
               disabled={resetting}

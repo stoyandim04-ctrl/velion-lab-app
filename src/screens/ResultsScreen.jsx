@@ -67,7 +67,9 @@ export default function ResultsScreen() {
 
   const handleCta = () => {
     if (!isAuthenticated) {
-      navigate(ROUTES.auth, { state: { from: '/paywall' } })
+      // New user landing here from the quiz funnel — default to SIGNUP mode
+      // so they see "Create account" form, not "Log in".
+      navigate(ROUTES.auth, { state: { from: '/paywall', mode: 'signup' } })
     } else {
       navigate(ROUTES.paywall)
     }

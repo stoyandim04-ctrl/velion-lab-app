@@ -1,8 +1,7 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import PhoneFrame from './components/layout/PhoneFrame.jsx'
-import CinematicIntro from './components/CinematicIntro.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import RouteFallback from './components/RouteFallback.jsx'
 import { OnboardingProvider } from './state/OnboardingContext.jsx'
@@ -44,19 +43,6 @@ const protectedDay = (
 export default function App() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [showIntro, setShowIntro] = useState(true)
-  const [mountApp, setMountApp] = useState(false)
-  const prevPathRef = useRef(location.pathname)
-
-  useEffect(() => {
-    const prev = prevPathRef.current
-    const curr = location.pathname
-    if (curr === ROUTES.welcome && prev !== ROUTES.welcome) {
-      setShowIntro(true)
-      setMountApp(false)
-    }
-    prevPathRef.current = curr
-  }, [location.pathname])
 
   // Native deep links: when the user returns from Stripe Checkout (or any
   // other Universal/App Link), navigate to the path embedded in the URL.
@@ -68,17 +54,9 @@ export default function App() {
     return () => cleanup()
   }, [navigate])
 
-  const handleIntroStartExit = () => {
-    setMountApp(true)
-  }
-
-  const handleIntroComplete = () => {
-    setShowIntro(false)
-  }
-
   return (
     <>
-      {mountApp && (
+      {true && (
         <AuthProvider>
           <OnboardingProvider>
             <PhoneFrame>
@@ -175,33 +153,6 @@ export default function App() {
         </AuthProvider>
       )}
 
-      <AnimatePresence>
-        {showIntro && (
-          <motion.div
-            key="intro-overlay"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100dvh',
-              minHeight: '100vh',
-              zIndex: 9999,
-              pointerEvents: 'none'
-            }}
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.0, ease: [0.65, 0, 0.35, 1] }}
-          >
-            <CinematicIntro
-              onStartExit={handleIntroStartExit}
-              onComplete={handleIntroComplete}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   )
 }

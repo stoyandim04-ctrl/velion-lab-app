@@ -30,7 +30,7 @@ export default function PaywallScreen() {
   const handleCheckout = async () => {
     if (loading) return
     if (!user) {
-      navigate(ROUTES.auth, { state: { from: '/paywall' } })
+      navigate(ROUTES.auth, { state: { from: '/paywall', mode: 'signup' } })
       return
     }
     setError(null)

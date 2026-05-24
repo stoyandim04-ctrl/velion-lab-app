@@ -166,16 +166,22 @@ const FAQS = [
 
 export default function LandingScreen() {
   const navigate = useNavigate()
-  const { isAuthenticated, hasPaidAccess, accessLoading } = useAuth()
+  const { isAuthenticated, hasPaidAccess, accessLoading, user, signOut } = useAuth()
   const [openFaq, setOpenFaq] = useState(null)
+  const [signingOut, setSigningOut] = useState(false)
 
   const isPaidUser = isAuthenticated && !accessLoading && hasPaidAccess
 
   // "Започни сега" винаги води към quiz — дори за платени потребители (те имат
-  // отделен бутон "Виж дашборда си" по-долу). Така user-ът никога не e изненадан.
+  // отделен бутон "Влез в профила си" по-долу). Така user-ът никога не e изненадан.
   const handleStartQuiz = () => navigate('/quiz/1')
-  const handleOpenDashboard = () => navigate(ROUTES.dashboard)
-  const handleLogin = () => navigate(ROUTES.auth)
+  const handleOpenProfile = () => navigate(ROUTES.dashboard)
+  const handleLogin = () => navigate(ROUTES.auth, { state: { mode: 'login' } })
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    await signOut()
+    setSigningOut(false)
+  }
 
   return (
     <Screen background="bg-forest-deep">
@@ -198,9 +204,26 @@ export default function LandingScreen() {
           </div>
 
           <div className="relative z-10 px-6 pt-[max(48px,env(safe-area-inset-top))] pb-12 min-h-[78vh] flex flex-col">
-            <div className="flex justify-center mb-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="w-12" />
               <img src="/logo/velion-shield.svg" alt="Velion Lab" className="w-12 h-12" />
+              {isAuthenticated ? (
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="text-ink-dim text-[10px] tracking-[0.1em] uppercase active:text-ink disabled:opacity-50"
+                >
+                  {signingOut ? '…' : 'Изход'}
+                </button>
+              ) : (
+                <div className="w-12" />
+              )}
             </div>
+            {isAuthenticated && (
+              <div className="text-center text-ink-dim text-[10.5px] mb-6 -mt-4">
+                Влязъл като <span className="text-ink-muted">{user?.email}</span>
+              </div>
+            )}
 
             <div className="flex-1 flex flex-col justify-end">
               <motion.div
@@ -233,24 +256,35 @@ export default function LandingScreen() {
                     Започни сега
                     <ArrowRight size={18} strokeWidth={2.8} />
                   </motion.button>
+
                   {isPaidUser ? (
                     <motion.button
-                      onClick={handleOpenDashboard}
+                      onClick={handleOpenProfile}
                       whileTap={{ scale: 0.97 }}
                       transition={{ duration: 0.15 }}
                       className="w-full min-h-[52px] rounded-2xl border border-accent/50 bg-accent/5 text-accent font-display text-sm font-semibold tracking-display uppercase active:bg-accent/10"
                     >
-                      Виж дашборда си
+                      Влез в профила си
                     </motion.button>
                   ) : (
-                    <motion.button
-                      onClick={handleLogin}
-                      whileTap={{ scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="w-full min-h-[52px] rounded-2xl border border-forest-line bg-transparent text-ink font-display text-sm font-semibold tracking-display uppercase active:border-ink-muted"
-                    >
-                      Влез в акаунта си
-                    </motion.button>
+                    <>
+                      <motion.button
+                        onClick={handleLogin}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{ duration: 0.15 }}
+                        className="w-full min-h-[52px] rounded-2xl border border-forest-line bg-transparent text-ink font-display text-sm font-semibold tracking-display uppercase active:border-ink-muted"
+                      >
+                        Влез в профила си
+                      </motion.button>
+                      {!isAuthenticated && (
+                        <button
+                          onClick={() => navigate(ROUTES.auth, { state: { mode: 'signup' } })}
+                          className="w-full min-h-[40px] text-ink-muted text-[12.5px] active:text-ink"
+                        >
+                          Нямаш акаунт? <span className="text-accent font-semibold">Създай нов</span>
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
 
