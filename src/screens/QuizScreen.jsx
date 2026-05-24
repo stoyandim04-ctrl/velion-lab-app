@@ -5,7 +5,7 @@ import Header from '../components/layout/Header.jsx'
 import ProgressBar from '../components/layout/ProgressBar.jsx'
 import Button from '../components/ui/Button.jsx'
 import QuizOption from '../components/features/QuizOption.jsx'
-import { QUIZ, QUIZ_TOTAL } from '../data/quiz.js'
+import { QUIZ, QUIZ_TOTAL, getBreatherAfter } from '../data/quiz.js'
 import { useOnboarding } from '../state/OnboardingContext.jsx'
 import { ROUTES } from '../lib/routes.js'
 
@@ -19,10 +19,16 @@ export default function QuizScreen() {
   const selected = answers[stepNum]
 
   const handleNext = () => {
+    // After Q1 → breather/1; Q3 → breather/2; Q5 → breather/3 → /results
+    const breather = getBreatherAfter(stepNum)
+    if (breather) {
+      navigate(`/quiz/breather/${breather.id}`)
+      return
+    }
     if (stepNum < QUIZ_TOTAL) {
       navigate(`/quiz/${stepNum + 1}`)
     } else {
-      navigate(ROUTES.future)
+      navigate(ROUTES.results)
     }
   }
 

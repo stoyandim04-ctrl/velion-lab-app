@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Check, ExternalLink } from 'lucide-react'
+import { ArrowRight, Check, ExternalLink } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import Header from '../components/layout/Header.jsx'
-import Button from '../components/ui/Button.jsx'
-import PriceCard from '../components/features/PriceCard.jsx'
 import Toast from '../components/ui/Toast.jsx'
-import { PLANS, PAYWALL_FEATURES } from '../data/prices.js'
+import { PRICE, PAYWALL_FEATURES } from '../data/prices.js'
 import { startCheckout } from '../lib/stripe.js'
 import { addAnalyticsEvent } from '../lib/engagement.js'
 import { useAuth } from '../state/AuthContext.jsx'
@@ -18,11 +16,9 @@ import { openExternalUrl } from '../lib/capacitor.js'
 export default function PaywallScreen() {
   const navigate = useNavigate()
   const { user, hasPaidAccess, accessLoading, isAuthenticated } = useAuth()
-  const [selected, setSelected] = useState('lifetime')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const plan = PLANS.find((p) => p.id === selected)
   const isReturningUser = isAuthenticated && !accessLoading && !hasPaidAccess
 
   useEffect(() => {
@@ -32,9 +28,7 @@ export default function PaywallScreen() {
   }, [accessLoading, hasPaidAccess, navigate])
 
   const handleCheckout = async () => {
-    if (!plan || loading) return
-    // If the user isn't logged in yet, send them to register/login first.
-    // After auth, they will be routed back to /paywall to finish checkout.
+    if (loading) return
     if (!user) {
       navigate(ROUTES.auth, { state: { from: '/paywall' } })
       return
@@ -43,10 +37,19 @@ export default function PaywallScreen() {
     setLoading(true)
     try {
       addAnalyticsEvent(user?.id, 'checkout_started', {
-        plan: plan.id,
-        mode: plan.mode
+        plan: PRICE.id,
+        mode: PRICE.mode
       })
-      await startCheckout({ priceId: plan.priceId, mode: plan.mode })
+      // Prefer the server-side checkout (carries user_id metadata).
+      // If priceId env is missing in production, fall back to the static
+      // Stripe Payment Link so the user can still pay.
+      if (PRICE.priceId) {
+        await startCheckout({ priceId: PRICE.priceId, mode: PRICE.mode })
+      } else if (PRICE.paymentLink) {
+        await openExternalUrl(PRICE.paymentLink)
+      } else {
+        throw new Error('Stripe price ID или Payment Link не са конфигурирани.')
+      }
     } catch (e) {
       setError(e.message || 'Грешка. Опитай отново.')
       setLoading(false)
@@ -59,7 +62,7 @@ export default function PaywallScreen() {
 
       <Toast message={error} onDismiss={() => setError(null)} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-6 pt-2 pb-[190px]" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-6 pt-2 pb-[200px]" style={{ WebkitOverflowScrolling: 'touch' }}>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -73,43 +76,44 @@ export default function PaywallScreen() {
           </h1>
           {isReturningUser && (
             <p className="text-ink-muted text-[13px] leading-[1.55] mb-6">
-              Влязъл си в акаунта си, но нямаш активен план. Избери план, за да продължиш протокола.
+              Влязъл си в акаунта си, но нямаш активен план. Активирай за да продължиш протокола.
             </p>
           )}
-          {!isReturningUser && <div className="mb-3" />}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="space-y-2 mb-7"
-        >
-          {PAYWALL_FEATURES.map((f) => (
-            <div key={f} className="flex items-start gap-3">
-              <div className="w-5 h-5 mt-0.5 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center shrink-0">
-                <Check size={12} strokeWidth={3} className="text-accent" />
-              </div>
-              <span className="text-ink text-sm leading-relaxed">{f}</span>
-            </div>
-          ))}
-        </motion.div>
-
+        {/* SINGLE PLAN CARD */}
         {!READER_MODE && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col gap-3 mb-5"
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="relative rounded-3xl border border-accent/40 bg-forest-card p-6 mb-6 overflow-hidden"
           >
-            {PLANS.map((p) => (
-              <PriceCard
-                key={p.id}
-                plan={p}
-                selected={selected === p.id}
-                onSelect={() => setSelected(p.id)}
-              />
-            ))}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(255,106,0,0.18),transparent_55%)] pointer-events-none" />
+            <div className="relative">
+              <div className="font-display text-accent text-[11px] tracking-[0.18em] uppercase mb-2 text-center">
+                {PRICE.name}
+              </div>
+              <div className="text-center mb-2">
+                <span className="font-display font-bold text-ink text-[60px] leading-none tracking-display">
+                  {PRICE.price}
+                </span>
+              </div>
+              <p className="text-ink-muted text-[12px] text-center mb-6">
+                {PRICE.subtitle}
+              </p>
+
+              <div className="space-y-2.5">
+                {PAYWALL_FEATURES.map((f) => (
+                  <div key={f} className="flex items-start gap-2.5">
+                    <div className="w-5 h-5 mt-0.5 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center flex-shrink-0">
+                      <Check size={11} strokeWidth={3} className="text-accent" />
+                    </div>
+                    <span className="text-ink text-[14px] leading-[1.5]">{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -117,16 +121,14 @@ export default function PaywallScreen() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
             className="rounded-2xl border border-forest-line bg-forest-card px-5 py-5 mb-5"
           >
             <div className="font-display text-accent text-[10px] tracking-[0.15em] uppercase mb-2">
               Активация
             </div>
             <p className="text-ink text-[14px] leading-[1.55] mb-3">
-              Достъпът до пълния протокол се активира на нашия сайт.
-              Регистрирай се или влез веднъж и приложението автоматично
-              отключва съдържанието на това устройство.
+              Достъпът до пълния протокол се активира на нашия сайт. Регистрирай се или влез веднъж и приложението автоматично отключва съдържанието на това устройство.
             </p>
             <p className="text-ink-muted text-[12px] leading-[1.55]">
               След активация се връщаш тук без нужда от повторно влизане.
@@ -136,38 +138,48 @@ export default function PaywallScreen() {
 
         <div className="text-ink-dim text-[11px] text-center mb-6 leading-relaxed">
           {READER_MODE
-            ? 'Управлението на абонамента се извършва на velion-lab.vercel.app.'
-            : 'Отмени по всяко време. Без скрити такси. Сигурно плащане през Stripe.'}
-        </div>
-
-        <div className="flex justify-center opacity-50">
-          <img src="/logo/logo.webp" alt="Velion Lab" loading="lazy" decoding="async" className="w-24 h-auto" />
+            ? 'Управлението на достъпа се извършва на velion-lab.vercel.app.'
+            : 'Lifetime достъп. Еднократно плащане. Без абонамент. Сигурно плащане през Stripe.'}
         </div>
       </div>
 
+      {/* STICKY BOTTOM CTA */}
       <div className="absolute bottom-0 left-0 right-0 px-6 pt-4 pb-[max(20px,env(safe-area-inset-bottom))] bg-gradient-to-t from-forest-deep via-forest-deep/95 to-transparent pointer-events-none">
         <div className="pointer-events-auto">
-          <Button onClick={READER_MODE ? () => openExternalUrl(EXTERNAL_BILLING_URL) : handleCheckout} disabled={loading && !READER_MODE}>
+          <motion.button
+            onClick={READER_MODE ? () => openExternalUrl(EXTERNAL_BILLING_URL) : handleCheckout}
+            disabled={loading && !READER_MODE}
+            whileTap={loading ? {} : { scale: 0.97 }}
+            whileHover={loading ? {} : { y: -1 }}
+            transition={{ duration: 0.15 }}
+            className="w-full min-h-[60px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_36px_rgba(255,106,0,0.45)] disabled:opacity-50 inline-flex items-center justify-center gap-2"
+          >
             {READER_MODE ? (
-              <span className="flex items-center justify-center gap-2">
-                АКТИВИРАЙ В БРАУЗЕР
-                <ExternalLink size={16} strokeWidth={2.4} />
-              </span>
+              <>
+                Активирай в браузер
+                <ExternalLink size={16} strokeWidth={2.6} />
+              </>
             ) : loading ? (
-              <span className="flex items-center justify-center gap-3">
+              <>
                 <img
                   src="/logo/velion-shield.svg"
                   alt=""
                   className="w-5 h-5 animate-pulse"
                 />
-                ОБРАБОТКА…
-              </span>
+                Обработка…
+              </>
             ) : !user ? (
-              'РЕГИСТРИРАЙ СЕ И ПЛАТИ'
+              <>
+                Регистрирай се и плати
+                <ArrowRight size={16} strokeWidth={2.8} />
+              </>
             ) : (
-              'ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ'
+              <>
+                Вземи достъп — {PRICE.price}
+                <ArrowRight size={16} strokeWidth={2.8} />
+              </>
             )}
-          </Button>
+          </motion.button>
         </div>
       </div>
     </Screen>

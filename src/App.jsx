@@ -11,15 +11,18 @@ import { ROUTES } from './lib/routes.js'
 import { registerDeepLinks } from './lib/capacitor.js'
 
 // Onboarding-path screens stay eager — they're tiny and on the first paint.
-import WelcomeScreen from './screens/WelcomeScreen.jsx'
+import LandingScreen from './screens/LandingScreen.jsx'
 import AuthScreen from './screens/AuthScreen.jsx'
 import GoalsScreen from './screens/GoalsScreen.jsx'
 import NotAloneScreen from './screens/NotAloneScreen.jsx'
 import QuizScreen from './screens/QuizScreen.jsx'
+import BreatherScreen from './screens/BreatherScreen.jsx'
+import ResultsScreen from './screens/ResultsScreen.jsx'
 import FutureScreen from './screens/FutureScreen.jsx'
 import PaywallScreen from './screens/PaywallScreen.jsx'
 
-// Less-trafficked screens lazy-loaded for a leaner initial bundle.
+// Legacy screens kept registered (not in main flow) for backwards-compat with any deep link.
+const WelcomeScreen = lazy(() => import('./screens/WelcomeScreen.jsx'))
 const EducationScreen = lazy(() => import('./screens/EducationScreen.jsx'))
 const BuildingPlanScreen = lazy(() => import('./screens/BuildingPlanScreen.jsx'))
 const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
@@ -82,11 +85,14 @@ export default function App() {
               <AnimatePresence mode="wait" initial={false}>
                 <Suspense fallback={<RouteFallback />}>
                 <Routes location={location} key={location.pathname}>
-                  <Route path={ROUTES.welcome} element={<WelcomeScreen />} />
+                  <Route path="/" element={<LandingScreen />} />
+                  <Route path="/welcome-classic" element={<WelcomeScreen />} />
                   <Route path={ROUTES.auth} element={<AuthScreen />} />
                   <Route path={ROUTES.goals} element={<GoalsScreen />} />
                   <Route path={ROUTES.notAlone} element={<NotAloneScreen />} />
                   <Route path={ROUTES.quiz} element={<QuizScreen />} />
+                  <Route path={ROUTES.breather} element={<BreatherScreen />} />
+                  <Route path={ROUTES.results} element={<ResultsScreen />} />
                   <Route path={ROUTES.education} element={<EducationScreen />} />
                   <Route path={ROUTES.future} element={<FutureScreen />} />
                   <Route path={ROUTES.building} element={<BuildingPlanScreen />} />
