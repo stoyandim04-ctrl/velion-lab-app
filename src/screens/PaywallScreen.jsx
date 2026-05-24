@@ -40,16 +40,26 @@ export default function PaywallScreen() {
         plan: PRICE.id,
         mode: PRICE.mode
       })
-      // Prefer the server-side checkout (carries user_id metadata).
-      // If priceId env is missing in production, fall back to the static
-      // Stripe Payment Link so the user can still pay.
+
+      // Use Stripe Payment Link with client_reference_id so the webhook can
+      // tie the resulting checkout session back to this Supabase user.
+      // This bypasses /api/create-checkout-session entirely — works even if
+      // the server priceId env var is wrong / stale.
+      if (PRICE.paymentLink) {
+        const url = new URL(PRICE.paymentLink)
+        url.searchParams.set('client_reference_id', user.id)
+        if (user.email) url.searchParams.set('prefilled_email', user.email)
+        await openExternalUrl(url.toString())
+        return
+      }
+
+      // Legacy fallback (only if Payment Link is removed in the future)
       if (PRICE.priceId) {
         await startCheckout({ priceId: PRICE.priceId, mode: PRICE.mode })
-      } else if (PRICE.paymentLink) {
-        await openExternalUrl(PRICE.paymentLink)
-      } else {
-        throw new Error('Stripe price ID или Payment Link не са конфигурирани.')
+        return
       }
+
+      throw new Error('Платежният канал не е конфигуриран.')
     } catch (e) {
       setError(e.message || 'Грешка. Опитай отново.')
       setLoading(false)
