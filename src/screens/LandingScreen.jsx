@@ -635,25 +635,44 @@ export default function LandingScreen() {
         </section>
 
         {/* ───── SECTION 12: FINAL CTA ─────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40 text-center">
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
-            ЗАПОЧНИ ДНЕС.
-          </h2>
-          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7 max-w-[320px] mx-auto">
-            Утре може да е твърде късно за нещо което си отлагал с години.
-          </p>
-          <motion.button
-            onClick={handleStartQuiz}
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ y: -1 }}
-            className="w-full min-h-[56px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_36px_rgba(255,106,0,0.45)] inline-flex items-center justify-center gap-2"
-          >
-            Започни сега · {PRICE.price}
-            <ArrowRight size={18} strokeWidth={2.8} />
-          </motion.button>
-          <p className="text-ink-dim text-[11px] mt-4">
-            ~2 минути въпросник · Lifetime достъп · €19.99 еднократно
-          </p>
+        <section className="relative px-6 py-20 border-t border-forest-line/40 text-center overflow-hidden">
+          <img
+            src="/landing/energy.webp"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/30 via-forest-deep/55 to-forest-deep pointer-events-none" />
+
+          <div className="relative">
+            <motion.h2
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6 }}
+              className="font-display font-bold text-ink text-[32px] leading-[1.05] tracking-display uppercase mb-3"
+            >
+              ЗАПОЧНИ ДНЕС.
+            </motion.h2>
+            <p className="text-ink-muted text-[14px] leading-[1.55] mb-8 max-w-[320px] mx-auto">
+              Утре може да е твърде късно за нещо което си отлагал с години.
+            </p>
+            <motion.button
+              onClick={handleStartQuiz}
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ y: -1 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+              className="w-full min-h-[60px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_40px_rgba(255,106,0,0.55)] inline-flex items-center justify-center gap-2"
+            >
+              Започни сега · {PRICE.price}
+              <ArrowRight size={18} strokeWidth={2.8} />
+            </motion.button>
+            <p className="text-ink-dim text-[11px] mt-4">
+              ~2 минути въпросник · Lifetime достъп · €19.99 еднократно
+            </p>
+          </div>
         </section>
 
         {/* ───── FOOTER ───────────────────────────────────────────────────── */}
