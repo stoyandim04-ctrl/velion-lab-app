@@ -35,9 +35,9 @@ export default function AuthScreen() {
   const navigate = useNavigate()
   const location = useLocation()
   const { signIn, signUp, signOut, resetPassword, user, isAuthenticated, loading, accessLoading, hasPaidAccess } = useAuth()
-  // Initial mode is read from navigation state — callers send mode:'signup'
-  // when they explicitly want a new account flow (e.g. from /results CTA).
-  const initialMode = location.state?.mode === 'signup' ? 'signup' : 'login'
+  // Default to SIGNUP — this is an onboarding-focused app, most /auth visitors
+  // are new users. Caller can override via location.state.mode = 'login'.
+  const initialMode = location.state?.mode === 'login' ? 'login' : 'signup'
   const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -165,11 +165,39 @@ export default function AuthScreen() {
             <h1 className="font-display font-bold text-ink text-[28px] sm:text-[32px] leading-[1.08] tracking-display uppercase mb-3">
               {mode === 'login' ? 'Влез в акаунта си' : 'Създай акаунт'}
             </h1>
-            <p className="text-ink-muted text-[15px] leading-[1.55] mb-8 max-w-[340px]">
+            <p className="text-ink-muted text-[15px] leading-[1.55] mb-6 max-w-[340px]">
               {mode === 'login'
                 ? 'Продължи от мястото, на което си спрял. Прогресът ти е запазен.'
                 : 'Запиши се за нов акаунт. Прогресът ти ще се пази в облака и достъпно на всяко устройство.'}
             </p>
+
+            {/* PROMINENT MODE TABS — always visible, primary navigation */}
+            {!blockedByCachedSession && (
+              <div className="grid grid-cols-2 gap-2 mb-6 rounded-2xl border border-forest-line bg-forest-card/40 p-1">
+                <button
+                  onClick={() => { setError(''); setInfo(''); setMode('signup') }}
+                  className={[
+                    'min-h-[44px] rounded-xl font-display text-[12px] font-bold tracking-[0.1em] uppercase transition-all',
+                    mode === 'signup'
+                      ? 'bg-accent text-forest-deep shadow-[0_0_20px_rgba(255,106,0,0.3)]'
+                      : 'bg-transparent text-ink-muted active:text-ink'
+                  ].join(' ')}
+                >
+                  Създай акаунт
+                </button>
+                <button
+                  onClick={() => { setError(''); setInfo(''); setMode('login') }}
+                  className={[
+                    'min-h-[44px] rounded-xl font-display text-[12px] font-bold tracking-[0.1em] uppercase transition-all',
+                    mode === 'login'
+                      ? 'bg-accent text-forest-deep shadow-[0_0_20px_rgba(255,106,0,0.3)]'
+                      : 'bg-transparent text-ink-muted active:text-ink'
+                  ].join(' ')}
+                >
+                  Влез
+                </button>
+              </div>
+            )}
           </motion.div>
 
           {blockedByCachedSession ? (
@@ -252,23 +280,11 @@ export default function AuthScreen() {
           </motion.form>
           )}
 
-          {!blockedByCachedSession && (
-            <button
-              onClick={() => { setError(''); setInfo(''); setMode(mode === 'login' ? 'signup' : 'login') }}
-              className="w-full min-h-[44px] text-ink-muted text-[14px] active:text-ink"
-              style={{ touchAction: 'manipulation' }}
-            >
-              {mode === 'login'
-                ? 'Нямаш акаунт? Създай нов'
-                : 'Вече имаш акаунт? Влез'}
-            </button>
-          )}
-
           {mode === 'login' && !blockedByCachedSession && (
             <button
               onClick={handleResetPassword}
               disabled={resetting}
-              className="w-full min-h-[36px] text-ink-dim text-[12px] active:text-ink-muted mt-1 disabled:opacity-50"
+              className="w-full min-h-[40px] text-ink-dim text-[12.5px] active:text-ink-muted mt-2 disabled:opacity-50"
               style={{ touchAction: 'manipulation' }}
             >
               {resetting ? 'Изпращане…' : 'Забравена парола?'}
