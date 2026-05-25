@@ -10,7 +10,6 @@ import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
 import ScrollProgress from '../components/animations/ScrollProgress.jsx'
 import { useRipple, RippleLayer } from '../components/animations/Ripple.jsx'
-import { useTouchGlow, TouchGlowLayer } from '../components/animations/TouchGlow.jsx'
 import { SPRING, useReducedMotion } from '../lib/animations.js'
 import { buildDays, MODULES, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
@@ -54,13 +53,11 @@ export default function DashboardScreen() {
   const headerScale = useTransform(scrollY, [0, 140], [1, 0.92])
   const headerBlur = useTransform(scrollY, [0, 80], ['blur(0px)', 'blur(2px)'])
 
-  // Tap ripples for the 3 cards
+  // Tap ripples — bright orange for ALL three cards so the press feedback
+  // is obvious on a phone screen.
   const ripple1 = useRipple()
   const ripple2 = useRipple()
-  const ripple3 = useRipple({ color: 'rgba(255,255,255,0.10)' })
-
-  // Touch-following spotlight on Card 1 (the hero card)
-  const touchCard1 = useTouchGlow()
+  const ripple3 = useRipple()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [profile, setProfileState] = useState(EMPTY_PROFILE)
@@ -194,18 +191,16 @@ export default function DashboardScreen() {
       >
         {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}
         <motion.div
-          initial={{ opacity: 0, y: 18, rotateX: -10 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{ ...SPRING, delay: 0.1 }}
-          onPointerMove={touchCard1.onPointerMove}
-          onPointerLeave={touchCard1.onPointerLeave}
+          initial={{ opacity: 0, y: 32, rotateX: -14, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.25 }}
+          whileTap={{ scale: 0.97 }}
           onPointerDown={ripple1.onPointerDown}
           onClick={goToDay}
           style={{ perspective: '900px' }}
-          className="relative h-[170px] mb-3 rounded-2xl px-4 py-4 flex flex-col overflow-hidden bg-forest-card cursor-pointer"
+          className="relative h-[170px] mb-4 rounded-2xl px-4 py-4 flex flex-col overflow-hidden bg-forest-card cursor-pointer"
         >
           <RippleLayer ripples={ripple1.ripples} />
-          <TouchGlowLayer point={touchCard1.point} />
           {/* Rotating conic gradient border */}
           <motion.div
             className="absolute -inset-[1px] rounded-2xl pointer-events-none"
@@ -267,13 +262,14 @@ export default function DashboardScreen() {
 
         {/* CARD 2: Progress — animated counters + shimmer progress bar */}
         <motion.div
-          initial={{ opacity: 0, y: 18, rotateX: -8 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{ ...SPRING, delay: 0.25 }}
+          initial={{ opacity: 0, y: 32, rotateX: -12, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.55 }}
+          whileTap={{ scale: 0.97 }}
           onPointerDown={ripple2.onPointerDown}
           style={{ perspective: '900px' }}
           className={[
-            'relative h-[170px] mb-3 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col overflow-hidden transition-colors',
+            'relative h-[170px] mb-4 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col overflow-hidden transition-colors cursor-pointer',
             progressPct >= 50 ? 'border-accent/35' : 'border-forest-line'
           ].join(' ')}
         >
@@ -359,11 +355,11 @@ export default function DashboardScreen() {
           type="button"
           onClick={goToDays}
           onPointerDown={ripple3.onPointerDown}
-          initial={{ opacity: 0, y: 18, rotateX: -8 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          initial={{ opacity: 0, y: 32, rotateX: -12, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
           whileTap={{ scale: 0.96 }}
           whileHover={{ y: -3 }}
-          transition={{ ...SPRING, delay: 0.4 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.85 }}
           style={{ perspective: '900px' }}
           className="relative h-[170px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col overflow-hidden hover:border-accent/40 transition-colors"
         >
