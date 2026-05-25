@@ -177,7 +177,7 @@ const FAQS = [
   },
   {
     q: 'Мога ли да анулирам?',
-    a: 'Плащаш веднъж — €19.99. Няма абонамент, няма автоматично подновяване. Достъпът остава завинаги.'
+    a: 'Плащаш веднъж — €11. Няма абонамент, няма автоматично подновяване. Достъпът остава завинаги.'
   },
   {
     q: 'Сигурно ли е плащането?',
@@ -377,7 +377,7 @@ export default function LandingScreen() {
 
                 <div className="mt-7 flex items-center justify-center gap-2 text-ink-dim text-[11px] tracking-[0.06em] uppercase">
                   <Sparkles size={11} className="text-accent" />
-                  <span>Lifetime достъп · €19.99 еднократно</span>
+                  <span>Lifetime достъп · €11 еднократно</span>
                 </div>
               </motion.div>
             </div>
@@ -785,7 +785,7 @@ export default function LandingScreen() {
               <ArrowRight size={18} strokeWidth={2.8} />
             </motion.button>
             <p className="text-ink-dim text-[11px] mt-4">
-              ~2 минути въпросник · Lifetime достъп · €19.99 еднократно
+              ~2 минути въпросник · Lifetime достъп · €11 еднократно
             </p>
           </div>
         </section>

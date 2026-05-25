@@ -1,19 +1,20 @@
 // Velion Lab single-plan pricing.
-// One offer, one price, lifetime access. €19.99 unique payment.
+// One offer, one price, lifetime access. €11 unique payment.
 //
-// The Stripe Payment Link below is the fast-checkout fallback that can be
-// opened directly without our /api/create-checkout-session step. Use it
-// from the native (Reader Mode) app or as a no-auth shortcut.
+// The Stripe Payment Link is the fast-checkout fallback (no server-side
+// checkout session needed). Set NEW link from Stripe Dashboard after
+// creating the €11 product — current value is placeholder.
 
 export const PRICE = {
   id: 'lifetime',
   name: 'ПЪЛЕН ДОСТЪП',
   subtitle: 'Еднократно плащане. Lifetime достъп.',
-  price: '€19.99',
-  amountCents: 1999,
+  price: '€11',
+  amountCents: 1100,
   currency: 'EUR',
   mode: 'payment',
   priceId: import.meta.env.VITE_PRICE_LIFETIME,
+  // ⚠ Replace with the new €11 Payment Link from Stripe Dashboard
   paymentLink: 'https://buy.stripe.com/7sYaEW8ZxcvGf7x2LrbMQ01'
 }
 
