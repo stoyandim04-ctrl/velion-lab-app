@@ -33,10 +33,10 @@ export default function PaywallScreen() {
     }
   }, [accessLoading, hasPaidAccess, isAuthenticated, navigate])
 
-  // Payments temporarily disabled while we redesign. The button informs
-  // the user. We keep all checkout plumbing intact so reactivation is a
-  // one-line change later.
-  const PAYMENTS_ENABLED = false
+  // Payments live — €11 Stripe Payment Link with client_reference_id.
+  // Flip back to false to show "плащанията са временно деактивирани"
+  // (e.g. during maintenance), independent of FREE_ACCESS_MODE.
+  const PAYMENTS_ENABLED = true
 
   const handleCheckout = async () => {
     if (loading) return
