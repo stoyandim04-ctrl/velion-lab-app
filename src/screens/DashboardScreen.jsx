@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
-import ProgressBar from '../components/layout/ProgressBar.jsx'
 import ProfileButton from '../components/features/ProfileButton.jsx'
 import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
 import ParticleField from '../components/animations/ParticleField.jsx'
 import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
+import ScrollProgress from '../components/animations/ScrollProgress.jsx'
+import { useRipple, RippleLayer } from '../components/animations/Ripple.jsx'
+import { useTouchGlow, TouchGlowLayer } from '../components/animations/TouchGlow.jsx'
 import { SPRING, useReducedMotion } from '../lib/animations.js'
 import { buildDays, MODULES, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
@@ -44,6 +46,21 @@ export default function DashboardScreen() {
   const { user } = useAuth()
   const userId = user?.id
   const reduced = useReducedMotion()
+
+  // Scroll-linked transforms — header collapses + blurs as user scrolls
+  const scrollRef = useRef(null)
+  const { scrollY } = useScroll({ container: scrollRef })
+  const headerOpacity = useTransform(scrollY, [0, 80, 140], [1, 0.6, 0.3])
+  const headerScale = useTransform(scrollY, [0, 140], [1, 0.92])
+  const headerBlur = useTransform(scrollY, [0, 80], ['blur(0px)', 'blur(2px)'])
+
+  // Tap ripples for the 3 cards
+  const ripple1 = useRipple()
+  const ripple2 = useRipple()
+  const ripple3 = useRipple({ color: 'rgba(255,255,255,0.10)' })
+
+  // Touch-following spotlight on Card 1 (the hero card)
+  const touchCard1 = useTouchGlow()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [profile, setProfileState] = useState(EMPTY_PROFILE)
@@ -128,12 +145,20 @@ export default function DashboardScreen() {
       <AuroraGlow />
       <ParticleField count={16} />
 
-      <div className="relative z-10 px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0">
+      <motion.div
+        className="relative z-20 px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0"
+        style={{
+          opacity: headerOpacity,
+          scale: headerScale,
+          filter: headerBlur,
+          transformOrigin: 'top center'
+        }}
+      >
         <div className="flex items-start justify-between gap-3">
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
+            transition={{ ...SPRING, delay: 0.05 }}
             className="min-w-0 flex-1"
           >
             <div className="font-display font-semibold text-accent text-[10px] tracking-[0.15em] uppercase">
@@ -143,26 +168,44 @@ export default function DashboardScreen() {
               Твоят протокол
             </div>
           </motion.div>
-          <ProfileButton
-            profile={profile}
-            completedDays={completed}
-            onClick={() => setDrawerOpen(true)}
-          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6, rotate: -15 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ ...SPRING, delay: 0.1 }}
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05, rotate: 4 }}
+            style={{ perspective: '300px' }}
+          >
+            <ProfileButton
+              profile={profile}
+              completedDays={completed}
+              onClick={() => setDrawerOpen(true)}
+            />
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
+
+      <ScrollProgress containerRef={scrollRef} />
 
       <div
+        ref={scrollRef}
         className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}
         <motion.div
-          initial={{ opacity: 0, y: 14, rotateX: -8 }}
+          initial={{ opacity: 0, y: 18, rotateX: -10 }}
           animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{ ...SPRING, delay: 0.05 }}
+          transition={{ ...SPRING, delay: 0.1 }}
+          onPointerMove={touchCard1.onPointerMove}
+          onPointerLeave={touchCard1.onPointerLeave}
+          onPointerDown={ripple1.onPointerDown}
+          onClick={goToDay}
           style={{ perspective: '900px' }}
-          className="relative h-[170px] mb-3 rounded-2xl px-4 py-4 flex flex-col overflow-hidden bg-forest-card"
+          className="relative h-[170px] mb-3 rounded-2xl px-4 py-4 flex flex-col overflow-hidden bg-forest-card cursor-pointer"
         >
+          <RippleLayer ripples={ripple1.ripples} />
+          <TouchGlowLayer point={touchCard1.point} />
           {/* Rotating conic gradient border */}
           <motion.div
             className="absolute -inset-[1px] rounded-2xl pointer-events-none"
@@ -224,15 +267,17 @@ export default function DashboardScreen() {
 
         {/* CARD 2: Progress — animated counters + shimmer progress bar */}
         <motion.div
-          initial={{ opacity: 0, y: 14, rotateX: -6 }}
+          initial={{ opacity: 0, y: 18, rotateX: -8 }}
           animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
+          transition={{ ...SPRING, delay: 0.25 }}
+          onPointerDown={ripple2.onPointerDown}
           style={{ perspective: '900px' }}
           className={[
             'relative h-[170px] mb-3 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col overflow-hidden transition-colors',
             progressPct >= 50 ? 'border-accent/35' : 'border-forest-line'
           ].join(' ')}
         >
+          <RippleLayer ripples={ripple2.ripples} />
           <div className="flex items-start justify-between">
             <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
               Прогрес
@@ -313,14 +358,16 @@ export default function DashboardScreen() {
         <motion.button
           type="button"
           onClick={goToDays}
-          initial={{ opacity: 0, y: 14, rotateX: -6 }}
+          onPointerDown={ripple3.onPointerDown}
+          initial={{ opacity: 0, y: 18, rotateX: -8 }}
           animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ y: -2 }}
-          transition={{ ...SPRING, delay: 0.25 }}
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ y: -3 }}
+          transition={{ ...SPRING, delay: 0.4 }}
           style={{ perspective: '900px' }}
           className="relative h-[170px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col overflow-hidden hover:border-accent/40 transition-colors"
         >
+          <RippleLayer ripples={ripple3.ripples} />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(255,106,0,0.14),transparent_55%)] pointer-events-none" />
           {!reduced && (
             <motion.div
