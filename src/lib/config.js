@@ -30,4 +30,4 @@ export const EXTERNAL_ACCOUNT_URL = 'https://velion-lab.vercel.app/auth'
 //
 // This is intentionally separate from PAYMENTS_ENABLED in PaywallScreen so
 // you can later have: payments back on AND free access for promo periods.
-export const FREE_ACCESS_MODE = true
+export const FREE_ACCESS_MODE = false

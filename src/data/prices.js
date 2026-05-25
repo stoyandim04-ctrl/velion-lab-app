@@ -14,8 +14,7 @@ export const PRICE = {
   currency: 'EUR',
   mode: 'payment',
   priceId: import.meta.env.VITE_PRICE_LIFETIME,
-  // ⚠ Replace with the new €11 Payment Link from Stripe Dashboard
-  paymentLink: 'https://buy.stripe.com/7sYaEW8ZxcvGf7x2LrbMQ01'
+  paymentLink: 'https://buy.stripe.com/cNidR84Jhany5wXbhXbMQ02'
 }
 
 // Backwards-compat for any old code path that still iterates PLANS.
