@@ -23,3 +23,11 @@ export const READER_MODE = isNative()
 
 export const EXTERNAL_BILLING_URL = 'https://velion-lab.vercel.app/paywall'
 export const EXTERNAL_ACCOUNT_URL = 'https://velion-lab.vercel.app/auth'
+
+// FREE_ACCESS_MODE: while Stripe is being rebuilt, every authenticated user
+// gets full course access without paying. Set to false to re-enable the
+// paid gate (then PaywallScreen + ProtectedRoute resume blocking).
+//
+// This is intentionally separate from PAYMENTS_ENABLED in PaywallScreen so
+// you can later have: payments back on AND free access for promo periods.
+export const FREE_ACCESS_MODE = true
