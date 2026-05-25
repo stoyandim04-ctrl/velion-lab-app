@@ -1,9 +1,9 @@
 // Velion Lab single-plan pricing.
 // One offer, one price, lifetime access. €11 unique payment.
 //
-// The Stripe Payment Link is the fast-checkout fallback (no server-side
-// checkout session needed). Set NEW link from Stripe Dashboard after
-// creating the €11 product — current value is placeholder.
+// LIVE Stripe Payment Link (after Stripe account activation). Real cards
+// will be charged. To swap back to a test link or update the price, change
+// `paymentLink` below.
 
 export const PRICE = {
   id: 'lifetime',
@@ -14,7 +14,7 @@ export const PRICE = {
   currency: 'EUR',
   mode: 'payment',
   priceId: import.meta.env.VITE_PRICE_LIFETIME,
-  paymentLink: 'https://buy.stripe.com/cNidR84Jhany5wXbhXbMQ02'
+  paymentLink: 'https://buy.stripe.com/28EeVc6RpcvG9Nd0DjbMQ03'
 }
 
 // Backwards-compat for any old code path that still iterates PLANS.
