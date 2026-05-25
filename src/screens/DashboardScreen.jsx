@@ -6,6 +6,10 @@ import Screen from '../components/layout/Screen.jsx'
 import ProgressBar from '../components/layout/ProgressBar.jsx'
 import ProfileButton from '../components/features/ProfileButton.jsx'
 import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
+import ParticleField from '../components/animations/ParticleField.jsx'
+import AuroraGlow from '../components/animations/AuroraGlow.jsx'
+import CountUp from '../components/animations/CountUp.jsx'
+import { SPRING, useReducedMotion } from '../lib/animations.js'
 import { buildDays, MODULES, TOTAL_DAYS } from '../data/course.js'
 import { getDayProgress } from '../lib/courseProgress.js'
 import { getDayData } from '../data/days.js'
@@ -39,6 +43,7 @@ export default function DashboardScreen() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const userId = user?.id
+  const reduced = useReducedMotion()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [profile, setProfileState] = useState(EMPTY_PROFILE)
@@ -119,16 +124,25 @@ export default function DashboardScreen() {
 
   return (
     <Screen background="bg-forest-deep">
-      <div className="px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0">
+      {/* Ambient layers — slow aurora + drifting amber particles */}
+      <AuroraGlow />
+      <ParticleField count={16} />
+
+      <div className="relative z-10 px-5 pt-[max(56px,env(safe-area-inset-top))] pb-3 shrink-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="min-w-0 flex-1"
+          >
             <div className="font-display font-semibold text-accent text-[10px] tracking-[0.15em] uppercase">
               Velion Lab
             </div>
             <div className="font-display font-bold text-ink text-[19px] tracking-display uppercase mt-1.5 leading-[1.15]">
               Твоят протокол
             </div>
-          </div>
+          </motion.div>
           <ProfileButton
             profile={profile}
             completedDays={completed}
@@ -138,50 +152,84 @@ export default function DashboardScreen() {
       </div>
 
       <div
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
+        className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* CARD 1: Today's day */}
+        {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="h-[160px] mb-3 rounded-2xl border border-forest-line bg-forest-card px-4 py-4 flex flex-col"
+          initial={{ opacity: 0, y: 14, rotateX: -8 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ ...SPRING, delay: 0.05 }}
+          style={{ perspective: '900px' }}
+          className="relative h-[170px] mb-3 rounded-2xl px-4 py-4 flex flex-col overflow-hidden bg-forest-card"
         >
-          <div className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
-            Ден {continueDay}/60 · Модул {currentModule.id}
-          </div>
-          <h2
-            className="mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase"
+          {/* Rotating conic gradient border */}
+          <motion.div
+            className="absolute -inset-[1px] rounded-2xl pointer-events-none"
             style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
+              background:
+                'conic-gradient(from 0deg, rgba(255,106,0,0.55), rgba(255,106,0,0) 25%, rgba(255,106,0,0) 75%, rgba(255,106,0,0.55))'
             }}
-          >
-            {continueData?.title || `Ден ${continueDay}`}
-          </h2>
+            animate={reduced ? {} : { rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          />
+          {/* Inner mask so only thin border shows */}
+          <div className="absolute inset-[1px] rounded-2xl bg-forest-card pointer-events-none" />
+          {/* Radial accent glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,106,0,0.22),transparent_55%)] pointer-events-none" />
+
+          <div className="relative">
+            <div className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
+              Ден {continueDay}/60 · Модул {currentModule.id}
+            </div>
+            <h2
+              className="mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}
+            >
+              {continueData?.title || `Ден ${continueDay}`}
+            </h2>
+          </div>
+
           <motion.button
             type="button"
             onClick={goToDay}
-            whileTap={{ scale: 0.96 }}
-            whileHover={{ y: -1 }}
-            transition={{ duration: 0.15 }}
-            className="mt-auto self-start inline-flex items-center gap-2 rounded-full bg-accent text-forest-deep font-display text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2.5 shadow-[0_0_28px_rgba(255,106,0,0.45)]"
+            whileTap={{ scale: 0.94 }}
+            whileHover={{ y: -2 }}
+            animate={
+              reduced
+                ? {}
+                : {
+                    boxShadow: [
+                      '0 0 20px rgba(255,106,0,0.35)',
+                      '0 0 38px rgba(255,106,0,0.65)',
+                      '0 0 20px rgba(255,106,0,0.35)'
+                    ]
+                  }
+            }
+            transition={{
+              boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+              scale: SPRING
+            }}
+            className="relative mt-auto self-start inline-flex items-center gap-2 rounded-full bg-accent text-forest-deep font-display text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2.5"
           >
             Продължи
             <ArrowRight size={14} strokeWidth={3} />
           </motion.button>
         </motion.div>
 
-        {/* CARD 2: Progress */}
+        {/* CARD 2: Progress — animated counters + shimmer progress bar */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.05 }}
+          initial={{ opacity: 0, y: 14, rotateX: -6 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ ...SPRING, delay: 0.15 }}
+          style={{ perspective: '900px' }}
           className={[
-            'h-[160px] mb-3 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col transition-colors',
+            'relative h-[170px] mb-3 rounded-2xl border bg-forest-card px-4 py-4 flex flex-col overflow-hidden transition-colors',
             progressPct >= 50 ? 'border-accent/35' : 'border-forest-line'
           ].join(' ')}
         >
@@ -189,27 +237,56 @@ export default function DashboardScreen() {
             <span className="font-display font-semibold text-ink text-[11px] tracking-display uppercase">
               Прогрес
             </span>
-            <span className="font-display font-bold text-accent text-[28px] leading-none tracking-display">
-              {progressPct}%
-            </span>
+            <motion.span
+              className="font-display font-bold text-accent text-[30px] leading-none tracking-display"
+              style={{ textShadow: '0 0 24px rgba(255,106,0,0.4)' }}
+            >
+              <CountUp to={progressPct} duration={1100} suffix="%" />
+            </motion.span>
           </div>
-          <div className="mt-4">
-            <ProgressBar value={completed} max={TOTAL_DAYS} glow />
+
+          {/* Custom shimmer progress bar */}
+          <div className="mt-4 relative h-2 w-full rounded-full bg-forest-line/60 overflow-hidden">
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-accent-soft via-accent to-accent-soft"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPct}%` }}
+              transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              style={{ boxShadow: '0 0 16px rgba(255,106,0,0.55)' }}
+            />
+            {!reduced && progressPct > 0 && (
+              <motion.div
+                className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                animate={{ x: ['-100%', '300%'] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'linear', delay: 1.4 }}
+                style={{ mixBlendMode: 'overlay' }}
+              />
+            )}
           </div>
+
           <div className="mt-auto pt-3 flex items-center justify-between gap-2 text-[10.5px] text-ink-muted">
             <span>
               <span className="text-ink font-display font-semibold">
-                {completed}/{TOTAL_DAYS}
+                <CountUp to={completed} />/{TOTAL_DAYS}
               </span>{' '}
               завършени
             </span>
             <span className="text-ink-dim">·</span>
             <span className="flex items-center gap-1">
               <motion.span
-                animate={{
-                  scale: [1, 1.18, 0.96, 1.08, 1],
-                  rotate: [0, -3, 3, -2, 0]
-                }}
+                animate={
+                  reduced
+                    ? {}
+                    : {
+                        scale: [1, 1.22, 0.94, 1.1, 1],
+                        rotate: [0, -4, 4, -2, 0],
+                        filter: [
+                          'drop-shadow(0 0 4px rgba(255,106,0,0.6))',
+                          'drop-shadow(0 0 12px rgba(255,106,0,0.9))',
+                          'drop-shadow(0 0 4px rgba(255,106,0,0.6))'
+                        ]
+                      }
+                }
                 transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
                 className="inline-block"
                 aria-hidden="true"
@@ -217,7 +294,7 @@ export default function DashboardScreen() {
                 🔥
               </motion.span>{' '}
               <span className="text-ink font-display font-semibold">
-                {streakCount}
+                <CountUp to={streakCount} />
               </span>{' '}
               серия
             </span>
@@ -232,43 +309,55 @@ export default function DashboardScreen() {
           </div>
         </motion.div>
 
-        {/* CARD 3: All days */}
+        {/* CARD 3: All days — sweeping shine + 3D tilt entrance */}
         <motion.button
           type="button"
           onClick={goToDays}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileTap={{ scale: 0.985 }}
-          whileHover={{ y: -1 }}
-          transition={{ duration: 0.45, delay: 0.1 }}
-          className="relative h-[160px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col overflow-hidden hover:border-accent/30 transition-colors"
+          initial={{ opacity: 0, y: 14, rotateX: -6 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          whileTap={{ scale: 0.97 }}
+          whileHover={{ y: -2 }}
+          transition={{ ...SPRING, delay: 0.25 }}
+          style={{ perspective: '900px' }}
+          className="relative h-[170px] w-full rounded-2xl border border-forest-line bg-forest-card px-4 py-4 text-left flex flex-col overflow-hidden hover:border-accent/40 transition-colors"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(255,106,0,0.10),transparent_50%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(255,106,0,0.14),transparent_55%)] pointer-events-none" />
+          {!reduced && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%)'
+              }}
+              animate={{ x: ['-100%', '120%'] }}
+              transition={{ duration: 5, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+            />
+          )}
           <div className="relative flex items-start justify-between gap-3">
             <span className="font-display text-[10px] tracking-[0.15em] text-accent uppercase">
               60-дневен протокол
             </span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 border border-accent/30 shrink-0">
+            <motion.span
+              animate={reduced ? {} : { rotate: [0, 6, -6, 0] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 border border-accent/30 shrink-0"
+            >
               <ArrowRight size={15} className="text-accent" strokeWidth={2.6} />
-            </span>
+            </motion.span>
           </div>
           <h2 className="relative mt-2 font-display font-bold text-ink text-[16px] leading-[1.2] tracking-display uppercase">
             📚 Всички дни
           </h2>
           <div className="relative mt-auto flex items-center gap-2 text-[12px] text-ink-muted">
-            <span>
-              <span className="text-ink font-display font-semibold">
-                {completed}
-              </span>{' '}
-              завършени
-            </span>
+            <span className="text-ink font-display font-semibold">
+              <CountUp to={completed} />
+            </span>{' '}
+            завършени
             <span className="text-ink-dim">·</span>
-            <span>
-              <span className="text-ink font-display font-semibold">
-                {lockedCount}
-              </span>{' '}
-              заключени
-            </span>
+            <span className="text-ink font-display font-semibold">
+              <CountUp to={lockedCount} />
+            </span>{' '}
+            заключени
           </div>
         </motion.button>
       </div>
