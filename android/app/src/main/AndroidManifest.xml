@@ -22,14 +22,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links: opens velion-lab.vercel.app URLs in the app
+            <!-- App Links: opens velion-lab.com URLs in the app
                  once Digital Asset Links verification succeeds. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" />
-                <data android:host="velion-lab.vercel.app" />
+                <data android:host="velion-lab.com" />
                 <data android:pathPrefix="/success" />
                 <data android:pathPrefix="/paywall" />
                 <data android:pathPrefix="/auth" />

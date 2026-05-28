@@ -191,7 +191,7 @@ export default function PaywallScreen() {
           {FREE_ACCESS_MODE
             ? 'Когато плащанията се върнат, твоят достъп остава.'
             : READER_MODE
-              ? 'Управлението на достъпа се извършва на velion-lab.vercel.app.'
+              ? 'Управлението на достъпа се извършва на velion-lab.com.'
               : 'Lifetime достъп. Еднократно плащане. Без абонамент. Сигурно плащане през Stripe.'}
         </div>
       </div>

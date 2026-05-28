@@ -4,8 +4,8 @@
 <dict>
   <key>com.apple.developer.associated-domains</key>
   <array>
-    <string>applinks:velion-lab.vercel.app</string>
-    <string>webcredentials:velion-lab.vercel.app</string>
+    <string>applinks:velion-lab.com</string>
+    <string>webcredentials:velion-lab.com</string>
   </array>
 </dict>
 </plist>

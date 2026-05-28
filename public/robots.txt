@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://velion-lab.vercel.app/sitemap.xml
+Sitemap: https://velion-lab.com/sitemap.xml

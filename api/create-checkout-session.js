@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 
   const origin =
     req.headers.origin ||
-    (req.headers.host ? `https://${req.headers.host}` : 'https://velion-lab.vercel.app')
+    (req.headers.host ? `https://${req.headers.host}` : 'https://velion-lab.com')
 
   try {
     const metadata = {

@@ -7,7 +7,7 @@
 //   in the native build, the app:
 //     - Hides all in-app pricing
 //     - Hides "ПРОДЪЛЖИ КЪМ ПЛАЩАНЕ" CTA
-//     - Replaces it with a single link to https://velion-lab.vercel.app/paywall
+//     - Replaces it with a single link to https://velion-lab.com/paywall
 //     - User signs up + pays on the website (Stripe) and returns via
 //       Universal Link or sign-in
 //
@@ -21,8 +21,8 @@ import { isNative } from './capacitor.js'
 // to integrate Apple In-App Purchase instead.
 export const READER_MODE = isNative()
 
-export const EXTERNAL_BILLING_URL = 'https://velion-lab.vercel.app/paywall'
-export const EXTERNAL_ACCOUNT_URL = 'https://velion-lab.vercel.app/auth'
+export const EXTERNAL_BILLING_URL = 'https://velion-lab.com/paywall'
+export const EXTERNAL_ACCOUNT_URL = 'https://velion-lab.com/auth'
 
 // FREE_ACCESS_MODE: while Stripe is being rebuilt, every authenticated user
 // gets full course access without paying. Set to false to re-enable the
