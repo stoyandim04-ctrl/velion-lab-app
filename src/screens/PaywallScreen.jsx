@@ -19,8 +19,6 @@ export default function PaywallScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const isReturningUser = isAuthenticated && !accessLoading && !hasPaidAccess
-
   // Free-access window: while payments are off, an authenticated user
   // should never sit on the paywall — bounce them straight to the dashboard.
   useEffect(() => {
@@ -98,23 +96,14 @@ export default function PaywallScreen() {
           transition={{ duration: 0.7 }}
         >
           <div className="font-display text-accent text-[11px] tracking-[0.15em] uppercase mb-3">
-            {FREE_ACCESS_MODE ? 'Безплатен пилотен достъп' : isReturningUser ? 'Акаунт без активен план' : 'Velion Lab'}
+            {FREE_ACCESS_MODE ? 'Безплатен пилотен достъп' : 'Velion Lab'}
           </div>
           <h1 className="font-display font-bold text-[28px] leading-[1.05] tracking-display text-ink uppercase mb-3">
-            {FREE_ACCESS_MODE
-              ? 'СТАРТИРАЙ КУРСА БЕЗПЛАТНО'
-              : isReturningUser
-                ? 'АКТИВИРАЙ ДОСТЪПА СИ'
-                : 'ЗАПОЧНИ ТРАНСФОРМАЦИЯТА СИ'}
+            {FREE_ACCESS_MODE ? 'СТАРТИРАЙ КУРСА БЕЗПЛАТНО' : 'ЗАПОЧНИ ТРАНСФОРМАЦИЯТА СИ'}
           </h1>
           {FREE_ACCESS_MODE && (
             <p className="text-ink-muted text-[13px] leading-[1.55] mb-6">
               Подготвяме новата версия на плащанията. Докато това става — всички ранни потребители получават пълен достъп до курса безплатно.
-            </p>
-          )}
-          {!FREE_ACCESS_MODE && isReturningUser && (
-            <p className="text-ink-muted text-[13px] leading-[1.55] mb-6">
-              Влязъл си в акаунта си, но нямаш активен план. Активирай за да продължиш протокола.
             </p>
           )}
         </motion.div>
