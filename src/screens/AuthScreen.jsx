@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Screen from '../components/layout/Screen.jsx'
@@ -46,9 +46,18 @@ export default function AuthScreen() {
   const [busy, setBusy] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  // If we're in signup mode but a cached session is active, show a clean
-  // "create a different account" panel instead of auto-redirecting.
-  const blockedByCachedSession = mode === 'signup' && isAuthenticated && !loading
+  // Capture whether the user was ALREADY authenticated when this screen
+  // mounted (cached Supabase session from a previous visit). We only want
+  // to show the "Active session — sign out first?" warning in that case.
+  // A fresh signup also flips isAuthenticated to true, but we must NOT
+  // treat that as a cached session — those users should be redirected
+  // forward, not shown an "are you sure?" panel.
+  const hadCachedSessionRef = useRef(null)
+  if (hadCachedSessionRef.current === null && !loading) {
+    hadCachedSessionRef.current = isAuthenticated
+  }
+  const hadCachedSession = hadCachedSessionRef.current === true
+  const blockedByCachedSession = mode === 'signup' && hadCachedSession && isAuthenticated && !loading
 
   const handleSignOutAndStartFresh = async () => {
     setSigningOut(true)
@@ -80,23 +89,25 @@ export default function AuthScreen() {
     ? location.state.from
     : null
 
-  // After login: wait for paid-access check, then route based on subscription status.
+  // After auth completes (login OR signup): wait for paid-access check,
+  // then route based on subscription status.
   // - Paid → dashboard (or original intended target)
-  // - Not paid → paywall (with clear messaging)
-  // EXCEPTION: if the caller passed mode:'signup' (explicit "create new account"
-  // intent), DO NOT auto-redirect — we want the user to sign out their cached
-  // session first via the dedicated panel.
+  // - Not paid → paywall
+  // EXCEPTION: a cached session already existed when the screen mounted
+  // AND the user explicitly arrived in signup mode. In that single case
+  // we show the "Active session — sign out first?" panel instead of
+  // auto-redirecting, so the user can decide which account to use.
   useEffect(() => {
-    if (mode === 'signup') return
     if (loading) return
     if (!isAuthenticated) return
+    if (mode === 'signup' && hadCachedSession) return
     if (accessLoading) return
     if (hasPaidAccess) {
       navigate(intendedTarget || ROUTES.dashboard, { replace: true })
     } else {
       navigate(ROUTES.paywall, { replace: true, state: { from: '/auth' } })
     }
-  }, [mode, loading, isAuthenticated, accessLoading, hasPaidAccess, navigate, intendedTarget])
+  }, [mode, loading, isAuthenticated, accessLoading, hasPaidAccess, hadCachedSession, navigate, intendedTarget])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
