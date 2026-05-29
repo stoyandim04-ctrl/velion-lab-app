@@ -46,9 +46,25 @@ export default async function handler(req, res) {
 
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = await stripe.checkout.sessions.retrieve(event.data.object.id, {
-          expand: ['subscription']
-        })
+        // Use the session object that Stripe already sent in the webhook
+        // payload. We previously re-fetched with stripe.checkout.sessions
+        // .retrieve(...), but that fails with "No such checkout.session"
+        // when STRIPE_SECRET_KEY is for a different mode than the live
+        // Payment Link (e.g. test key + cs_live_... session).
+        //
+        // Only subscription-mode checkouts need the expanded subscription
+        // object to populate current_period_end. For payment-mode (our
+        // €11 one-shot Payment Link) the payload already has everything.
+        let session = event.data.object
+        if (session.mode === 'subscription') {
+          try {
+            session = await stripe.checkout.sessions.retrieve(session.id, {
+              expand: ['subscription']
+            })
+          } catch (e) {
+            console.warn('[stripe-webhook] expand subscription failed, using payload as-is:', e?.message)
+          }
+        }
 
         // Resolve user_id from (in order):
         //   1. session.metadata.user_id (set by /api/create-checkout-session)
