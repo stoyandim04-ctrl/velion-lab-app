@@ -208,9 +208,19 @@ export default function LandingScreen() {
   const heroOpacity = useTransform(scrollY, [0, 350], [0.65, reduced ? 0.65 : 0.25])
 
   const isPaidUser = isAuthenticated && !accessLoading && hasPaidAccess
+  const isAuthedNotPaid = isAuthenticated && !accessLoading && !hasPaidAccess
+
+  // Prefer Supabase user_metadata.full_name (set during signup); fall back
+  // to email-local-part so paid returning users always see a name in
+  // their welcome CTA, never a generic "Влез в профила си".
+  const fullName = user?.user_metadata?.full_name || ''
+  const firstName =
+    fullName.trim().split(/\s+/)[0] ||
+    (user?.email ? user.email.split('@')[0] : '')
 
   const handleStartQuiz = () => navigate('/quiz/1')
   const handleOpenProfile = () => navigate(ROUTES.dashboard)
+  const handleContinueToPayment = () => navigate(ROUTES.paywall)
   const handleLogin = () => navigate(ROUTES.auth, { state: { mode: 'login' } })
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -260,7 +270,7 @@ export default function LandingScreen() {
             </div>
             {isAuthenticated && (
               <div className="text-center text-ink-dim text-[10.5px] mb-4">
-                Влязъл като <span className="text-ink-muted">{user?.email}</span>
+                Влязъл като <span className="text-ink-muted">{firstName || user?.email}</span>
               </div>
             )}
 
@@ -351,7 +361,16 @@ export default function LandingScreen() {
                       transition={{ duration: 0.15 }}
                       className="w-full min-h-[52px] rounded-2xl border border-accent/50 bg-accent/5 text-accent font-display text-sm font-semibold tracking-display uppercase active:bg-accent/10"
                     >
-                      Влез в профила си
+                      {firstName ? `Влез, ${firstName}` : 'Влез в профила си'}
+                    </motion.button>
+                  ) : isAuthedNotPaid ? (
+                    <motion.button
+                      onClick={handleContinueToPayment}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      className="w-full min-h-[52px] rounded-2xl border border-accent/50 bg-accent/5 text-accent font-display text-sm font-semibold tracking-display uppercase active:bg-accent/10"
+                    >
+                      Продължи към плащане
                     </motion.button>
                   ) : (
                     <>
@@ -361,16 +380,14 @@ export default function LandingScreen() {
                         transition={{ duration: 0.15 }}
                         className="w-full min-h-[52px] rounded-2xl border border-forest-line bg-transparent text-ink font-display text-sm font-semibold tracking-display uppercase active:border-ink-muted"
                       >
-                        Влез в профила си
+                        Влез в акаунта си
                       </motion.button>
-                      {!isAuthenticated && (
-                        <button
-                          onClick={() => navigate(ROUTES.auth, { state: { mode: 'signup' } })}
-                          className="w-full min-h-[40px] text-ink-muted text-[12.5px] active:text-ink"
-                        >
-                          Нямаш акаунт? <span className="text-accent font-semibold">Създай нов</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => navigate(ROUTES.auth, { state: { mode: 'signup' } })}
+                        className="w-full min-h-[40px] text-ink-muted text-[12.5px] active:text-ink"
+                      >
+                        Нямаш акаунт? <span className="text-accent font-semibold">Създай нов</span>
+                      </button>
                     </>
                   )}
                 </motion.div>

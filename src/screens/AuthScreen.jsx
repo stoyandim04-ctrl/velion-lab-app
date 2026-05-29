@@ -41,6 +41,7 @@ export default function AuthScreen() {
   const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
@@ -127,7 +128,13 @@ export default function AuthScreen() {
     setBusy(true)
 
     if (mode === 'signup') {
-      const { data, error: err } = await signUp(trimmedEmail, password)
+      const trimmedName = fullName.trim()
+      if (!trimmedName) {
+        setError('Името е задължително.')
+        setBusy(false)
+        return
+      }
+      const { data, error: err } = await signUp(trimmedEmail, password, { fullName: trimmedName })
       setBusy(false)
       if (err) {
         console.error('[Velion] signUp error:', err)
@@ -252,6 +259,19 @@ export default function AuthScreen() {
             onSubmit={handleSubmit}
             className="flex flex-col gap-3 mb-4"
           >
+            {mode === 'signup' && (
+              <input
+                type="text"
+                autoCapitalize="words"
+                autoComplete="name"
+                placeholder="име"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                maxLength={60}
+                className="w-full min-h-[52px] bg-forest-card border border-forest-line rounded-2xl px-4 py-3.5 text-ink placeholder:text-ink-dim focus:outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] transition-all"
+                style={{ fontSize: 16 }}
+              />
+            )}
             <input
               type="email"
               inputMode="email"

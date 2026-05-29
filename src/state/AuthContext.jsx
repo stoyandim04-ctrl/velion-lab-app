@@ -95,8 +95,31 @@ export function AuthProvider({ children }) {
     return { data, error }
   }, [])
 
-  const signUp = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+  const signUp = useCallback(async (email, password, options = {}) => {
+    const { fullName } = options
+    const trimmedName = typeof fullName === 'string' ? fullName.trim() : ''
+    const signUpOptions = trimmedName ? { data: { full_name: trimmedName } } : undefined
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: signUpOptions
+    })
+    // Mirror the name into the profiles row so the rest of the app
+    // (ProfileDrawer, landing greeting) can read it without going through
+    // user_metadata. Upsert handles both: profile row already created by
+    // a trigger, or not yet — we always end up with display_name set.
+    if (!error && data?.user?.id && trimmedName) {
+      try {
+        await supabase
+          .from('profiles')
+          .upsert(
+            { id: data.user.id, display_name: trimmedName, updated_at: new Date().toISOString() },
+            { onConflict: 'id' }
+          )
+      } catch (e) {
+        console.warn('[Velion] profile upsert after signup failed:', e?.message)
+      }
+    }
     return { data, error }
   }, [])
 
