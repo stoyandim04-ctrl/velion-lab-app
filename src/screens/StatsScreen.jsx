@@ -13,8 +13,10 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, Flame, Target, TrendingUp, Zap,
-  Flag, Shield, CheckCircle, Milestone, Trophy, Crown, Lock
+  Flag, Shield, CheckCircle, Milestone, Trophy, Crown, Lock, Share2
 } from 'lucide-react'
+import ShareCardModal from '../components/features/ShareCardModal.jsx'
+import { getCachedProfile } from '../lib/profile.js'
 import Screen from '../components/layout/Screen.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { ROUTES } from '../lib/routes.js'
@@ -125,6 +127,30 @@ export default function StatsScreen() {
     [unlockedBadges]
   )
   const levelProgress = progressWithinLevel(gamification.xp || 0, gamification.level || 1)
+
+  const [shareOpen, setShareOpen] = useState(false)
+  const sharePayload = useMemo(() => {
+    if (!userId) return null
+    const profile = getCachedProfile(userId)
+    const firstName = (profile?.name || '').split(/\s+/)[0] || ''
+    const idx = results.latest
+      ? {
+          score: results.latest.score,
+          delta: results.initial && results.initial.id !== results.latest.id
+            ? results.latest.score - results.initial.score
+            : null,
+          tierLabel: TIERS[results.latest.tier]?.label || null
+        }
+      : null
+    return {
+      displayName: firstName,
+      level: gamification.level || 1,
+      streak: gamification.current_streak || 0,
+      completedDays: completedCount,
+      controlIndex: idx
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, gamification.level, gamification.current_streak, results.latest, results.initial])
 
   const engagement = useMemo(() => getCachedEngagement(userId), [userId])
   const days = useMemo(
@@ -433,21 +459,37 @@ export default function StatsScreen() {
           </div>
         </motion.div>
 
-        {/* RETAKE QUIZ CTA */}
-        {results.latest && (
-          <motion.button
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            onClick={() => navigate('/quiz/1')}
-            whileTap={{ scale: 0.98 }}
-            className="w-full rounded-2xl border border-accent/40 bg-accent/5 text-accent font-display text-[12px] font-bold tracking-display uppercase px-5 py-3.5 inline-flex items-center justify-center gap-2"
+        {/* SHARE + RETAKE CTAs */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.22 }}
+          className="flex flex-col gap-2.5"
+        >
+          <button
+            onClick={() => setShareOpen(true)}
+            className="w-full rounded-2xl bg-accent text-forest-deep font-display text-[12.5px] font-bold tracking-display uppercase px-5 py-4 inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(255,106,0,0.35)] active:scale-[0.98]"
           >
-            <Target size={14} strokeWidth={2.5} />
-            Пресметни отново
-          </motion.button>
-        )}
+            <Share2 size={14} strokeWidth={2.5} />
+            Сподели прогреса
+          </button>
+          {results.latest && (
+            <button
+              onClick={() => navigate('/quiz/1')}
+              className="w-full rounded-2xl border border-accent/40 bg-accent/5 text-accent font-display text-[12px] font-bold tracking-display uppercase px-5 py-3.5 inline-flex items-center justify-center gap-2 active:scale-[0.98]"
+            >
+              <Target size={14} strokeWidth={2.5} />
+              Пресметни отново
+            </button>
+          )}
+        </motion.div>
       </div>
+
+      <ShareCardModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        payload={sharePayload}
+      />
     </Screen>
   )
 }
