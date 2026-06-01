@@ -14,6 +14,7 @@
 //      directly with the authenticated user_id and the appropriate kind.
 
 import { supabase } from './supabaseClient.js'
+import { awardInitialQuiz } from './gamification.js'
 
 const PENDING_KEY = 'velion_pending_initial_quiz'
 
@@ -121,6 +122,13 @@ export async function flushPendingQuizToSupabase(userId) {
     tier: pending.tier,
     answers: pending.answers
   })
-  if (!error) clearPendingQuiz()
+  if (!error) {
+    clearPendingQuiz()
+    // Reward the user for completing their first Контрол индекс. Fires
+    // the 'quiz_taken' badge and grants +50 XP — best-effort, swallowed
+    // on failure so the quiz persistence itself stays the source of
+    // truth for the baseline.
+    awardInitialQuiz(userId, { score: pending.score, tier: pending.tier }).catch(() => {})
+  }
   return data
 }
