@@ -193,7 +193,7 @@ export default function DashboardScreen() {
         {/* CONTROL INDEX widget — latest score for this user, or CTA to take it */}
         <ControlIndexCard
           userId={userId}
-          onTap={() => navigate(ROUTES.results)}
+          onTap={() => navigate(ROUTES.stats)}
           onTakeQuiz={() => navigate('/quiz/1')}
         />
 
