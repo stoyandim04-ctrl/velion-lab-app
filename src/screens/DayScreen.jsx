@@ -20,6 +20,7 @@ import {
   recordDayCompletion,
   recordOpenedDay
 } from '../lib/engagement.js'
+import { awardForDayCompletion } from '../lib/gamification.js'
 import { getDayData, getNextDayRoute } from '../data/days.js'
 
 import ThemeCard from '../components/features/course/ThemeCard.jsx'
@@ -166,25 +167,43 @@ function DayContent({ data, userId }) {
     if (userId) syncDayCompletion(userId, data.dayNumber)
     const nextRoute = getNextDayRoute(data.dayNumber)
     const nextDayNumber = Math.min(60, data.dayNumber + 1)
+    const completedCount = getCompletedDayNumbers(userId).length
     setCelebration({
       dayNumber: data.dayNumber,
       nextDayNumber,
       streak: engagement.streak.count || 1,
       message: getStreakMessage(engagement.streak.count || 1)
     })
+    // Award XP + check badges. Best-effort: if the network is down, the
+    // gamification lib falls back to localStorage so the next dashboard
+    // visit still reflects the gain. We don't block navigation on it.
+    if (userId) {
+      awardForDayCompletion(userId, data.dayNumber, { completedCount })
+        .then((award) => {
+          if (!award) return
+          setCelebration((curr) => (curr ? { ...curr, award } : curr))
+          if (award.newBadges && award.newBadges.length > 0) {
+            const last = award.newBadges[award.newBadges.length - 1]
+            setToast(`Нова значка: ${last.title}`)
+          } else if (award.leveledUp) {
+            setToast(`Ниво ${award.level} отключено · +${award.xpGained} XP`)
+          }
+        })
+        .catch(() => {})
+    }
     if (nextRoute) {
-      setToast(`Ден ${data.dayNumber} завършен · Ден ${data.dayNumber + 1} е отключен`)
+      if (!toast) setToast(`Ден ${data.dayNumber} завършен · Ден ${data.dayNumber + 1} е отключен`)
       setTimeout(() => {
         setToast('')
         setCelebration(null)
         navigate(nextRoute)
-      }, 2400)
+      }, 2800)
     } else {
       setToast('Денят е завършен')
       setTimeout(() => {
         setToast('')
         setCelebration(null)
-      }, 2400)
+      }, 2800)
     }
   }
 

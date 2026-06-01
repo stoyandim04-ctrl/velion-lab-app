@@ -11,7 +11,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Flame, Target, TrendingUp } from 'lucide-react'
+import {
+  ArrowLeft, Flame, Target, TrendingUp, Zap,
+  Flag, Shield, CheckCircle, Milestone, Trophy, Crown, Lock
+} from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { ROUTES } from '../lib/routes.js'
@@ -20,6 +23,27 @@ import { getDayProgress } from '../lib/courseProgress.js'
 import { getCachedEngagement } from '../lib/engagement.js'
 import { TIERS } from '../lib/controlIndex.js'
 import { supabase } from '../lib/supabaseClient.js'
+import {
+  fetchGamification,
+  fetchUnlockedBadges,
+  getCachedGamification,
+  progressWithinLevel,
+  MAX_LEVEL
+} from '../lib/gamification.js'
+import { BADGES, RARITY_COLORS } from '../data/badges.js'
+
+const BADGE_ICONS = {
+  flag: Flag,
+  shield: Shield,
+  flame: Flame,
+  'check-circle': CheckCircle,
+  milestone: Milestone,
+  trophy: Trophy,
+  target: Target,
+  'trending-up': TrendingUp,
+  zap: Zap,
+  crown: Crown
+}
 
 function StatTile({ label, value, sub, color }) {
   return (
@@ -63,6 +87,8 @@ export default function StatsScreen() {
   const userId = user?.id
 
   const [results, setResults] = useState({ initial: null, latest: null, loading: true })
+  const [gamification, setGamification] = useState(() => getCachedGamification(userId))
+  const [unlockedBadges, setUnlockedBadges] = useState([])
 
   useEffect(() => {
     let active = true
@@ -71,22 +97,34 @@ export default function StatsScreen() {
       return
     }
     ;(async () => {
-      const { data } = await supabase
-        .from('user_quiz_results')
-        .select('id, kind, score, tier, taken_at')
-        .eq('user_id', userId)
-        .order('taken_at', { ascending: false })
-        .limit(10)
+      const [{ data: quizRows }, gam, badges] = await Promise.all([
+        supabase
+          .from('user_quiz_results')
+          .select('id, kind, score, tier, taken_at')
+          .eq('user_id', userId)
+          .order('taken_at', { ascending: false })
+          .limit(10),
+        fetchGamification(userId),
+        fetchUnlockedBadges(userId)
+      ])
       if (!active) return
-      const rows = data || []
+      const rows = quizRows || []
       const initial = rows.find((r) => r.kind === 'initial') || null
       const latest = rows[0] || null
       setResults({ initial, latest, loading: false })
+      setGamification(gam)
+      setUnlockedBadges(badges)
     })()
     return () => {
       active = false
     }
   }, [userId])
+
+  const unlockedById = useMemo(
+    () => Object.fromEntries((unlockedBadges || []).map((b) => [b.badge_id, b])),
+    [unlockedBadges]
+  )
+  const levelProgress = progressWithinLevel(gamification.xp || 0, gamification.level || 1)
 
   const engagement = useMemo(() => getCachedEngagement(userId), [userId])
   const days = useMemo(
@@ -134,6 +172,53 @@ export default function StatsScreen() {
         >
           Лична статистика
         </motion.h1>
+
+        {/* LEVEL + XP BLOCK */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.03 }}
+          className="rounded-3xl border border-accent/30 bg-forest-card/70 px-5 py-5 mb-4 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_85%_50%,rgba(255,106,0,0.15),transparent_60%)]" />
+          <div className="relative flex items-center gap-4 mb-3">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 relative"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,106,0,0.28), rgba(255,106,0,0.06))',
+                border: '1px solid rgba(255,106,0,0.5)',
+                boxShadow: '0 0 24px rgba(255,106,0,0.3)'
+              }}
+            >
+              <Zap size={14} className="absolute top-1.5 right-1.5 text-accent/80" strokeWidth={2.5} />
+              <span className="font-display font-bold text-accent text-[24px] leading-none">
+                {gamification.level || 1}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display text-[10px] tracking-[0.14em] uppercase text-ink-muted mb-0.5">
+                Текущо ниво
+              </div>
+              <div className="font-display font-bold text-ink text-[16px] tracking-display uppercase">
+                Ниво {gamification.level || 1}{(gamification.level || 1) >= MAX_LEVEL ? ' · MAX' : ''}
+              </div>
+              <div className="font-display text-ink-dim text-[11px] mt-0.5">
+                {levelProgress.atMax
+                  ? `${gamification.xp || 0} XP общо`
+                  : `${levelProgress.into} / ${levelProgress.span} XP до следващо ниво`}
+              </div>
+            </div>
+          </div>
+          <div className="relative h-2 rounded-full bg-forest-line overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: levelProgress.atMax ? '100%' : `${levelProgress.pct}%` }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="h-full bg-accent"
+              style={{ boxShadow: '0 0 10px rgba(255,106,0,0.6)' }}
+            />
+          </div>
+        </motion.div>
 
         {/* CONTROL INDEX BLOCK */}
         {results.loading ? null : results.latest ? (
@@ -283,6 +368,64 @@ export default function StatsScreen() {
                         }}
                       />
                     </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </motion.div>
+
+        {/* BADGES GRID */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+          className="rounded-3xl border border-forest-line bg-forest-card/70 px-5 py-5 mb-4"
+        >
+          <div className="flex items-baseline justify-between mb-3">
+            <div className="font-display text-ink-muted text-[10px] tracking-[0.14em] uppercase">
+              Постижения
+            </div>
+            <div className="font-display text-ink-dim text-[10.5px]">
+              {Object.keys(unlockedById).length} / {BADGES.length}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {BADGES.map((badge) => {
+              const Icon = BADGE_ICONS[badge.icon] || Trophy
+              const unlocked = !!unlockedById[badge.id]
+              const rarityColor = RARITY_COLORS[badge.rarity] || RARITY_COLORS.common
+              return (
+                <div
+                  key={badge.id}
+                  className="rounded-2xl border px-3 py-3 flex flex-col items-start"
+                  style={{
+                    borderColor: unlocked ? `${rarityColor}55` : 'rgba(255,255,255,0.06)',
+                    background: unlocked ? `${rarityColor}0d` : 'rgba(255,255,255,0.02)',
+                    opacity: unlocked ? 1 : 0.55
+                  }}
+                >
+                  <div
+                    className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
+                    style={{
+                      background: unlocked ? `${rarityColor}22` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${unlocked ? `${rarityColor}55` : 'rgba(255,255,255,0.08)'}`
+                    }}
+                  >
+                    {unlocked ? (
+                      <Icon size={15} strokeWidth={2.3} style={{ color: rarityColor }} />
+                    ) : (
+                      <Lock size={13} strokeWidth={2.3} className="text-ink-dim" />
+                    )}
+                  </div>
+                  <div
+                    className="font-display font-bold text-[11.5px] leading-[1.2] uppercase tracking-[0.06em] mb-0.5"
+                    style={{ color: unlocked ? '#F5F1EA' : '#9CA3AF' }}
+                  >
+                    {badge.title}
+                  </div>
+                  <div className="text-ink-dim text-[10.5px] leading-[1.35]">
+                    {badge.description}
                   </div>
                 </div>
               )
