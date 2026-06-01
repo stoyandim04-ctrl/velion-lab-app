@@ -7,6 +7,8 @@ import ProfileButton from '../components/features/ProfileButton.jsx'
 import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
 import ControlIndexCard from '../components/features/ControlIndexCard.jsx'
 import LevelCard from '../components/features/LevelCard.jsx'
+import CoachModal from '../components/features/CoachModal.jsx'
+import { Sparkles } from 'lucide-react'
 import ParticleField from '../components/animations/ParticleField.jsx'
 import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
@@ -62,6 +64,7 @@ export default function DashboardScreen() {
   const ripple3 = useRipple()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [coachOpen, setCoachOpen] = useState(false)
   const [profile, setProfileState] = useState(EMPTY_PROFILE)
   const [engagement, setEngagement] = useState(() => getCachedEngagement(userId))
   const [ready, setReady] = useState(false)
@@ -417,6 +420,22 @@ export default function DashboardScreen() {
         </motion.button>
       </div>
 
+      {/* FAB — AI Coach. Sits bottom-right above the safe-area inset. */}
+      <motion.button
+        type="button"
+        onClick={() => setCoachOpen(true)}
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ ...SPRING, delay: 0.6 }}
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ y: -2 }}
+        className="absolute z-30 right-5 inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent text-forest-deep shadow-[0_8px_28px_rgba(255,106,0,0.45)]"
+        style={{ bottom: 'max(20px, calc(env(safe-area-inset-bottom) + 16px))' }}
+        aria-label="Velion Coach"
+      >
+        <Sparkles size={22} strokeWidth={2.5} />
+      </motion.button>
+
       <ProfileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -426,6 +445,11 @@ export default function DashboardScreen() {
         completedDays={completed}
         totalDays={TOTAL_DAYS}
         completedDaysList={completedDaysList}
+      />
+
+      <CoachModal
+        open={coachOpen}
+        onClose={() => setCoachOpen(false)}
       />
     </Screen>
   )
