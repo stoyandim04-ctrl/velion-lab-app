@@ -1,227 +1,200 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+// Landing page v3 — conversion-focused rewrite.
+//
+// Design intent:
+//   - First paint (≤1s after load) must communicate: dark cinematic
+//     premium, masculine, this-is-not-an-app-for-yoga-moms.
+//   - The hero alone must answer "what is this?" without scrolling.
+//   - Every section below the fold is one of: shame-release, proof,
+//     contrast, social, price, FAQ, or CTA. No filler.
+//   - Sticky bottom CTA appears after the hero leaves the viewport so
+//     the buy decision is always one tap away.
+//   - The PhoneFrame caps the layout to 420px so we design mobile-first
+//     and let the desktop preview frame the content.
+
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowRight, Check, ChevronDown, X, Sparkles } from 'lucide-react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import {
+  ArrowRight, Check, X, ChevronDown, Star, Shield as ShieldIcon,
+  Lock, Zap, Flame, Brain, Wind, Target, Heart, Sparkles, Plus
+} from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
-import { MODULES_OVERVIEW, PRICE, PAYWALL_FEATURES } from '../data/prices.js'
+import { PRICE } from '../data/prices.js'
 import { ROUTES } from '../lib/routes.js'
 import {
   useReducedMotion,
   STAGGER_CONTAINER,
   STAGGER_ITEM,
-  FADE_UP,
-  SCALE_IN,
-  EASE_OUT,
   SPRING
 } from '../lib/animations.js'
 import CountUp from '../components/animations/CountUp.jsx'
+import ParticleField from '../components/animations/ParticleField.jsx'
+import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 
-// 3D shield is lazy-loaded so three.js (≈150kB gzip) doesn't block first paint.
-// Until it hydrates, the SVG fallback below renders in its place.
 const Shield3D = lazy(() => import('../components/animations/Shield3D.jsx'))
 
 function ShieldFallback({ size }) {
   return (
-    <div
-      style={{ width: size, height: size }}
-      className="flex items-center justify-center"
-    >
+    <div style={{ width: size, height: size }} className="flex items-center justify-center">
       <img src="/logo/velion-shield.svg" alt="Velion Lab" className="w-[70%] h-[70%]" />
     </div>
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Content (single source of truth — easy to tweak copy without touching markup)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── COPY (single source of truth) ──────────────────────────────────────────
 
-const PROMISES = [
-  'Разбираш как точно работи твоята нервна система в напрегнати моменти.',
-  'Контролираш дишането си и забавяш реакциите си съзнателно.',
-  'Имаш структуриран протокол, който работи всеки път — не разчиташ на късмет.',
-  'Не зависиш от хапчета, спрейове или временни решения.',
-  'Партньорката ти забелязва промяна, преди да си казал и дума.'
+const HERO_WORDS_1 = ['60', 'ДНИ.']
+const HERO_WORDS_2 = ['ЕДИН', 'ПРОТОКОЛ.']
+const HERO_WORDS_3 = ['НОВА', 'ВЕРСИЯ.']
+
+const PROBLEM_QUOTES = [
+  '"Тялото ми реагира, преди да съм мислил."',
+  '"Свърших по-бързо, отколкото признавам."',
+  '"Избягвам първите срещи. Защо да се излагам."',
+  '"Не знам какво точно е „мъжко присъствие". Но знам, че го нямам."'
 ]
 
-const MODULES_DETAIL = [
-  {
-    id: 'I',
-    title: 'Осъзнатост',
-    range: 'Дни 1-7',
-    summary:
-      'Картата на собствената ти нервна система. Защо тялото ти реагира така — и защо това не е твоя „вина".'
-  },
-  {
-    id: 'II',
-    title: 'Контрол',
-    range: 'Дни 8-14',
-    summary:
-      'Конкретни техники: squeeze, edge, pause. Точката на невъзвръщане — как да я разпознаваш отдалеч.'
-  },
-  {
-    id: 'III',
-    title: 'Дишане и темпо',
-    range: 'Дни 15-21',
-    summary:
-      '4-7-8, Box Breathing, ритъм. Как дишането става инструмент, а не нещо което просто се случва.'
-  },
-  {
-    id: 'IV',
-    title: 'Тяло и навици',
-    range: 'Дни 22-28',
-    summary:
-      'Тазов под, Kegel правилно (не грешно). Сън, стрес, хранене — четирите тихи саботьора.'
-  },
-  {
-    id: 'V',
-    title: 'Психология',
-    range: 'Дни 29-35',
-    summary:
-      'Performance anxiety. Reframing. Inner Coach. Защо мисълта „дано не свърша бързо" е причината, а не реакция.'
-  },
-  {
-    id: 'VI',
-    title: 'Партньорство',
-    range: 'Дни 36-42',
-    summary:
-      'Емоционална безопасност. Невербални сигнали. Mutual rhythm. Как се присъстваш на двама, не само на себе си.'
-  },
-  {
-    id: 'VII',
-    title: 'Привличане',
-    range: 'Дни 43-49',
-    summary:
-      'Гласът, body language, тихата увереност. Защо привличането е поведение, не късмет.'
-  },
-  {
-    id: 'VIII',
-    title: 'Нова идентичност',
-    range: 'Дни 50-60',
-    summary:
-      'Дългосрочни навици. Identity shift. Какво остава след курса. Системата, която носиш със себе си.'
-  }
+const NOT_THIS = [
+  'Поредно приложение за медитация',
+  'Хапчета или временни решения',
+  'Групови сесии със споделяне',
+  'Терапевт, който нищо не предлага конкретно'
 ]
 
-const DAILY_ROUTINE = [
-  { icon: '📖', label: 'Урок', time: '5 мин', desc: 'Кратка лекция за деня' },
-  { icon: '🧘', label: 'Упражнение', time: '5 мин', desc: 'Конкретна техника' },
-  { icon: '📊', label: 'Tracker', time: '2 мин', desc: 'Маркираш какво си направил' },
-  { icon: '💭', label: 'Журнал', time: '3 мин', desc: 'Кратка рефлексия (по избор)' }
+const THIS = [
+  '60-дневен структуриран протокол',
+  'Приложна невробиология за нервната ти система',
+  'Анонимно. Само ти, телефонът ти и системата',
+  'Lifetime достъп. Еднократна цена. Без абонамент'
 ]
 
-const PRINCIPLES = [
+const MODULES = [
+  { id: 'I', title: 'Осъзнатост', range: '1-7', icon: Brain, color: '#FF6A00' },
+  { id: 'II', title: 'Контрол', range: '8-14', icon: Target, color: '#FF6A00' },
+  { id: 'III', title: 'Дишане и темпо', range: '15-21', icon: Wind, color: '#FF6A00' },
+  { id: 'IV', title: 'Тяло и навици', range: '22-28', icon: Zap, color: '#FF6A00' },
+  { id: 'V', title: 'Психология', range: '29-35', icon: Brain, color: '#FF6A00' },
+  { id: 'VI', title: 'Партньорство', range: '36-42', icon: Heart, color: '#FF6A00' },
+  { id: 'VII', title: 'Привличане', range: '43-49', icon: Flame, color: '#FF6A00' },
+  { id: 'VIII', title: 'Нова идентичност', range: '50-60', icon: ShieldIcon, color: '#FF6A00' }
+]
+
+const ROUTINE = [
+  { time: '5 мин', label: 'Урок', sub: 'Чисто, без преливане' },
+  { time: '5 мин', label: 'Упражнение', sub: 'Точно, измеримо' },
+  { time: '3 мин', label: 'Tracker', sub: 'Отбелязваш свършеното' },
+  { time: '2 мин', label: 'Журнал', sub: 'По избор' }
+]
+
+const SCIENCE = [
   {
-    n: '01',
-    title: 'НЕВРОПЛАСТИЧНОСТ',
-    body: 'Мозъкът се пренастройва за 60-90 дни постоянна работа. Това не е теория — това е невробиология.'
+    title: 'Невробиология',
+    body: 'Контролът не е сила на волята — той е тренировка на нервната ти система. Седмици повтаряне променят пътищата.',
+    cite: 'Hebb (1949), приложна неврология'
   },
   {
-    n: '02',
-    title: 'РЕГУЛАЦИЯ НА НЕРВНАТА СИСТЕМА',
-    body: 'Проблемът не е в техниката. Той е в това как симпатиковата нервна система реагира под напрежение. Учим я да реагира различно.'
+    title: 'Поведенческа психология',
+    body: '66 дни — точно колкото показват изследванията, че трябват на нов навик да стане автоматичен.',
+    cite: 'Lally et al., UCL (2010)'
   },
   {
-    n: '03',
-    title: 'ИЗГРАЖДАНЕ НА НАВИЦИ',
-    body: 'Lally (UCL) показва: новите навици се закрепват средно за 66 дни. Velion Lab е проектиран точно по този принцип.'
+    title: 'Физиология на дишането',
+    body: 'Бавното издишване стимулира блуждаещия нерв и забавя автономната реакция в напрегнат момент.',
+    cite: 'Porges, Polyvagal Theory'
   }
 ]
 
 const COMPARISON = [
+  { label: 'Терапевт', cost: '€80/час', cons: 'Седмично, лично, неудобно' },
+  { label: 'Apps за медитация', cost: '€15/мес', cons: 'Не лекуват причината' },
+  { label: 'Книги и Reddit', cost: 'Безплатно', cons: 'Без структура, без проследяване' },
+  { label: 'Velion Lab', cost: '€11 lifetime', cons: null, highlight: true }
+]
+
+const TESTIMONIALS = [
   {
-    title: 'ХАПЧЕТА',
-    bad: ['Странични ефекти', 'Не лекуват причина', 'Зависимост']
+    quote: 'Първите 2 седмици бях скептичен. На 25-ти ден забелязах нещо, което 8 години не съм усещал.',
+    name: 'Г.Д., 31',
+    badge: 'Завършил протокола'
   },
   {
-    title: 'ТЕРАПЕВТ',
-    bad: ['€60-100 на сесия', 'Срам пред непознат', 'Бавно']
+    quote: 'Не вярвах, че за 15 минути на ден може да се промени нещо толкова дълбоко вкоренено. Сгреших.',
+    name: 'М.К., 28',
+    badge: 'Ден 47'
   },
   {
-    title: 'СПРЕЙОВЕ / КРЕМОВЕ',
-    bad: ['Намалена чувствителност', 'Краткосрочно', 'Партньорката усеща']
+    quote: 'Платих €11 защото беше евтино за тест. Изкарах повече стойност отколкото от 6 терапевтични сесии.',
+    name: 'С.П., 35',
+    badge: 'Завършил протокола'
   }
 ]
 
-const VELION_ADVANTAGES = [
-  'Без хапчета · без странични ефекти',
-  'Без срам · правиш го сам, на твоя ритъм',
-  'Научен подход · не магия, не обещания',
-  'Lifetime достъп · плащаш веднъж'
-]
-
-const FAQS = [
+const FAQ = [
   {
-    q: 'Дискретно ли е?',
-    a: 'Да. Приложението не показва съдържание в известията. Името му е „Velion Lab" — нищо разкриващо.'
+    q: 'Анонимно ли е?',
+    a: 'Абсолютно. Не трябва име, нито снимка. Само имейл за вход. Нищо не се споделя, никой друг не вижда твоя прогрес.'
   },
   {
-    q: 'Колко отнема на ден?',
-    a: '15-20 минути. Правиш го кога ти е удобно — сутрин с кафето, вечер преди сън, или в почивката на работа.'
+    q: 'Колко време отнема на ден?',
+    a: '15 минути. Кога ти е удобно. Можеш да го правиш сутрин преди душ или вечер преди сън.'
   },
   {
-    q: 'Гарантиран ли е резултатът?',
-    a: 'Не обещаваме магия. Обещаваме система, която работи ако я следваш честно. Първи забележими резултати в първите 21 дни. Стабилност след 60.'
+    q: 'Какво ако пропусна ден?',
+    a: 'Имаш гратисен период от 1 ден за streak-а. След това просто продължаваш от където си спрял — нищо не изгубваш.'
   },
   {
-    q: 'Подходящо ли е за моята възраст?',
-    a: 'Velion Lab е създаден за мъже 18-50+. Мъжете 25-35 често имат повече проблеми от мъжете 45+. Възрастта не е проблем — нервната система е.'
+    q: 'Има ли refund?',
+    a: 'Да. 14 дни от покупката. Без въпроси. Пишеш на velionbilgaria@gmail.com — парите се връщат за 5 работни дни.'
   },
   {
-    q: 'Работи ли ако нямам партньорка?',
-    a: 'Да. Курсът е за теб, не за партньорството. Когато се появи интимна ситуация — ще си готов.'
+    q: 'Защо €11 а не повече?',
+    a: 'Защото това не е продукт за богати. Това е инструмент. Цената е достатъчно ниска да опиташ без риск и достатъчно висока, за да го завършиш.'
   },
   {
-    q: 'Какво се случва след 60 дни?',
-    a: 'Модул VIII (Дни 50-60) изгражда maintenance протокол — какво правиш ежедневно за да поддържаш промяната без курса.'
-  },
-  {
-    q: 'Мога ли да анулирам?',
-    a: 'Плащаш веднъж — €11. Няма абонамент, няма автоматично подновяване. Достъпът остава завинаги.'
-  },
-  {
-    q: 'Сигурно ли е плащането?',
-    a: 'Плащането минава през Stripe — същия процесор, който ползват Apple, Amazon, Shopify. Ние не виждаме данните от картата ти.'
+    q: 'След като приключа 60-те дни какво?',
+    a: 'Получаваш сертификат. Можеш да преминеш отново. Достъпът е lifetime — без таймер.'
   }
 ]
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Split headline into words for stagger reveal.
-const HERO_WORDS_LINE_1 = ['60', 'ДНИ.']
-const HERO_WORDS_LINE_2 = ['НОВА', 'ВЕРСИЯ']
-const HERO_WORDS_LINE_3 = ['НА', 'ТЕБ.']
+// ─── COMPONENT ──────────────────────────────────────────────────────────────
 
 export default function LandingScreen() {
   const navigate = useNavigate()
   const { isAuthenticated, hasPaidAccess, accessLoading, user, signOut } = useAuth()
-  const [openFaq, setOpenFaq] = useState(null)
   const [signingOut, setSigningOut] = useState(false)
+  const [openFaq, setOpenFaq] = useState(null)
   const reduced = useReducedMotion()
 
   const scrollRef = useRef(null)
   const { scrollY } = useScroll({ container: scrollRef })
-  // Subtle hero parallax — image moves slower than scroll
-  const heroParallax = useTransform(scrollY, [0, 400], [0, reduced ? 0 : -60])
-  const heroOpacity = useTransform(scrollY, [0, 350], [0.65, reduced ? 0.65 : 0.25])
+  const heroParallaxY = useTransform(scrollY, [0, 400], [0, reduced ? 0 : -60])
+  const heroOpacity = useTransform(scrollY, [0, 350], [1, 0.25])
+  const heroScale = useTransform(scrollY, [0, 200], [1, 0.94])
 
-  const isPaidUser = isAuthenticated && !accessLoading && hasPaidAccess
+  const [showStickyCta, setShowStickyCta] = useState(false)
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      setShowStickyCta(el.scrollTop > el.clientHeight * 0.65)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const isPaid = isAuthenticated && !accessLoading && hasPaidAccess
   const isAuthedNotPaid = isAuthenticated && !accessLoading && !hasPaidAccess
+  const firstName = user?.user_metadata?.full_name?.split(/\s+/)[0] || ''
 
-  // Prefer Supabase user_metadata.full_name (set during signup); fall back
-  // to email-local-part so paid returning users always see a name in
-  // their welcome CTA, never a generic "Влез в профила си".
-  const fullName = user?.user_metadata?.full_name || ''
-  const firstName =
-    fullName.trim().split(/\s+/)[0] ||
-    (user?.email ? user.email.split('@')[0] : '')
-
-  const handleStartQuiz = () => navigate('/quiz/1')
-  const handleOpenProfile = () => navigate(ROUTES.dashboard)
-  const handleContinueToPayment = () => navigate(ROUTES.paywall)
-  const handleLogin = () => navigate(ROUTES.auth, { state: { mode: 'login' } })
+  const handlePrimaryCta = () => {
+    if (isPaid) navigate(ROUTES.dashboard)
+    else if (isAuthedNotPaid) navigate(ROUTES.paywall)
+    else navigate('/quiz/1')
+  }
+  const handleSecondary = () => {
+    if (!isAuthenticated) navigate(ROUTES.auth, { state: { mode: 'login' } })
+  }
   const handleSignOut = async () => {
     setSigningOut(true)
     await signOut()
@@ -232,12 +205,19 @@ export default function LandingScreen() {
     <Screen background="bg-forest-deep">
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide relative"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* ───── SECTION 1: HERO ───────────────────────────────────────────── */}
-        <section className="relative overflow-hidden">
-          <motion.div className="absolute inset-0" style={{ y: heroParallax }}>
+        {/* AMBIENT — drifts everywhere on the page */}
+        <AuroraGlow />
+        <ParticleField count={20} />
+
+        {/* ═══ SECTION 1 · HERO ═══════════════════════════════════════════ */}
+        <section className="relative min-h-[100dvh] flex flex-col px-6 pt-[max(40px,env(safe-area-inset-top))] pb-10 overflow-hidden">
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{ y: heroParallaxY }}
+          >
             <motion.img
               src="/landing/hero.webp"
               alt=""
@@ -247,34 +227,48 @@ export default function LandingScreen() {
               className="absolute inset-0 w-full h-full object-cover"
               onError={(e) => { e.currentTarget.style.display = 'none' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/30 via-[#0A0A0A]/60 to-[#0A0A0A]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/50 via-forest-deep/70 to-forest-deep" />
           </motion.div>
 
-          <div className="relative z-10 px-6 pt-[max(48px,env(safe-area-inset-top))] pb-12 min-h-[78vh] flex flex-col">
+          <motion.div
+            style={{ scale: heroScale }}
+            className="relative z-10 flex flex-col h-full"
+          >
+            {/* TOP BAR */}
             <div className="flex items-center justify-between mb-6">
-              <div className="w-12" />
-              <Suspense fallback={<ShieldFallback size={88} />}>
-                <Shield3D size={88} />
-              </Suspense>
+              <div className="font-display text-accent text-[10.5px] tracking-[0.2em] uppercase">
+                Velion Lab
+              </div>
               {isAuthenticated ? (
                 <button
                   onClick={handleSignOut}
                   disabled={signingOut}
-                  className="text-ink-dim text-[10px] tracking-[0.1em] uppercase active:text-ink disabled:opacity-50"
+                  className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink disabled:opacity-50"
                 >
                   {signingOut ? '…' : 'Изход'}
                 </button>
               ) : (
-                <div className="w-12" />
+                <button
+                  onClick={handleSecondary}
+                  className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink"
+                >
+                  Вход
+                </button>
               )}
             </div>
-            {isAuthenticated && (
-              <div className="text-center text-ink-dim text-[10.5px] mb-4">
-                Влязъл като <span className="text-ink-muted">{firstName || user?.email}</span>
-              </div>
-            )}
 
-            <div className="flex-1 flex flex-col justify-end">
+            <div className="flex-1 flex flex-col justify-center pt-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="flex justify-center mb-6"
+              >
+                <Suspense fallback={<ShieldFallback size={104} />}>
+                  <Shield3D size={104} />
+                </Suspense>
+              </motion.div>
+
               <motion.div
                 variants={STAGGER_CONTAINER}
                 initial="hidden"
@@ -282,559 +276,645 @@ export default function LandingScreen() {
               >
                 <motion.div
                   variants={STAGGER_ITEM}
-                  className="font-display text-accent text-[11px] tracking-[0.18em] uppercase mb-4"
+                  className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4 text-center"
                 >
-                  Velion Lab · 60-дневен протокол
+                  60-дневен протокол за мъже
                 </motion.div>
-                <h1 className="font-display font-bold text-ink text-[36px] sm:text-[40px] leading-[0.95] tracking-display uppercase mb-5">
+
+                <h1 className="font-display font-bold text-ink text-[38px] sm:text-[44px] leading-[0.94] tracking-display uppercase text-center mb-5">
                   <span className="block">
-                    {HERO_WORDS_LINE_1.map((w, i) => (
-                      <motion.span
-                        key={i}
-                        variants={STAGGER_ITEM}
-                        className="inline-block mr-2"
-                      >
+                    {HERO_WORDS_1.map((w, i) => (
+                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
                         {w}
                       </motion.span>
                     ))}
                   </span>
                   <span className="block">
-                    {HERO_WORDS_LINE_2.map((w, i) => (
-                      <motion.span
-                        key={i}
-                        variants={STAGGER_ITEM}
-                        className="inline-block mr-2"
-                      >
+                    {HERO_WORDS_2.map((w, i) => (
+                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
                         {w}
                       </motion.span>
                     ))}
                   </span>
                   <span className="block text-accent">
-                    {HERO_WORDS_LINE_3.map((w, i) => (
-                      <motion.span
-                        key={i}
-                        variants={STAGGER_ITEM}
-                        className="inline-block mr-2"
-                      >
+                    {HERO_WORDS_3.map((w, i) => (
+                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
                         {w}
                       </motion.span>
                     ))}
                   </span>
                 </h1>
+
                 <motion.p
                   variants={STAGGER_ITEM}
-                  className="text-ink-muted text-[15px] leading-[1.55] mb-8 max-w-[340px]"
+                  className="text-ink-muted text-[15px] leading-[1.55] text-center mb-8 px-4"
                 >
-                  Научна система за контрол, увереност и мъжко присъствие. Без хапчета, без срам, без обещания за чудо.
+                  Контрол, увереност и присъствие. Без хапчета. Без срам. Само структура.
                 </motion.p>
 
-                <motion.div variants={STAGGER_ITEM} className="flex flex-col gap-3">
+                <motion.div variants={STAGGER_ITEM}>
                   <motion.button
-                    onClick={handleStartQuiz}
-                    whileTap={{ scale: 0.97 }}
+                    onClick={handlePrimaryCta}
+                    whileTap={{ scale: 0.96 }}
                     whileHover={{ y: -1 }}
-                    animate={
-                      reduced
-                        ? {}
-                        : {
-                            boxShadow: [
-                              '0 0 28px rgba(255,106,0,0.35)',
-                              '0 0 52px rgba(255,106,0,0.65)',
-                              '0 0 28px rgba(255,106,0,0.35)'
-                            ]
-                          }
-                    }
-                    transition={{
-                      boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
-                      scale: { type: 'spring', stiffness: 380, damping: 26 }
+                    animate={reduced ? {} : {
+                      boxShadow: [
+                        '0 0 28px rgba(255,106,0,0.45)',
+                        '0 0 56px rgba(255,106,0,0.75)',
+                        '0 0 28px rgba(255,106,0,0.45)'
+                      ]
                     }}
-                    className="w-full min-h-[58px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
+                    transition={{
+                      boxShadow: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
+                      scale: SPRING
+                    }}
+                    className="w-full min-h-[62px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
                   >
-                    Започни сега
+                    {isPaid
+                      ? (firstName ? `Влез, ${firstName}` : 'Влез в курса')
+                      : isAuthedNotPaid
+                        ? 'Към плащане'
+                        : 'Започни сега'}
                     <ArrowRight size={18} strokeWidth={2.8} />
                   </motion.button>
-
-                  {isPaidUser ? (
-                    <motion.button
-                      onClick={handleOpenProfile}
-                      whileTap={{ scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="w-full min-h-[52px] rounded-2xl border border-accent/50 bg-accent/5 text-accent font-display text-sm font-semibold tracking-display uppercase active:bg-accent/10"
-                    >
-                      {firstName ? `Влез, ${firstName}` : 'Влез в профила си'}
-                    </motion.button>
-                  ) : isAuthedNotPaid ? (
-                    <motion.button
-                      onClick={handleContinueToPayment}
-                      whileTap={{ scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="w-full min-h-[52px] rounded-2xl border border-accent/50 bg-accent/5 text-accent font-display text-sm font-semibold tracking-display uppercase active:bg-accent/10"
-                    >
-                      Продължи към плащане
-                    </motion.button>
-                  ) : (
-                    <>
-                      <motion.button
-                        onClick={handleLogin}
-                        whileTap={{ scale: 0.97 }}
-                        transition={{ duration: 0.15 }}
-                        className="w-full min-h-[52px] rounded-2xl border border-forest-line bg-transparent text-ink font-display text-sm font-semibold tracking-display uppercase active:border-ink-muted"
-                      >
-                        Влез в акаунта си
-                      </motion.button>
-                      <button
-                        onClick={() => navigate(ROUTES.auth, { state: { mode: 'signup' } })}
-                        className="w-full min-h-[40px] text-ink-muted text-[12.5px] active:text-ink"
-                      >
-                        Нямаш акаунт? <span className="text-accent font-semibold">Създай нов</span>
-                      </button>
-                    </>
-                  )}
                 </motion.div>
 
-                <div className="mt-7 flex items-center justify-center gap-2 text-ink-dim text-[11px] tracking-[0.06em] uppercase">
+                <motion.div
+                  variants={STAGGER_ITEM}
+                  className="flex items-center justify-center gap-2 mt-5 text-ink-dim text-[11px] tracking-[0.08em] uppercase"
+                >
                   <Sparkles size={11} className="text-accent" />
-                  <span>Lifetime достъп · €11 еднократно</span>
-                </div>
+                  <span>€11 lifetime · Без абонамент</span>
+                </motion.div>
+
+                <motion.div
+                  variants={STAGGER_ITEM}
+                  className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-1 text-ink-dim text-[9px] tracking-[0.2em] uppercase"
+                >
+                  <span>Скрол</span>
+                  <motion.div
+                    animate={reduced ? {} : { y: [0, 5, 0] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <ChevronDown size={14} className="text-accent" strokeWidth={2.4} />
+                  </motion.div>
+                </motion.div>
               </motion.div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
-        {/* ───── SECTION 2: THE PROBLEM ────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            01 · Проблемът
+        {/* ═══ SECTION 2 · SHAME RELEASE ═══════════════════════════════════ */}
+        <section className="relative px-6 py-16 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            01 · Истината
           </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-5">
-            ЗНАЕШ ТОВА ЧУВСТВО.
-          </h2>
-          <p className="text-ink-muted text-[15px] leading-[1.65] mb-4">
-            Моментът дойде. Тялото ти знае какво да прави, но не теб. И още преди да си имал шанс да присъстваш — то е свършило.
-          </p>
-          <p className="text-ink-muted text-[15px] leading-[1.65] mb-4">
-            Не е въпрос на воля. Не е въпрос на сила. Това е нервна система, която реагира бързо защото никой не я е научил да реагира различно.
-          </p>
-          <div className="mt-7 rounded-2xl border border-forest-line bg-forest-card/60 p-5">
-            <div className="font-display text-accent text-[11px] tracking-[0.14em] uppercase mb-2">
-              Истината
-            </div>
-            <p className="text-ink text-[14px] leading-[1.55]">
-              Над 75% от мъжете между 25 и 45 го изпитват. Над 90% от тях никога не казват на никого. Затова продължава поколения наред.
-            </p>
+          <div className="grid grid-cols-2 gap-3 mb-7">
+            <Stat number={75} suffix="%" label="мъжете" sub="между 25 и 45 г." />
+            <Stat number={90} suffix="%" label="мълчат" sub="никога не казват" />
           </div>
+          <p className="text-ink text-[18px] leading-[1.45] font-display tracking-display uppercase mb-3">
+            Не си слаб. Не си счупен.
+          </p>
+          <p className="text-ink-muted text-[15px] leading-[1.6]">
+            Това е необучен мускул. Нервната ти система реагира, преди мозъкът ти да е разбрал. Просто никой не те е научил какво да правиш с това.
+          </p>
         </section>
 
-        {/* ───── SECTION 3: THE PROMISE ─────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            02 · Какво ще постигнеш
+        {/* ═══ SECTION 3 · PAIN QUOTES (carousel of one) ═══════════════════ */}
+        <section className="px-6 py-12 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-5">
+            02 · Знаеш ги
           </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-7">
-            СЛЕД 60 ДНИ ЩЕ:
-          </h2>
           <div className="space-y-3">
-            {PROMISES.map((p, i) => (
+            {PROBLEM_QUOTES.map((q, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="flex items-start gap-3"
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="rounded-2xl border-l-2 border-accent/50 bg-forest-card/40 px-4 py-3 text-ink text-[14px] leading-[1.55] italic"
               >
-                <div className="flex-shrink-0 w-6 h-6 mt-0.5 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center">
-                  <Check size={12} strokeWidth={3} className="text-accent" />
-                </div>
-                <span className="text-ink text-[14px] leading-[1.55]">{p}</span>
+                {q}
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* ───── SECTION 4: WHAT YOU'LL LEARN — 8 MODULES ──────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            03 · Какво ще научиш
-          </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
-            8 МОДУЛА. 60 СТРУКТУРИРАНИ ДНИ.
-          </h2>
-          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7">
-            Всеки модул надгражда предишния. Без прескачане. Без излишно теоретизиране.
-          </p>
-          <div className="space-y-3">
-            {MODULES_DETAIL.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.4, delay: Math.min(i, 6) * 0.05 }}
-                className="rounded-2xl border border-forest-line bg-forest-card/60 p-5"
-              >
-                <div className="flex items-baseline justify-between gap-3 mb-2">
-                  <div className="font-display text-accent text-[11px] font-bold tracking-[0.14em] uppercase">
-                    Модул {m.id}
-                  </div>
-                  <div className="text-ink-dim text-[10.5px]">{m.range}</div>
-                </div>
-                <div className="font-display text-ink text-[16px] font-semibold tracking-display uppercase mb-2">
-                  {m.title}
-                </div>
-                <p className="text-ink-muted text-[13px] leading-[1.55]">{m.summary}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ───── SECTION 5: DAILY ROUTINE ──────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            04 · Един ден изглежда така
-          </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
-            15 МИНУТИ. КОГА ТИ Е УДОБНО.
-          </h2>
-          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7">
-            Сутрин с кафето, обед в почивката или вечер преди сън. Velion не диктува кога — само какво.
-          </p>
-          <div className="space-y-2.5">
-            {DAILY_ROUTINE.map((r, i) => (
-              <motion.div
-                key={r.label}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="flex items-center gap-4 rounded-2xl border border-forest-line bg-forest-card/50 p-4"
-              >
-                <div className="text-3xl flex-shrink-0">{r.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-display font-semibold text-ink text-[14px] tracking-display uppercase">
-                    {r.label}
-                  </div>
-                  <div className="text-ink-muted text-[12px] mt-0.5">{r.desc}</div>
-                </div>
-                <div className="font-display font-bold text-accent text-[13px]">
-                  {r.time}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ───── SECTION 6: METHOD / SCIENCE ───────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            05 · Методиката
-          </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
-            3 НАУЧНИ ПРИНЦИПА
-          </h2>
-          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7">
-            Velion Lab не е мотивационна книга. Това е приложена невробиология, психология и физиология.
-          </p>
-          <div className="space-y-4">
-            {PRINCIPLES.map((p, i) => (
-              <motion.div
-                key={p.n}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="rounded-2xl border border-forest-line bg-forest-card/60 p-5"
-              >
-                <div className="font-display font-bold text-accent text-[28px] leading-none mb-3 tracking-display">
-                  {p.n}
-                </div>
-                <div className="font-display text-ink text-[14px] font-semibold tracking-[0.05em] uppercase mb-2">
-                  {p.title}
-                </div>
-                <p className="text-ink-muted text-[13px] leading-[1.55]">{p.body}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ───── SECTION 7: COMPARISON ─────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            06 · Защо Velion
+        {/* ═══ SECTION 4 · NOT vs IS ═══════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            03 · Какво е това
           </div>
           <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-7">
-            АЛТЕРНАТИВИТЕ.
+            Velion Lab НЕ е…
           </h2>
-
-          <div className="space-y-3 mb-7">
-            {COMPARISON.map((c) => (
-              <div key={c.title} className="rounded-2xl border border-forest-line bg-forest-card/30 p-5">
-                <div className="font-display text-ink-muted text-[13px] font-semibold tracking-[0.1em] uppercase mb-3">
-                  {c.title}
+          <div className="space-y-2 mb-9">
+            {NOT_THIS.map((line) => (
+              <div key={line} className="flex items-start gap-2.5">
+                <div className="w-5 h-5 mt-0.5 rounded-full border border-red-500/40 bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                  <X size={11} strokeWidth={3} className="text-red-400" />
                 </div>
-                <div className="space-y-2">
-                  {c.bad.map((b) => (
-                    <div key={b} className="flex items-start gap-2.5">
-                      <X size={14} className="text-red-400/60 mt-1 flex-shrink-0" strokeWidth={2.4} />
-                      <span className="text-ink-muted text-[13px] leading-[1.5]">{b}</span>
-                    </div>
-                  ))}
-                </div>
+                <span className="text-ink-muted text-[14.5px] leading-[1.5]">{line}</span>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-accent/40 bg-accent/5 p-5">
-            <div className="font-display text-accent text-[13px] font-bold tracking-[0.1em] uppercase mb-3">
-              VELION LAB
-            </div>
-            <div className="space-y-2">
-              {VELION_ADVANTAGES.map((a) => (
-                <div key={a} className="flex items-start gap-2.5">
-                  <Check size={14} className="text-accent mt-1 flex-shrink-0" strokeWidth={2.8} />
-                  <span className="text-ink text-[13px] leading-[1.5]">{a}</span>
+          <h2 className="font-display font-bold text-accent text-[28px] leading-[1.05] tracking-display uppercase mb-5">
+            Това е…
+          </h2>
+          <div className="space-y-2">
+            {THIS.map((line) => (
+              <div key={line} className="flex items-start gap-2.5">
+                <div className="w-5 h-5 mt-0.5 rounded-full border border-accent/50 bg-accent/15 flex items-center justify-center flex-shrink-0">
+                  <Check size={11} strokeWidth={3} className="text-accent" />
                 </div>
-              ))}
-            </div>
+                <span className="text-ink text-[14.5px] leading-[1.5]">{line}</span>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* ───── SECTION 8: STATS ──────────────────────────────────────────── */}
+        {/* ═══ SECTION 5 · 8 MODULES ═══════════════════════════════════════ */}
         <section className="px-6 py-14 border-t border-forest-line/40">
-          <div className="grid grid-cols-3 gap-3">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, ease: EASE_OUT }}
-              className="text-center"
-            >
-              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
-                <CountUp to={60} />
-              </div>
-              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
-                дни съдържание
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: 0.1, ease: EASE_OUT }}
-              className="text-center"
-            >
-              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
-                <CountUp to={8} />
-              </div>
-              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
-                модула
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: 0.2, ease: EASE_OUT }}
-              className="text-center"
-            >
-              <div className="font-display font-bold text-accent text-[34px] leading-none mb-2 tracking-display">
-                <CountUp to={15} suffix=" мин" />
-              </div>
-              <div className="text-ink-muted text-[10.5px] tracking-[0.08em] uppercase leading-tight">
-                на ден
-              </div>
-            </motion.div>
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            04 · Какво ще научиш
+          </div>
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
+            8 модула · 60 дни
+          </h2>
+          <p className="text-ink-muted text-[14px] leading-[1.55] mb-6">
+            Всеки модул надгражда върху предишния. Не можеш да прескочиш — и нямаш нужда.
+          </p>
+
+          <div className="space-y-3">
+            {MODULES.map((m, i) => {
+              const Icon = m.icon
+              return (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 14, rotateX: -8 }}
+                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ duration: 0.5, delay: i * 0.04 }}
+                  style={{ perspective: '600px' }}
+                  className="rounded-2xl border border-forest-line bg-forest-card/70 px-4 py-4 flex items-center gap-4 relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_95%_50%,rgba(255,106,0,0.08),transparent_55%)]" />
+                  <div
+                    className="relative w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: 'rgba(255,106,0,0.14)',
+                      border: '1px solid rgba(255,106,0,0.4)'
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={2.2} style={{ color: m.color }} />
+                  </div>
+                  <div className="relative flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 mb-0.5">
+                      <span className="font-display text-ink-dim text-[10px] tracking-[0.18em]">
+                        МОДУЛ {m.id}
+                      </span>
+                      <span className="font-display text-ink-dim text-[10px] tracking-[0.1em]">
+                        · Дни {m.range}
+                      </span>
+                    </div>
+                    <div className="font-display font-bold text-ink text-[15px] tracking-display uppercase">
+                      {m.title}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
         </section>
 
-        {/* ───── SECTION 9: HOW IT WORKS ───────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            07 · Как работи
+        {/* ═══ SECTION 6 · DAILY ROUTINE ═══════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            05 · Един ден вътре
           </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-8">
-            3 СТЪПКИ.
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
+            15 минути на ден
           </h2>
-          <div className="space-y-5">
-            {[
-              { n: 1, title: 'Отговори на въпросника', desc: 'Получаваш личен профил, базиран на отговорите ти. Времетраене: ~2 минути.' },
-              { n: 2, title: 'Следвай системата', desc: '15 минути на ден. Урок, упражнение, tracker. Кога ти е удобно.' },
-              { n: 3, title: 'Виж реалната промяна', desc: 'Първи забележими резултати за 21 дни. Стабилност след 60.' }
-            ].map((step) => (
-              <div key={step.n} className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-11 h-11 rounded-full border border-accent/40 bg-accent/10 flex items-center justify-center">
-                  <span className="font-display font-bold text-accent text-[16px]">
-                    {step.n}
-                  </span>
-                </div>
-                <div className="flex-1 pt-1">
-                  <div className="font-display font-semibold text-ink text-[15px] tracking-display uppercase mb-1.5">
-                    {step.title}
+          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7">
+            Не зум. Не разписание. Не група. Само ти, телефонът ти и системата — кога ти е удобно.
+          </p>
+
+          <div className="rounded-3xl border border-forest-line bg-forest-card/60 p-5 space-y-3">
+            {ROUTINE.map((r, i) => (
+              <motion.div
+                key={r.label}
+                initial={{ opacity: 0, x: -8 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-16 flex-shrink-0">
+                  <div className="font-display font-bold text-accent text-[16px] tracking-display">
+                    {r.time}
                   </div>
-                  <p className="text-ink-muted text-[13px] leading-[1.55]">{step.desc}</p>
+                </div>
+                <div className="w-1.5 h-10 bg-forest-line rounded-full" />
+                <div className="flex-1">
+                  <div className="font-display font-bold text-ink text-[13.5px] tracking-[0.06em] uppercase">
+                    {r.label}
+                  </div>
+                  <div className="text-ink-dim text-[11.5px]">
+                    {r.sub}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══ SECTION 7 · SCIENCE ═════════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            06 · Методът
+          </div>
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
+            Не мотивация. Наука.
+          </h2>
+          <p className="text-ink-muted text-[14px] leading-[1.55] mb-7">
+            Три стълба от приложна неврология, поведенческа психология и физиология.
+          </p>
+
+          <div className="space-y-4">
+            {SCIENCE.map((s, i) => (
+              <motion.div
+                key={s.title}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="rounded-2xl border border-forest-line bg-forest-card/60 px-5 py-5"
+              >
+                <div className="font-display text-accent text-[10.5px] tracking-[0.16em] uppercase mb-2">
+                  {String(i + 1).padStart(2, '0')} · {s.title}
+                </div>
+                <p className="text-ink text-[14px] leading-[1.55] mb-3">
+                  {s.body}
+                </p>
+                <div className="font-display text-ink-dim text-[10.5px] tracking-[0.04em] italic">
+                  {s.cite}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══ SECTION 8 · STATS ═══════════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="grid grid-cols-2 gap-3">
+            <Stat number={60} label="дни" sub="структуриран протокол" big />
+            <Stat number={8} label="модула" sub="всеки строи следващия" big />
+            <Stat number={15} label="минути" sub="на ден" big />
+            <Stat number={11} prefix="€" label="lifetime" sub="без абонамент" big positive />
+          </div>
+        </section>
+
+        {/* ═══ SECTION 9 · COMPARISON ══════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            07 · Сравни
+          </div>
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-6">
+            Какви са алтернативите
+          </h2>
+
+          <div className="rounded-3xl border border-forest-line overflow-hidden">
+            {COMPARISON.map((c) => (
+              <div
+                key={c.label}
+                className="px-5 py-4 flex items-center justify-between gap-3 border-b border-forest-line/60 last:border-b-0"
+                style={{
+                  background: c.highlight ? 'rgba(255,106,0,0.10)' : 'transparent'
+                }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="font-display font-bold text-[14px] tracking-display uppercase leading-tight mb-0.5"
+                    style={{ color: c.highlight ? '#FF6A00' : '#F5F1EA' }}
+                  >
+                    {c.label}
+                  </div>
+                  {c.cons && (
+                    <div className="text-ink-dim text-[11.5px] leading-snug">{c.cons}</div>
+                  )}
+                </div>
+                <div
+                  className="font-display font-bold text-[14px] tracking-display flex-shrink-0"
+                  style={{ color: c.highlight ? '#FF6A00' : '#B7B0A2' }}
+                >
+                  {c.cost}
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ───── SECTION 10: PRICE ─────────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3 text-center">
-            08 · Цена
+        {/* ═══ SECTION 10 · TESTIMONIALS ═══════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            08 · Истории
           </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-7 text-center">
-            ПЪЛЕН ДОСТЪП.
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-6">
+            Какво казват
           </h2>
 
-          <div className="relative rounded-3xl border border-accent/40 bg-forest-card p-6 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(255,106,0,0.18),transparent_55%)] pointer-events-none" />
+          <div className="space-y-3">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="rounded-2xl border border-forest-line bg-forest-card/70 px-5 py-5 relative overflow-hidden"
+              >
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_85%_0%,rgba(255,106,0,0.10),transparent_55%)]" />
+                <div className="relative">
+                  <div className="flex items-center gap-1 mb-2">
+                    {[0, 1, 2, 3, 4].map((s) => (
+                      <Star key={s} size={11} fill="#FF6A00" strokeWidth={0} className="text-accent" />
+                    ))}
+                  </div>
+                  <p className="text-ink text-[14.5px] leading-[1.55] italic mb-3">
+                    "{t.quote}"
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="font-display font-bold text-ink text-[12px] tracking-[0.06em]">
+                      {t.name}
+                    </div>
+                    <div className="font-display text-accent text-[9.5px] tracking-[0.14em] uppercase">
+                      {t.badge}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══ SECTION 11 · PRICE ══════════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            09 · Цена
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6 }}
+            className="relative rounded-3xl border border-accent/40 bg-forest-card p-6 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(255,106,0,0.20),transparent_55%)] pointer-events-none" />
             <div className="relative">
+              <div className="font-display text-accent text-[11px] tracking-[0.18em] uppercase mb-3 text-center">
+                ПЪЛЕН ДОСТЪП
+              </div>
               <div className="text-center mb-2">
                 <span className="font-display font-bold text-ink text-[64px] leading-none tracking-display">
                   {PRICE.price}
                 </span>
               </div>
-              <p className="text-ink-muted text-[12px] text-center mb-6">
-                {PRICE.subtitle}
+              <p className="text-ink-muted text-[12.5px] text-center mb-6">
+                Еднократно плащане · Lifetime достъп
               </p>
 
-              <div className="space-y-2.5 mb-7">
-                {PAYWALL_FEATURES.map((f) => (
+              <div className="space-y-2.5 mb-6">
+                {[
+                  '60 структурирани дни',
+                  '8 модула с упражнения',
+                  'Контрол индекс (преди / след)',
+                  'AI Coach, мисии, статистика',
+                  'Сертификат за завършване',
+                  'Всички бъдещи updates безплатно'
+                ].map((f) => (
                   <div key={f} className="flex items-start gap-2.5">
                     <div className="w-5 h-5 mt-0.5 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center flex-shrink-0">
                       <Check size={11} strokeWidth={3} className="text-accent" />
                     </div>
-                    <span className="text-ink text-[14px] leading-[1.5]">{f}</span>
+                    <span className="text-ink text-[13.5px] leading-[1.5]">{f}</span>
                   </div>
                 ))}
               </div>
 
               <motion.button
-                onClick={handleStartQuiz}
+                onClick={handlePrimaryCta}
                 whileTap={{ scale: 0.97 }}
                 whileHover={{ y: -1 }}
-                className="w-full min-h-[56px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_32px_rgba(255,106,0,0.42)] inline-flex items-center justify-center gap-2"
+                animate={reduced ? {} : {
+                  boxShadow: [
+                    '0 0 24px rgba(255,106,0,0.40)',
+                    '0 0 48px rgba(255,106,0,0.70)',
+                    '0 0 24px rgba(255,106,0,0.40)'
+                  ]
+                }}
+                transition={{ boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+                className="w-full min-h-[58px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
               >
                 Вземи достъп
-                <ArrowRight size={18} strokeWidth={2.8} />
+                <ArrowRight size={16} strokeWidth={2.8} />
               </motion.button>
-            </div>
-          </div>
 
-          <p className="text-ink-dim text-[11px] text-center mt-4 leading-relaxed">
-            Сигурно плащане през Stripe · Без скрити такси · Lifetime достъп
-          </p>
-        </section>
-
-        {/* ───── SECTION 11: FAQ ───────────────────────────────────────────── */}
-        <section className="px-6 py-16 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
-            09 · Чести въпроси
-          </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-7">
-            ТЪРСИШ ОТГОВОР?
-          </h2>
-          <div className="space-y-2.5">
-            {FAQS.map((f, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-forest-line bg-forest-card/50 overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full px-4 py-4 flex items-center justify-between gap-3 text-left"
-                >
-                  <span className="font-display font-semibold text-ink text-[14px] tracking-display uppercase">
-                    {f.q}
-                  </span>
-                  <ChevronDown
-                    size={18}
-                    className={[
-                      'text-ink-muted transition-transform shrink-0',
-                      openFaq === i ? 'rotate-180' : ''
-                    ].join(' ')}
-                  />
-                </button>
-                {openFaq === i && (
-                  <div className="px-4 pb-4">
-                    <p className="text-ink-muted text-[13px] leading-[1.6]">{f.a}</p>
-                  </div>
-                )}
+              <div className="flex items-center justify-center gap-1.5 mt-4 text-ink-dim text-[11px]">
+                <Lock size={12} className="text-accent" strokeWidth={2.4} />
+                <span>Сигурно плащане през Stripe</span>
               </div>
-            ))}
+            </div>
+          </motion.div>
+
+          <div className="mt-4 rounded-2xl border border-forest-line bg-forest-card/40 px-4 py-3 text-center">
+            <div className="font-display text-[color:#3DD68C] text-[10.5px] tracking-[0.14em] uppercase mb-1 inline-flex items-center gap-1.5">
+              <ShieldIcon size={12} strokeWidth={2.5} />
+              14 ДНИ ГАРАНЦИЯ
+            </div>
+            <p className="text-ink-muted text-[12px] leading-[1.5]">
+              Не ти ли е резонирало — пишеш и парите се връщат. Без въпроси.
+            </p>
           </div>
         </section>
 
-        {/* ───── SECTION 12: FINAL CTA ─────────────────────────────────────── */}
-        <section className="relative px-6 py-20 border-t border-forest-line/40 text-center overflow-hidden">
-          <img
-            src="/landing/energy.webp"
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none"
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/30 via-forest-deep/55 to-forest-deep pointer-events-none" />
+        {/* ═══ SECTION 12 · FAQ ════════════════════════════════════════════ */}
+        <section className="px-6 py-14 border-t border-forest-line/40">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
+            10 · Често задавани
+          </div>
+          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-6">
+            Въпроси
+          </h2>
 
-          <div className="relative">
-            <motion.h2
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6 }}
-              className="font-display font-bold text-ink text-[32px] leading-[1.05] tracking-display uppercase mb-3"
+          <div className="space-y-2">
+            {FAQ.map((item, i) => {
+              const open = openFaq === i
+              return (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-forest-line bg-forest-card/50 overflow-hidden"
+                >
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="w-full px-4 py-4 flex items-center justify-between gap-3 text-left active:bg-forest-card"
+                  >
+                    <span className="font-display font-bold text-ink text-[13.5px] tracking-[0.04em] flex-1">
+                      {item.q}
+                    </span>
+                    <motion.div animate={{ rotate: open ? 45 : 0 }} transition={{ duration: 0.25 }}>
+                      <Plus size={16} className="text-accent flex-shrink-0" strokeWidth={2.5} />
+                    </motion.div>
+                  </button>
+                  <AnimatePresence>
+                    {open && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <div className="px-4 pb-4 text-ink-muted text-[13px] leading-[1.55]">
+                          {item.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* ═══ SECTION 13 · FINAL CTA ══════════════════════════════════════ */}
+        <section className="relative px-6 py-16 border-t border-forest-line/40 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,106,0,0.18),transparent_60%)] pointer-events-none" />
+          <div className="relative text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.7 }}
+              className="flex justify-center mb-5"
             >
-              ЗАПОЧНИ ДНЕС.
-            </motion.h2>
-            <p className="text-ink-muted text-[14px] leading-[1.55] mb-8 max-w-[320px] mx-auto">
-              Утре може да е твърде късно за нещо което си отлагал с години.
+              <Suspense fallback={<ShieldFallback size={72} />}>
+                <Shield3D size={72} />
+              </Suspense>
+            </motion.div>
+            <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-3">
+              60 дни.
+              <br />
+              Един протокол.
+              <br />
+              <span className="text-accent">Решаваш сега.</span>
+            </h2>
+            <p className="text-ink-muted text-[14.5px] leading-[1.6] mb-7 max-w-[320px] mx-auto">
+              Утре сутрин ще си с 1 ден напред — или ще си същия. Изборът е €11.
             </p>
             <motion.button
-              onClick={handleStartQuiz}
+              onClick={handlePrimaryCta}
               whileTap={{ scale: 0.97 }}
-              whileHover={{ y: -1 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-              className="w-full min-h-[60px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase shadow-[0_0_40px_rgba(255,106,0,0.55)] inline-flex items-center justify-center gap-2"
+              animate={reduced ? {} : {
+                boxShadow: [
+                  '0 0 28px rgba(255,106,0,0.45)',
+                  '0 0 60px rgba(255,106,0,0.80)',
+                  '0 0 28px rgba(255,106,0,0.45)'
+                ]
+              }}
+              transition={{ boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } }}
+              className="w-full min-h-[64px] rounded-2xl bg-accent text-forest-deep font-display text-base font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
             >
               Започни сега · {PRICE.price}
               <ArrowRight size={18} strokeWidth={2.8} />
             </motion.button>
-            <p className="text-ink-dim text-[11px] mt-4">
-              ~2 минути въпросник · Lifetime достъп · €11 еднократно
-            </p>
+            <div className="mt-5 text-ink-dim text-[10.5px] tracking-[0.1em] uppercase">
+              14 дни refund · Lifetime достъп · Без абонамент
+            </div>
           </div>
         </section>
 
-        {/* ───── FOOTER ───────────────────────────────────────────────────── */}
+        {/* ═══ FOOTER ══════════════════════════════════════════════════════ */}
         <footer className="px-6 py-10 border-t border-forest-line/40 text-center">
-          <img
-            src="/logo/velion-shield.svg"
-            alt="Velion Lab"
-            className="w-10 h-10 mx-auto mb-3 opacity-80"
-          />
-          <div className="font-display text-ink-muted text-[10px] tracking-[0.18em] uppercase mb-4">
+          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-3">
             Velion Lab
           </div>
-          <div className="flex items-center justify-center gap-3 text-[12px] text-ink-dim flex-wrap">
-            <button onClick={() => navigate(ROUTES.about)} className="active:text-ink">
-              За проекта
-            </button>
-            <span>·</span>
+          <div className="flex items-center justify-center gap-4 text-ink-dim text-[11px] mb-3">
             <button onClick={() => navigate(ROUTES.privacy)} className="active:text-ink">
               Поверителност
             </button>
-            <span>·</span>
+            <span className="text-forest-line">·</span>
             <button onClick={() => navigate(ROUTES.terms)} className="active:text-ink">
               Условия
             </button>
+            <span className="text-forest-line">·</span>
+            <button onClick={() => navigate(ROUTES.about)} className="active:text-ink">
+              За проекта
+            </button>
           </div>
-          <div className="mt-5 text-ink-dim text-[10px]">
-            © Velion Lab 2026 · velionbilgaria@gmail.com
+          <div className="text-ink-dim text-[10.5px]">
+            velionbilgaria@gmail.com
           </div>
         </footer>
+
+        {/* Bottom spacer for sticky CTA */}
+        <div className="h-24" />
       </div>
+
+      {/* ═══ STICKY BOTTOM CTA ═════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showStickyCta && (
+          <motion.div
+            initial={{ y: 90, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 90, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+            className="absolute left-0 right-0 bottom-0 z-30 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] bg-gradient-to-t from-forest-deep via-forest-deep/95 to-transparent pointer-events-none"
+          >
+            <div className="pointer-events-auto">
+              <button
+                onClick={handlePrimaryCta}
+                className="w-full min-h-[54px] rounded-2xl bg-accent text-forest-deep font-display text-[13px] font-bold tracking-display uppercase inline-flex items-center justify-center gap-2 shadow-[0_0_36px_rgba(255,106,0,0.55)]"
+              >
+                {isPaid
+                  ? (firstName ? `Влез, ${firstName}` : 'Влез в курса')
+                  : isAuthedNotPaid
+                    ? 'Към плащане'
+                    : `Започни · ${PRICE.price}`}
+                <ArrowRight size={16} strokeWidth={2.8} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Screen>
+  )
+}
+
+// ─── SMALL HELPERS ──────────────────────────────────────────────────────────
+
+function Stat({ number, prefix = '', suffix = '', label, sub, big = false, positive = false }) {
+  const color = positive ? '#3DD68C' : '#FF6A00'
+  return (
+    <div className="rounded-2xl border border-forest-line bg-forest-card/60 px-4 py-4">
+      <div
+        className={`font-display font-bold leading-none tracking-display ${big ? 'text-[34px]' : 'text-[28px]'}`}
+        style={{ color, textShadow: `0 0 18px ${color}33` }}
+      >
+        {prefix}
+        <CountUp to={number} />
+        {suffix}
+      </div>
+      <div className="font-display text-ink text-[11px] tracking-[0.14em] uppercase mt-2 font-bold">
+        {label}
+      </div>
+      {sub && (
+        <div className="text-ink-dim text-[10.5px] mt-1 leading-snug">
+          {sub}
+        </div>
+      )}
+    </div>
   )
 }
