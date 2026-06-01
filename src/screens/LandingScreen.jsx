@@ -13,9 +13,9 @@
 
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring, AnimatePresence, useMotionTemplate } from 'framer-motion'
 import {
-  ArrowRight, Check, X, ChevronDown, Star, Shield as ShieldIcon,
+  ArrowRight, Check, X, ChevronDown, Shield as ShieldIcon,
   Lock, Zap, Flame, Brain, Wind, Target, Heart, Sparkles, Plus
 } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
@@ -112,24 +112,6 @@ const COMPARISON = [
   { label: 'Velion Lab', cost: '€11 lifetime', cons: null, highlight: true }
 ]
 
-const TESTIMONIALS = [
-  {
-    quote: 'Първите 2 седмици бях скептичен. На 25-ти ден забелязах нещо, което 8 години не съм усещал.',
-    name: 'Г.Д., 31',
-    badge: 'Завършил протокола'
-  },
-  {
-    quote: 'Не вярвах, че за 15 минути на ден може да се промени нещо толкова дълбоко вкоренено. Сгреших.',
-    name: 'М.К., 28',
-    badge: 'Ден 47'
-  },
-  {
-    quote: 'Платих €11 защото беше евтино за тест. Изкарах повече стойност отколкото от 6 терапевтични сесии.',
-    name: 'С.П., 35',
-    badge: 'Завършил протокола'
-  }
-]
-
 const FAQ = [
   {
     q: 'Анонимно ли е?',
@@ -167,10 +149,55 @@ export default function LandingScreen() {
   const reduced = useReducedMotion()
 
   const scrollRef = useRef(null)
-  const { scrollY } = useScroll({ container: scrollRef })
-  const heroParallaxY = useTransform(scrollY, [0, 400], [0, reduced ? 0 : -60])
-  const heroOpacity = useTransform(scrollY, [0, 350], [1, 0.25])
-  const heroScale = useTransform(scrollY, [0, 200], [1, 0.94])
+  const heroRef = useRef(null)
+
+  // Page-wide scroll progress drives the rotating shield + the corner
+  // scroll-progress arc.
+  const { scrollYProgress: pageProgress } = useScroll({ container: scrollRef })
+
+  // Hero-local scroll progress drives the cinematic transforms:
+  // image parallax+scale+blur+fade, shield rotate+lift, text crossfade
+  // between three stacked headlines.
+  const { scrollYProgress: heroProgress } = useScroll({
+    container: scrollRef,
+    target: heroRef,
+    offset: ['start start', 'end start']
+  })
+
+  // Smoothed version so transforms don't jitter on touch scroll. All
+  // hero motion derives from this single spring.
+  const heroP = useSpring(heroProgress, { stiffness: 120, damping: 28, mass: 0.4 })
+
+  // Background image — translate up, zoom in, blur, fade.
+  const imgY = useTransform(heroP, [0, 1], reduced ? ['0%', '0%'] : ['0%', '-28%'])
+  const imgScale = useTransform(heroP, [0, 1], reduced ? [1, 1] : [1.05, 1.45])
+  const imgOpacity = useTransform(heroP, [0, 0.5, 1], [0.95, 0.55, 0])
+  const imgBlurPx = useTransform(heroP, [0, 1], reduced ? [0, 0] : [0, 14])
+  const imgFilter = useMotionTemplate`blur(${imgBlurPx}px)`
+
+  // Shield — rotates on Y axis as you scroll, lifts and shrinks toward
+  // the top, fades out near the end.
+  const shieldRotateY = useTransform(heroP, [0, 1], reduced ? [0, 0] : [0, 540])
+  const shieldScale = useTransform(heroP, [0, 0.6, 1], [1, 1.08, 0.55])
+  const shieldY = useTransform(heroP, [0, 1], reduced ? ['0%', '0%'] : ['0%', '-120%'])
+  const shieldOpacity = useTransform(heroP, [0.7, 1], [1, 0.15])
+
+  // Text states — three headlines cross-fade across the scroll. Each is
+  // visible inside its own progress band, off-screen elsewhere.
+  const text1Opacity = useTransform(heroP, [0, 0.18, 0.3], [1, 1, 0])
+  const text1Y = useTransform(heroP, [0, 0.3], ['0%', '-15%'])
+  const text2Opacity = useTransform(heroP, [0.28, 0.4, 0.55, 0.65], [0, 1, 1, 0])
+  const text2Y = useTransform(heroP, [0.28, 0.65], ['18%', '-12%'])
+  const text3Opacity = useTransform(heroP, [0.62, 0.78, 0.92, 1], [0, 1, 1, 0.85])
+  const text3Y = useTransform(heroP, [0.62, 1], ['18%', '-6%'])
+
+  // Aurora layer intensifies as we leave the hero.
+  const auroraIntensity = useTransform(heroP, [0, 1], [0.6, 1])
+
+  // Corner scroll arc — 0→360deg across the whole page.
+  const arcRotate = useTransform(pageProgress, [0, 1], [0, 360])
+  const arcProgress = useTransform(pageProgress, [0, 1], [0, 100])
+  const arcStrokeOffset = useTransform(arcProgress, (v) => 2 * Math.PI * 14 * (1 - v / 100))
 
   const [showStickyCta, setShowStickyCta] = useState(false)
   useEffect(() => {
@@ -209,159 +236,213 @@ export default function LandingScreen() {
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* AMBIENT — drifts everywhere on the page */}
-        <AuroraGlow />
-        <ParticleField count={20} />
+        <motion.div style={{ opacity: auroraIntensity }} className="absolute inset-0 pointer-events-none">
+          <AuroraGlow />
+        </motion.div>
+        <ParticleField count={26} />
 
-        {/* ═══ SECTION 1 · HERO ═══════════════════════════════════════════ */}
-        <section className="relative min-h-[100dvh] flex flex-col px-6 pt-[max(40px,env(safe-area-inset-top))] pb-10 overflow-hidden">
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{ y: heroParallaxY }}
-          >
-            <motion.img
-              src="/landing/hero.webp"
-              alt=""
-              decoding="async"
-              fetchpriority="high"
-              style={{ opacity: heroOpacity }}
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/50 via-forest-deep/70 to-forest-deep" />
-          </motion.div>
+        {/* TOP BAR — pinned absolutely so it stays visible during scroll-hero */}
+        <div className="absolute z-30 top-0 left-0 right-0 flex items-center justify-between px-6 pt-[max(20px,env(safe-area-inset-top))] pb-3">
+          <div className="font-display text-accent text-[10.5px] tracking-[0.2em] uppercase">
+            Velion Lab
+          </div>
+          {/* Scroll progress arc */}
+          <div className="relative w-9 h-9">
+            <motion.div style={{ rotate: arcRotate }} className="absolute inset-0">
+              <svg width="36" height="36" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                <motion.circle
+                  cx="18"
+                  cy="18"
+                  r="14"
+                  fill="none"
+                  stroke="#FF6A00"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 14}
+                  style={{ strokeDashoffset: arcStrokeOffset, transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+                />
+              </svg>
+            </motion.div>
+          </div>
+          {isAuthenticated ? (
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink disabled:opacity-50"
+            >
+              {signingOut ? '…' : 'Изход'}
+            </button>
+          ) : (
+            <button
+              onClick={handleSecondary}
+              className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink"
+            >
+              Вход
+            </button>
+          )}
+        </div>
 
-          <motion.div
-            style={{ scale: heroScale }}
-            className="relative z-10 flex flex-col h-full"
-          >
-            {/* TOP BAR */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="font-display text-accent text-[10.5px] tracking-[0.2em] uppercase">
-                Velion Lab
-              </div>
-              {isAuthenticated ? (
-                <button
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink disabled:opacity-50"
-                >
-                  {signingOut ? '…' : 'Изход'}
-                </button>
-              ) : (
-                <button
-                  onClick={handleSecondary}
-                  className="text-ink-dim text-[10.5px] tracking-[0.1em] uppercase active:text-ink"
-                >
-                  Вход
-                </button>
-              )}
-            </div>
+        {/* ═══ SECTION 1 · CINEMATIC SCROLL HERO ════════════════════════════ */}
+        {/* 250vh tall — pinned sticky inner container holds the 100vh stage
+            and crossfades 3 text states as the user scrolls. */}
+        <section
+          ref={heroRef}
+          className="relative h-[250vh] overflow-visible"
+        >
+          <div className="sticky top-0 h-[100vh] w-full overflow-hidden">
+            {/* BACKGROUND IMAGE — parallax + scale + blur + fade */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{ y: imgY, scale: imgScale, opacity: imgOpacity, filter: imgFilter }}
+            >
+              <img
+                src="/landing/hero.webp"
+                alt=""
+                decoding="async"
+                fetchpriority="high"
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-forest-deep/40 via-forest-deep/65 to-forest-deep" />
+            </motion.div>
 
-            <div className="flex-1 flex flex-col justify-center pt-4">
+            {/* SHIELD — rotates on Y, lifts toward top, shrinks, fades */}
+            <motion.div
+              className="absolute left-1/2 top-[18vh] -translate-x-1/2 flex justify-center"
+              style={{ y: shieldY, scale: shieldScale, opacity: shieldOpacity }}
+            >
               <motion.div
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="flex justify-center mb-6"
+                style={{ rotateY: shieldRotateY, transformStyle: 'preserve-3d', perspective: 800 }}
               >
-                <Suspense fallback={<ShieldFallback size={104} />}>
-                  <Shield3D size={104} />
+                <Suspense fallback={<ShieldFallback size={120} />}>
+                  <Shield3D size={120} />
                 </Suspense>
               </motion.div>
+            </motion.div>
 
+            {/* TEXT STATES — three headlines crossfading across the scroll */}
+            <div className="absolute inset-x-0 top-[48vh] px-6">
+              {/* State 1: brand intro */}
               <motion.div
-                variants={STAGGER_CONTAINER}
-                initial="hidden"
-                animate="show"
+                style={{ opacity: text1Opacity, y: text1Y }}
+                className="absolute inset-x-6 text-center"
               >
                 <motion.div
-                  variants={STAGGER_ITEM}
-                  className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4 text-center"
+                  variants={STAGGER_CONTAINER}
+                  initial="hidden"
+                  animate="show"
                 >
-                  60-дневен протокол за мъже
-                </motion.div>
-
-                <h1 className="font-display font-bold text-ink text-[38px] sm:text-[44px] leading-[0.94] tracking-display uppercase text-center mb-5">
-                  <span className="block">
-                    {HERO_WORDS_1.map((w, i) => (
-                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
-                        {w}
-                      </motion.span>
-                    ))}
-                  </span>
-                  <span className="block">
-                    {HERO_WORDS_2.map((w, i) => (
-                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
-                        {w}
-                      </motion.span>
-                    ))}
-                  </span>
-                  <span className="block text-accent">
-                    {HERO_WORDS_3.map((w, i) => (
-                      <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">
-                        {w}
-                      </motion.span>
-                    ))}
-                  </span>
-                </h1>
-
-                <motion.p
-                  variants={STAGGER_ITEM}
-                  className="text-ink-muted text-[15px] leading-[1.55] text-center mb-8 px-4"
-                >
-                  Контрол, увереност и присъствие. Без хапчета. Без срам. Само структура.
-                </motion.p>
-
-                <motion.div variants={STAGGER_ITEM}>
-                  <motion.button
-                    onClick={handlePrimaryCta}
-                    whileTap={{ scale: 0.96 }}
-                    whileHover={{ y: -1 }}
-                    animate={reduced ? {} : {
-                      boxShadow: [
-                        '0 0 28px rgba(255,106,0,0.45)',
-                        '0 0 56px rgba(255,106,0,0.75)',
-                        '0 0 28px rgba(255,106,0,0.45)'
-                      ]
-                    }}
-                    transition={{
-                      boxShadow: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
-                      scale: SPRING
-                    }}
-                    className="w-full min-h-[62px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
-                  >
-                    {isPaid
-                      ? (firstName ? `Влез, ${firstName}` : 'Влез в курса')
-                      : isAuthedNotPaid
-                        ? 'Към плащане'
-                        : 'Започни сега'}
-                    <ArrowRight size={18} strokeWidth={2.8} />
-                  </motion.button>
-                </motion.div>
-
-                <motion.div
-                  variants={STAGGER_ITEM}
-                  className="flex items-center justify-center gap-2 mt-5 text-ink-dim text-[11px] tracking-[0.08em] uppercase"
-                >
-                  <Sparkles size={11} className="text-accent" />
-                  <span>€11 lifetime · Без абонамент</span>
-                </motion.div>
-
-                <motion.div
-                  variants={STAGGER_ITEM}
-                  className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-1 text-ink-dim text-[9px] tracking-[0.2em] uppercase"
-                >
-                  <span>Скрол</span>
                   <motion.div
-                    animate={reduced ? {} : { y: [0, 5, 0] }}
-                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                    variants={STAGGER_ITEM}
+                    className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4"
                   >
-                    <ChevronDown size={14} className="text-accent" strokeWidth={2.4} />
+                    60-дневен протокол за мъже
                   </motion.div>
+                  <h1 className="font-display font-bold text-ink text-[42px] sm:text-[48px] leading-[0.92] tracking-display uppercase">
+                    <span className="block">
+                      {HERO_WORDS_1.map((w, i) => (
+                        <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">{w}</motion.span>
+                      ))}
+                    </span>
+                    <span className="block">
+                      {HERO_WORDS_2.map((w, i) => (
+                        <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">{w}</motion.span>
+                      ))}
+                    </span>
+                    <span className="block text-accent">
+                      {HERO_WORDS_3.map((w, i) => (
+                        <motion.span key={i} variants={STAGGER_ITEM} className="inline-block mr-2.5">{w}</motion.span>
+                      ))}
+                    </span>
+                  </h1>
                 </motion.div>
               </motion.div>
+
+              {/* State 2: shock stat */}
+              <motion.div
+                style={{ opacity: text2Opacity, y: text2Y }}
+                className="absolute inset-x-6 text-center"
+              >
+                <div className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4">
+                  Истината
+                </div>
+                <div className="font-display font-bold text-ink text-[110px] sm:text-[130px] leading-none tracking-display mb-2">
+                  <span style={{ textShadow: '0 0 32px rgba(255,106,0,0.45)' }}>75<span className="text-accent">%</span></span>
+                </div>
+                <div className="font-display font-bold text-ink text-[18px] tracking-display uppercase">
+                  Мъже го имат.
+                </div>
+                <div className="font-display font-bold text-accent text-[18px] tracking-display uppercase">
+                  Никой не казва.
+                </div>
+              </motion.div>
+
+              {/* State 3: promise */}
+              <motion.div
+                style={{ opacity: text3Opacity, y: text3Y }}
+                className="absolute inset-x-6 text-center"
+              >
+                <div className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4">
+                  Резултат
+                </div>
+                <h2 className="font-display font-bold text-ink text-[34px] leading-[0.98] tracking-display uppercase mb-5">
+                  ОТ <span className="text-ink-dim line-through">ИНСТИНКТ</span>
+                  <br />
+                  ДО <span className="text-accent">КОНТРОЛ</span>
+                </h2>
+                <p className="text-ink-muted text-[14px] leading-[1.55] max-w-[300px] mx-auto">
+                  60 дни. Един протокол. Цена на едно кафе на седмица.
+                </p>
+              </motion.div>
             </div>
-          </motion.div>
+
+            {/* CTA — pinned in the bottom safe-area of the hero stage */}
+            <div className="absolute inset-x-0 bottom-0 px-6 pb-[max(28px,env(safe-area-inset-bottom))]">
+              <motion.button
+                onClick={handlePrimaryCta}
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ y: -1 }}
+                animate={reduced ? {} : {
+                  boxShadow: [
+                    '0 0 28px rgba(255,106,0,0.45)',
+                    '0 0 56px rgba(255,106,0,0.80)',
+                    '0 0 28px rgba(255,106,0,0.45)'
+                  ]
+                }}
+                transition={{
+                  boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+                  scale: SPRING
+                }}
+                className="w-full min-h-[62px] rounded-2xl bg-accent text-forest-deep font-display text-sm font-bold tracking-display uppercase inline-flex items-center justify-center gap-2"
+              >
+                {isPaid
+                  ? (firstName ? `Влез, ${firstName}` : 'Влез в курса')
+                  : isAuthedNotPaid
+                    ? 'Към плащане'
+                    : 'Започни сега'}
+                <ArrowRight size={18} strokeWidth={2.8} />
+              </motion.button>
+              <div className="flex items-center justify-center gap-2 mt-4 text-ink-dim text-[10.5px] tracking-[0.08em] uppercase">
+                <Sparkles size={11} className="text-accent" />
+                <span>€11 lifetime · Без абонамент</span>
+              </div>
+            </div>
+
+            {/* Scroll cue — visible in first state only */}
+            <motion.div
+              style={{ opacity: text1Opacity }}
+              className="absolute bottom-32 left-0 right-0 flex flex-col items-center gap-1 text-ink-dim text-[9px] tracking-[0.2em] uppercase pointer-events-none"
+            >
+              <span>Скрол</span>
+              <motion.div
+                animate={reduced ? {} : { y: [0, 5, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <ChevronDown size={14} className="text-accent" strokeWidth={2.4} />
+              </motion.div>
+            </motion.div>
+          </div>
         </section>
 
         {/* ═══ SECTION 2 · SHAME RELEASE ═══════════════════════════════════ */}
@@ -617,53 +698,10 @@ export default function LandingScreen() {
           </div>
         </section>
 
-        {/* ═══ SECTION 10 · TESTIMONIALS ═══════════════════════════════════ */}
+        {/* ═══ SECTION 10 · PRICE ══════════════════════════════════════════ */}
         <section className="px-6 py-14 border-t border-forest-line/40">
           <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
-            08 · Истории
-          </div>
-          <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-6">
-            Какво казват
-          </h2>
-
-          <div className="space-y-3">
-            {TESTIMONIALS.map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="rounded-2xl border border-forest-line bg-forest-card/70 px-5 py-5 relative overflow-hidden"
-              >
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_85%_0%,rgba(255,106,0,0.10),transparent_55%)]" />
-                <div className="relative">
-                  <div className="flex items-center gap-1 mb-2">
-                    {[0, 1, 2, 3, 4].map((s) => (
-                      <Star key={s} size={11} fill="#FF6A00" strokeWidth={0} className="text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-ink text-[14.5px] leading-[1.55] italic mb-3">
-                    "{t.quote}"
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="font-display font-bold text-ink text-[12px] tracking-[0.06em]">
-                      {t.name}
-                    </div>
-                    <div className="font-display text-accent text-[9.5px] tracking-[0.14em] uppercase">
-                      {t.badge}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ═══ SECTION 11 · PRICE ══════════════════════════════════════════ */}
-        <section className="px-6 py-14 border-t border-forest-line/40">
-          <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
-            09 · Цена
+            08 · Цена
           </div>
 
           <motion.div
@@ -741,10 +779,10 @@ export default function LandingScreen() {
           </div>
         </section>
 
-        {/* ═══ SECTION 12 · FAQ ════════════════════════════════════════════ */}
+        {/* ═══ SECTION 11 · FAQ ════════════════════════════════════════════ */}
         <section className="px-6 py-14 border-t border-forest-line/40">
           <div className="font-display text-accent text-[10px] tracking-[0.2em] uppercase mb-4">
-            10 · Често задавани
+            09 · Често задавани
           </div>
           <h2 className="font-display font-bold text-ink text-[28px] leading-[1.05] tracking-display uppercase mb-6">
             Въпроси
