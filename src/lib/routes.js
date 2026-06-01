@@ -16,6 +16,7 @@ export const ROUTES = {
   dailyOnboarding: '/daily-onboarding',
   dashboard: '/dashboard',
   stats: '/stats',
+  transformation: '/transformation',
   day: '/course/day-:day',
   day1: '/course/day-1',
   days: '/days',

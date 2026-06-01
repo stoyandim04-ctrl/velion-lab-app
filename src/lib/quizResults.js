@@ -100,35 +100,80 @@ export async function fetchLatestQuizResult(userId, kind = null) {
   return data
 }
 
-// Called once per authenticated session after signup/login. If a pending
-// pre-signup quiz is cached AND the user doesn't already have an 'initial'
-// row, copy the cache into Supabase and clear it. Idempotent: safe to call
-// on every auth state change.
+// Called once per authenticated session after signup/login. Inspects
+// the cached pending quiz and decides which kind it should land under:
+//   - no 'initial' row yet                 → kind='initial' (the
+//     onboarding baseline; awards 'quiz_taken' badge + 50 XP)
+//   - 'initial' exists AND user has done   → kind='final' (the
+//     completion test for the before/after  narrative)
+//     60+ day completions AND no 'final'
+//   - otherwise                            → kind='retake' (any
+//     quiz the user explicitly redoes from the dashboard)
+//
+// Idempotent: safe to call on every auth state change. If nothing is
+// pending or the kind we'd write already exists, returns the existing
+// row instead of inserting a duplicate.
 export async function flushPendingQuizToSupabase(userId) {
   if (!userId) return null
   const pending = readPendingQuiz()
   if (!pending) return null
 
-  // Avoid creating duplicate 'initial' rows on repeated auth events.
-  const existing = await fetchLatestQuizResult(userId, 'initial')
-  if (existing) {
-    clearPendingQuiz()
-    return existing
+  const kind = await resolveQuizKind(userId)
+  if (kind === 'initial') {
+    const existing = await fetchLatestQuizResult(userId, 'initial')
+    if (existing) {
+      clearPendingQuiz()
+      return existing
+    }
+  } else if (kind === 'final') {
+    const existing = await fetchLatestQuizResult(userId, 'final')
+    if (existing) {
+      clearPendingQuiz()
+      return existing
+    }
   }
+  // 'retake' is allowed to insert multiple rows over time, so no
+  // dedup check there.
 
   const { data, error } = await recordQuizResult(userId, {
-    kind: 'initial',
+    kind,
     score: pending.score,
     tier: pending.tier,
     answers: pending.answers
   })
   if (!error) {
     clearPendingQuiz()
-    // Reward the user for completing their first Контрол индекс. Fires
-    // the 'quiz_taken' badge and grants +50 XP — best-effort, swallowed
-    // on failure so the quiz persistence itself stays the source of
-    // truth for the baseline.
-    awardInitialQuiz(userId, { score: pending.score, tier: pending.tier }).catch(() => {})
+    if (kind === 'initial') {
+      // Reward the user for completing their first Контрол индекс.
+      // Fires the 'quiz_taken' badge and grants +50 XP — best-effort.
+      awardInitialQuiz(userId, { score: pending.score, tier: pending.tier }).catch(() => {})
+    } else if (kind === 'final') {
+      const { awardQuizImprovement } = await import('./gamification.js')
+      const initialRow = await fetchLatestQuizResult(userId, 'initial')
+      if (initialRow) {
+        awardQuizImprovement(userId, {
+          initialScore: initialRow.score,
+          finalScore: pending.score
+        }).catch(() => {})
+      }
+    }
   }
   return data
+}
+
+async function resolveQuizKind(userId) {
+  const initial = await fetchLatestQuizResult(userId, 'initial')
+  if (!initial) return 'initial'
+
+  const { count } = await supabase
+    .from('user_day_completions')
+    .select('day_number', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  const completedDays = count || 0
+
+  if (completedDays >= 60) {
+    const final = await fetchLatestQuizResult(userId, 'final')
+    if (!final) return 'final'
+  }
+  return 'retake'
 }

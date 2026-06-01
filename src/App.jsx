@@ -29,6 +29,7 @@ const SuccessScreen = lazy(() => import('./screens/SuccessScreen.jsx'))
 const DailyOnboardingScreen = lazy(() => import('./screens/DailyOnboardingScreen.jsx'))
 const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'))
 const StatsScreen = lazy(() => import('./screens/StatsScreen.jsx'))
+const BeforeAfterScreen = lazy(() => import('./screens/BeforeAfterScreen.jsx'))
 const DayScreen = lazy(() => import('./screens/DayScreen.jsx'))
 const DaysScreen = lazy(() => import('./screens/DaysScreen.jsx'))
 const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen.jsx'))
@@ -81,6 +82,7 @@ export default function App() {
                   <Route path={ROUTES.dailyOnboarding} element={<ProtectedRoute requirePaid><DailyOnboardingScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.dashboard} element={<ProtectedRoute requirePaid><DashboardScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.stats} element={<ProtectedRoute requirePaid><StatsScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.transformation} element={<ProtectedRoute requirePaid><BeforeAfterScreen /></ProtectedRoute>} />
                   <Route path="/course/day-1" element={protectedDay} />
                   <Route path="/course/day-2" element={protectedDay} />
                   <Route path="/course/day-3" element={protectedDay} />

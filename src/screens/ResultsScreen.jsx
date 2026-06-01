@@ -121,27 +121,58 @@ export default function ResultsScreen() {
   const profile = useMemo(() => resolveProfile(answers || {}), [answers])
   const controlIndex = useMemo(() => calculateControlIndex(answers || {}), [answers])
 
-  // Cache the Control Index for the post-signup flush. If the user IS
-  // already authenticated when they land here (rare — quiz retake from
-  // dashboard), write to Supabase directly so the row appears immediately.
+  // Single effect handling persistence + post-quiz routing. The cases:
+  //   1. Quiz incomplete + paid user → /dashboard (defensive; means
+  //      the user navigated to /results manually without doing the
+  //      quiz). For everyone else with an incomplete quiz, no-op.
+  //   2. Quiz complete → savePendingQuiz, then flush if authenticated.
+  //      - The flush returns the row it wrote. If kind='final' we send
+  //        the user to /transformation for the before/after view; any
+  //        other kind (initial/retake) keeps them on the results page
+  //        so they can see the new score.
+  //   3. Unpaid users always see the results page so the CTA upsells
+  //      them into the paywall.
   useEffect(() => {
-    if (!controlIndex.isComplete) return
+    if (accessLoading) return
+
+    if (!controlIndex.isComplete) {
+      if (isAuthenticated && hasPaidAccess) {
+        navigate(ROUTES.dashboard, { replace: true })
+      }
+      return
+    }
+
     savePendingQuiz({
       answers,
       score: controlIndex.score,
       tier: controlIndex.tier.id
     })
-    if (isAuthenticated && user?.id) {
-      flushPendingQuizToSupabase(user.id).catch(() => {})
-    }
-  }, [controlIndex.isComplete, controlIndex.score, controlIndex.tier.id, answers, isAuthenticated, user?.id])
 
-  // If user has already paid, send them straight to dashboard.
-  useEffect(() => {
-    if (isAuthenticated && !accessLoading && hasPaidAccess) {
-      navigate(ROUTES.dashboard, { replace: true })
+    if (!isAuthenticated || !user?.id) return
+
+    let cancelled = false
+    flushPendingQuizToSupabase(user.id)
+      .then((row) => {
+        if (cancelled) return
+        if (row?.kind === 'final') {
+          navigate(ROUTES.transformation, { replace: true })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
     }
-  }, [isAuthenticated, accessLoading, hasPaidAccess, navigate])
+  }, [
+    accessLoading,
+    isAuthenticated,
+    hasPaidAccess,
+    user?.id,
+    controlIndex.isComplete,
+    controlIndex.score,
+    controlIndex.tier.id,
+    answers,
+    navigate
+  ])
 
   const handleCta = () => {
     if (!isAuthenticated) {
