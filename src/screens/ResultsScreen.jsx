@@ -8,6 +8,7 @@ import { useAuth } from '../state/AuthContext.jsx'
 import { PRICE } from '../data/prices.js'
 import { ROUTES } from '../lib/routes.js'
 import { calculateControlIndex } from '../lib/controlIndex.js'
+import { savePendingQuiz, flushPendingQuizToSupabase } from '../lib/quizResults.js'
 
 // Profile resolution based on quiz answers.
 // Q1 = frequency (id 1), Q3 = anxiety (id 3), Q5 = presence (id 5)
@@ -116,9 +117,24 @@ function ControlIndexGauge({ score, tierColor }) {
 export default function ResultsScreen() {
   const navigate = useNavigate()
   const { answers } = useOnboarding()
-  const { isAuthenticated, hasPaidAccess, accessLoading } = useAuth()
+  const { isAuthenticated, hasPaidAccess, accessLoading, user } = useAuth()
   const profile = useMemo(() => resolveProfile(answers || {}), [answers])
   const controlIndex = useMemo(() => calculateControlIndex(answers || {}), [answers])
+
+  // Cache the Control Index for the post-signup flush. If the user IS
+  // already authenticated when they land here (rare — quiz retake from
+  // dashboard), write to Supabase directly so the row appears immediately.
+  useEffect(() => {
+    if (!controlIndex.isComplete) return
+    savePendingQuiz({
+      answers,
+      score: controlIndex.score,
+      tier: controlIndex.tier.id
+    })
+    if (isAuthenticated && user?.id) {
+      flushPendingQuizToSupabase(user.id).catch(() => {})
+    }
+  }, [controlIndex.isComplete, controlIndex.score, controlIndex.tier.id, answers, isAuthenticated, user?.id])
 
   // If user has already paid, send them straight to dashboard.
   useEffect(() => {

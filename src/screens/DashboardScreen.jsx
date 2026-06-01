@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import ProfileButton from '../components/features/ProfileButton.jsx'
 import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
+import ControlIndexCard from '../components/features/ControlIndexCard.jsx'
 import ParticleField from '../components/animations/ParticleField.jsx'
 import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
@@ -189,6 +190,13 @@ export default function DashboardScreen() {
         className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
+        {/* CONTROL INDEX widget — latest score for this user, or CTA to take it */}
+        <ControlIndexCard
+          userId={userId}
+          onTap={() => navigate(ROUTES.results)}
+          onTakeQuiz={() => navigate('/quiz/1')}
+        />
+
         {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}
         <motion.div
           initial={{ opacity: 0, y: 32, rotateX: -14, scale: 0.94 }}

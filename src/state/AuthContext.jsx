@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
 import { fetchPaidAccess } from '../lib/paidAccess.js'
+import { flushPendingQuizToSupabase } from '../lib/quizResults.js'
 
 const AuthContext = createContext(null)
 
@@ -82,6 +83,12 @@ export function AuthProvider({ children }) {
       lastUserIdRef.current = newUserId
       setLoading(false)
       refreshAccess(newUserId)
+      // If a pre-signup Контрол индекс is cached in localStorage and this
+      // user does not yet have an 'initial' row, persist it now. Safe to
+      // call on every auth event — the function is idempotent.
+      if (newUserId) {
+        flushPendingQuizToSupabase(newUserId).catch(() => {})
+      }
     })
 
     return () => {
