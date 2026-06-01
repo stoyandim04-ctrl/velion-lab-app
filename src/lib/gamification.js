@@ -116,8 +116,41 @@ function emptyState() {
     level: 1,
     current_streak: 0,
     longest_streak: 0,
-    last_completion_date: null
+    last_completion_date: null,
+    current_week_streak: 0,
+    longest_week_streak: 0,
+    last_week_active: null,
+    current_month_streak: 0,
+    longest_month_streak: 0,
+    last_month_active: null
   }
+}
+
+function isoWeekKey(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const day = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`
+}
+
+function monthKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function nextWeekKey(weekKey) {
+  // weekKey format: "2026-W22"
+  const [year, w] = weekKey.split('-W')
+  const next = parseInt(w, 10) + 1
+  if (next > 52) return `${parseInt(year, 10) + 1}-W01`
+  return `${year}-W${String(next).padStart(2, '0')}`
+}
+
+function nextMonthKey(monthK) {
+  const [year, m] = monthK.split('-').map((s) => parseInt(s, 10))
+  if (m === 12) return `${year + 1}-01`
+  return `${year}-${String(m + 1).padStart(2, '0')}`
 }
 
 // ── public reads ─────────────────────────────────────────────────────
@@ -126,7 +159,7 @@ export async function fetchGamification(userId) {
   if (!userId) return emptyState()
   const { data, error } = await supabase
     .from('user_gamification')
-    .select('xp, level, current_streak, longest_streak, last_completion_date')
+    .select('xp, level, current_streak, longest_streak, last_completion_date, current_week_streak, longest_week_streak, last_week_active, current_month_streak, longest_month_streak, last_month_active')
     .eq('user_id', userId)
     .maybeSingle()
   if (error) {
@@ -175,6 +208,12 @@ async function upsertGamification(userId, next) {
     current_streak: next.current_streak,
     longest_streak: next.longest_streak,
     last_completion_date: next.last_completion_date,
+    current_week_streak: next.current_week_streak || 0,
+    longest_week_streak: next.longest_week_streak || 0,
+    last_week_active: next.last_week_active || null,
+    current_month_streak: next.current_month_streak || 0,
+    longest_month_streak: next.longest_month_streak || 0,
+    last_month_active: next.last_month_active || null,
     updated_at: new Date().toISOString()
   }
   const { error } = await supabase
@@ -247,12 +286,55 @@ export async function awardForDayCompletion(userId, dayNumber, context = {}) {
   const newLevel = levelForXp(totalXp)
   const leveledUp = newLevel > prevLevel
 
+  // Weekly + monthly streaks (independent of daily): increment when
+  // we cross into a new ISO week / calendar month; reset to 1 when we
+  // skip a week or month.
+  const thisWeek = isoWeekKey()
+  const thisMonth = monthKey()
+  let weekStreak = prev.current_week_streak || 0
+  let weekLongest = prev.longest_week_streak || 0
+  let lastWeek = prev.last_week_active || null
+  if (lastWeek !== thisWeek) {
+    if (lastWeek && nextWeekKey(lastWeek) === thisWeek) {
+      weekStreak = weekStreak + 1
+    } else {
+      weekStreak = 1
+    }
+    weekLongest = Math.max(weekLongest, weekStreak)
+    lastWeek = thisWeek
+  } else if (weekStreak === 0) {
+    weekStreak = 1
+    weekLongest = Math.max(weekLongest, 1)
+  }
+
+  let monthStreak = prev.current_month_streak || 0
+  let monthLongest = prev.longest_month_streak || 0
+  let lastMonth = prev.last_month_active || null
+  if (lastMonth !== thisMonth) {
+    if (lastMonth && nextMonthKey(lastMonth) === thisMonth) {
+      monthStreak = monthStreak + 1
+    } else {
+      monthStreak = 1
+    }
+    monthLongest = Math.max(monthLongest, monthStreak)
+    lastMonth = thisMonth
+  } else if (monthStreak === 0) {
+    monthStreak = 1
+    monthLongest = Math.max(monthLongest, 1)
+  }
+
   const next = {
     xp: totalXp,
     level: newLevel,
     current_streak: nextStreak,
     longest_streak: longest,
-    last_completion_date: today
+    last_completion_date: today,
+    current_week_streak: weekStreak,
+    longest_week_streak: weekLongest,
+    last_week_active: lastWeek,
+    current_month_streak: monthStreak,
+    longest_month_streak: monthLongest,
+    last_month_active: lastMonth
   }
   await upsertGamification(userId, next)
 
@@ -279,6 +361,29 @@ export async function awardForDayCompletion(userId, dayNumber, context = {}) {
   }
   if (newLevel >= 5) candidates.push({ id: 'level_5', context: { level: newLevel } })
   if (newLevel >= 10) candidates.push({ id: 'level_10', context: { level: newLevel } })
+
+  // SECRET BADGES — time-of-day + recovery + perfect-week checks
+  const now = new Date()
+  const hour = now.getHours()
+  if (hour < 8) {
+    candidates.push({ id: 'sunrise', context: { hour } })
+  }
+  if (hour >= 23) {
+    candidates.push({ id: 'night_owl', context: { hour } })
+  }
+  // comeback: previous lastCompletion was 8+ days ago AND now we have
+  // a fresh streak count of 1 (reset path)
+  if (prev.last_completion_date) {
+    const gap = daysBetween(prev.last_completion_date, today)
+    if (gap >= 8 && nextStreak === 1) {
+      candidates.push({ id: 'comeback', context: { gap } })
+    }
+  }
+  // perfect_week: this week's count of days completed via context
+  // weeklyCompletedCount (caller passes when known). If >= 7 unlock.
+  if (Number(context.weeklyCompletedCount || 0) >= 7) {
+    candidates.push({ id: 'perfect_week', context: { weeklyCompletedCount: context.weeklyCompletedCount } })
+  }
 
   const newBadges = await unlockBadgesIfNeeded(userId, candidates)
 
@@ -320,4 +425,27 @@ export async function awardQuizImprovement(userId, { initialScore, finalScore } 
     { id: 'quiz_improved_20', context: { initialScore, finalScore, delta } }
   ])
   return { newBadges }
+}
+
+// Breath-session counter — bumps a localStorage tally, persists every
+// session as an analytics event in user_events, and unlocks the
+// secret 'breath_master' badge on the 25th completed session.
+export async function awardBreathSession(userId) {
+  if (!userId) return null
+  const key = `velion_breath_count_${userId}`
+  let count = 0
+  try {
+    if (typeof window !== 'undefined') {
+      count = parseInt(window.localStorage.getItem(key) || '0', 10) || 0
+      count += 1
+      window.localStorage.setItem(key, String(count))
+    }
+  } catch {}
+
+  if (count < 25) return { count, newBadges: [] }
+
+  const newBadges = await unlockBadgesIfNeeded(userId, [
+    { id: 'breath_master', context: { sessions: count } }
+  ])
+  return { count, newBadges }
 }

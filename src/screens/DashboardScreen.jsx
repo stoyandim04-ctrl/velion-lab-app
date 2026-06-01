@@ -8,7 +8,8 @@ import ProfileDrawer from '../components/features/ProfileDrawer.jsx'
 import ControlIndexCard from '../components/features/ControlIndexCard.jsx'
 import LevelCard from '../components/features/LevelCard.jsx'
 import CoachModal from '../components/features/CoachModal.jsx'
-import { Sparkles } from 'lucide-react'
+import DailyMotivationCard from '../components/features/DailyMotivationCard.jsx'
+import { Sparkles, Wind, Target as TargetIcon, History } from 'lucide-react'
 import ParticleField from '../components/animations/ParticleField.jsx'
 import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
@@ -194,6 +195,9 @@ export default function DashboardScreen() {
         className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-5 pb-[max(96px,calc(env(safe-area-inset-bottom)+72px))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
+        {/* DAILY MOTIVATION — one short Bulgarian line, cached server-side per day */}
+        <DailyMotivationCard />
+
         {/* GAMIFICATION strip — level + XP progress + streak */}
         <LevelCard userId={userId} onTap={() => navigate(ROUTES.stats)} />
 
@@ -203,6 +207,51 @@ export default function DashboardScreen() {
           onTap={() => navigate(ROUTES.stats)}
           onTakeQuiz={() => navigate('/quiz/1')}
         />
+
+        {/* QUICK ACTIONS — breath, missions, history */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.2 }}
+          className="grid grid-cols-3 gap-2 mb-4"
+        >
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.breath)}
+            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
+              <Wind size={14} className="text-accent" strokeWidth={2.4} />
+            </div>
+            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
+              Дишане
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.missions)}
+            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
+              <TargetIcon size={14} className="text-accent" strokeWidth={2.4} />
+            </div>
+            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
+              Мисии
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.history)}
+            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
+              <History size={14} className="text-accent" strokeWidth={2.4} />
+            </div>
+            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
+              История
+            </div>
+          </button>
+        </motion.div>
 
         {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}
         <motion.div

@@ -30,6 +30,9 @@ const DailyOnboardingScreen = lazy(() => import('./screens/DailyOnboardingScreen
 const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'))
 const StatsScreen = lazy(() => import('./screens/StatsScreen.jsx'))
 const BeforeAfterScreen = lazy(() => import('./screens/BeforeAfterScreen.jsx'))
+const BreathScreen = lazy(() => import('./screens/BreathScreen.jsx'))
+const MissionsScreen = lazy(() => import('./screens/MissionsScreen.jsx'))
+const HistoryScreen = lazy(() => import('./screens/HistoryScreen.jsx'))
 const DayScreen = lazy(() => import('./screens/DayScreen.jsx'))
 const DaysScreen = lazy(() => import('./screens/DaysScreen.jsx'))
 const PrivacyScreen = lazy(() => import('./screens/PrivacyScreen.jsx'))
@@ -83,6 +86,9 @@ export default function App() {
                   <Route path={ROUTES.dashboard} element={<ProtectedRoute requirePaid><DashboardScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.stats} element={<ProtectedRoute requirePaid><StatsScreen /></ProtectedRoute>} />
                   <Route path={ROUTES.transformation} element={<ProtectedRoute requirePaid><BeforeAfterScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.breath} element={<ProtectedRoute requirePaid><BreathScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.missions} element={<ProtectedRoute requirePaid><MissionsScreen /></ProtectedRoute>} />
+                  <Route path={ROUTES.history} element={<ProtectedRoute requirePaid><HistoryScreen /></ProtectedRoute>} />
                   <Route path="/course/day-1" element={protectedDay} />
                   <Route path="/course/day-2" element={protectedDay} />
                   <Route path="/course/day-3" element={protectedDay} />

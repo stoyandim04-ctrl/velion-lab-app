@@ -86,6 +86,53 @@ export const BADGES = [
     icon: 'crown',
     rarity: 'legendary',
     xpReward: 300
+  },
+  // SECRET BADGES — hidden from the catalog until unlocked. The UI
+  // renders them as "???" placeholders when locked.
+  {
+    id: 'sunrise',
+    title: 'Ранен старт',
+    description: 'Завърши ден преди 8:00 сутринта.',
+    icon: 'sunrise',
+    rarity: 'rare',
+    xpReward: 80,
+    secret: true
+  },
+  {
+    id: 'night_owl',
+    title: 'Среднощно присъствие',
+    description: 'Завърши ден след 23:00.',
+    icon: 'moon',
+    rarity: 'rare',
+    xpReward: 80,
+    secret: true
+  },
+  {
+    id: 'comeback',
+    title: 'Завръщане',
+    description: 'Възстанови streak след прекъсване от 7+ дни.',
+    icon: 'rotate-cw',
+    rarity: 'rare',
+    xpReward: 120,
+    secret: true
+  },
+  {
+    id: 'perfect_week',
+    title: 'Перфектна седмица',
+    description: '7 дни от 7 завършени в една календарна седмица.',
+    icon: 'star',
+    rarity: 'rare',
+    xpReward: 150,
+    secret: true
+  },
+  {
+    id: 'breath_master',
+    title: 'Майстор на дъха',
+    description: 'Завърши 25 сесии дишане.',
+    icon: 'wind',
+    rarity: 'rare',
+    xpReward: 100,
+    secret: true
   }
 ]
 

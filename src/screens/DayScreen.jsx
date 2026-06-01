@@ -21,6 +21,7 @@ import {
   recordOpenedDay
 } from '../lib/engagement.js'
 import { awardForDayCompletion } from '../lib/gamification.js'
+import { ensureWeeklyMissions, recordMissionSignal } from '../lib/missions.js'
 import { getDayData, getNextDayRoute } from '../data/days.js'
 
 import ThemeCard from '../components/features/course/ThemeCard.jsx'
@@ -178,7 +179,20 @@ function DayContent({ data, userId }) {
     // gamification lib falls back to localStorage so the next dashboard
     // visit still reflects the gain. We don't block navigation on it.
     if (userId) {
-      awardForDayCompletion(userId, data.dayNumber, { completedCount })
+      // weeklyCompletedCount: rough heuristic from local progress for the
+      // current ISO week, used for the perfect_week secret badge check.
+      const now = new Date()
+      const dow = now.getDay() === 0 ? 7 : now.getDay()
+      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (dow - 1))
+      const weeklyCompletedCount = getCompletedDayNumbers(userId)
+        .map((n) => ({ n, ts: localStorage.getItem(`velion_day_${userId}_${n}_completed_at`) }))
+        .filter((d) => d.ts && new Date(d.ts) >= weekStart)
+        .length
+
+      awardForDayCompletion(userId, data.dayNumber, {
+        completedCount,
+        weeklyCompletedCount
+      })
         .then((award) => {
           if (!award) return
           setCelebration((curr) => (curr ? { ...curr, award } : curr))
@@ -190,6 +204,15 @@ function DayContent({ data, userId }) {
           }
         })
         .catch(() => {})
+      // Track weekly missions
+      ensureWeeklyMissions(userId)
+        .then(() => recordMissionSignal(userId, 'days_completed'))
+        .catch(() => {})
+      // Journal mission signal — credit if the day's journal text is
+      // non-empty at completion time.
+      if (journalText && journalText.trim().length > 0) {
+        recordMissionSignal(userId, 'journal_entries').catch(() => {})
+      }
     }
     if (nextRoute) {
       if (!toast) setToast(`Ден ${data.dayNumber} завършен · Ден ${data.dayNumber + 1} е отключен`)
