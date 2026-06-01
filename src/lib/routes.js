@@ -23,6 +23,7 @@ export const ROUTES = {
   weekReport: '/report/week',
   monthReport: '/report/month',
   recommendations: '/recommendations',
+  goalsPersonal: '/my-goals',
   day: '/course/day-:day',
   day1: '/course/day-1',
   days: '/days',

@@ -83,6 +83,9 @@ export default function BeforeAfterScreen() {
       level: gam.level || 1,
       streak: gam.current_streak || 0,
       completedDays: 60,
+      initialScore: initial?.score ?? null,
+      finalScore: final?.score ?? null,
+      delta,
       controlIndex: final
         ? {
             score: final.score,
@@ -91,7 +94,7 @@ export default function BeforeAfterScreen() {
           }
         : null
     }
-  }, [userId, final, delta])
+  }, [userId, initial, final, delta])
 
   const handleDownloadCertificate = async () => {
     if (!userId || certBusy) return
@@ -275,6 +278,7 @@ export default function BeforeAfterScreen() {
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         payload={sharePayload}
+        variant="transformation"
       />
     </Screen>
   )

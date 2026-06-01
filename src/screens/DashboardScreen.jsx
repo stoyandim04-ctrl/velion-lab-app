@@ -9,7 +9,7 @@ import ControlIndexCard from '../components/features/ControlIndexCard.jsx'
 import LevelCard from '../components/features/LevelCard.jsx'
 import CoachModal from '../components/features/CoachModal.jsx'
 import DailyMotivationCard from '../components/features/DailyMotivationCard.jsx'
-import { Sparkles, Wind, Target as TargetIcon, History } from 'lucide-react'
+import { Sparkles, Wind, Target as TargetIcon, History, CalendarRange, Flag } from 'lucide-react'
 import ParticleField from '../components/animations/ParticleField.jsx'
 import AuroraGlow from '../components/animations/AuroraGlow.jsx'
 import CountUp from '../components/animations/CountUp.jsx'
@@ -208,49 +208,35 @@ export default function DashboardScreen() {
           onTakeQuiz={() => navigate('/quiz/1')}
         />
 
-        {/* QUICK ACTIONS — breath, missions, history */}
+        {/* QUICK ACTIONS — breath, missions, recommendations, goals, week report, history */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.2 }}
           className="grid grid-cols-3 gap-2 mb-4"
         >
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.breath)}
-            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
-          >
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
-              <Wind size={14} className="text-accent" strokeWidth={2.4} />
-            </div>
-            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
-              Дишане
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.missions)}
-            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
-          >
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
-              <TargetIcon size={14} className="text-accent" strokeWidth={2.4} />
-            </div>
-            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
-              Мисии
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.history)}
-            className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
-          >
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
-              <History size={14} className="text-accent" strokeWidth={2.4} />
-            </div>
-            <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
-              История
-            </div>
-          </button>
+          {[
+            { label: 'Дишане', icon: Wind, route: ROUTES.breath },
+            { label: 'Мисии', icon: TargetIcon, route: ROUTES.missions },
+            { label: 'AI план', icon: Sparkles, route: ROUTES.recommendations },
+            { label: 'Цели', icon: Flag, route: ROUTES.goalsPersonal },
+            { label: 'Седмица', icon: CalendarRange, route: ROUTES.weekReport },
+            { label: 'История', icon: History, route: ROUTES.history }
+          ].map(({ label, icon: Icon, route }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => navigate(route)}
+              className="rounded-2xl border border-forest-line bg-forest-card/70 px-3 py-3 flex flex-col items-start gap-1.5 active:bg-forest-card"
+            >
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.35)' }}>
+                <Icon size={14} className="text-accent" strokeWidth={2.4} />
+              </div>
+              <div className="font-display text-ink text-[10.5px] tracking-[0.08em] uppercase font-bold leading-tight">
+                {label}
+              </div>
+            </button>
+          ))}
         </motion.div>
 
         {/* CARD 1: Today's day — "alive" card with rotating gradient border + radial glow */}

@@ -14,8 +14,9 @@ import {
   downloadShareCard,
   shareShareCard
 } from '../../lib/shareCard.js'
+import { renderBeforeAfterCard } from '../../lib/beforeAfterCard.js'
 
-export default function ShareCardModal({ open, onClose, payload }) {
+export default function ShareCardModal({ open, onClose, payload, variant = 'stats' }) {
   const [card, setCard] = useState(null)
   const [working, setWorking] = useState(false)
 
@@ -27,7 +28,17 @@ export default function ShareCardModal({ open, onClose, payload }) {
     let active = true
     setWorking(true)
     ;(async () => {
-      const result = await renderShareCard(payload)
+      // 'transformation' variant is the dedicated 60-day before/after
+      // card. It expects payload.initialScore + payload.finalScore +
+      // payload.delta to be set; renders a delta-hero layout instead
+      // of the regular stats grid.
+      const renderer =
+        variant === 'transformation' &&
+        payload.initialScore != null &&
+        payload.finalScore != null
+          ? renderBeforeAfterCard
+          : renderShareCard
+      const result = await renderer(payload)
       if (!active) return
       setCard(result)
       setWorking(false)
@@ -35,7 +46,7 @@ export default function ShareCardModal({ open, onClose, payload }) {
     return () => {
       active = false
     }
-  }, [open, payload])
+  }, [open, payload, variant])
 
   const handleDownload = () => {
     if (!card?.dataUrl) return
