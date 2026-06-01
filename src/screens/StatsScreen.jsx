@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, Flame, Target, TrendingUp, Zap,
-  Flag, Shield, CheckCircle, Milestone, Trophy, Crown, Lock, Share2
+  Flag, Shield, CheckCircle, Milestone, Trophy, Crown, Lock, Share2, FileText, Download
 } from 'lucide-react'
 import ShareCardModal from '../components/features/ShareCardModal.jsx'
 import { getCachedProfile } from '../lib/profile.js'
@@ -129,6 +129,40 @@ export default function StatsScreen() {
   const levelProgress = progressWithinLevel(gamification.xp || 0, gamification.level || 1)
 
   const [shareOpen, setShareOpen] = useState(false)
+  const [certBusy, setCertBusy] = useState(false)
+  const isProtocolComplete = completedCount >= TOTAL_DAYS
+
+  const handleDownloadCertificate = async () => {
+    if (!userId || certBusy) return
+    const profile = getCachedProfile(userId)
+    const initialScore = results.initial?.score ?? null
+    const finalScore = results.latest && results.latest.id !== results.initial?.id
+      ? results.latest.score
+      : null
+    setCertBusy(true)
+    try {
+      // Lazy-load jsPDF (~150 KB gzipped) only when the user actually
+      // clicks "Свали PDF" — keeps the /stats page light for the 99%
+      // of visits that aren't day-60 completions.
+      const { generateCertificatePdf } = await import('../lib/certificate.js')
+      await generateCertificatePdf({
+        fullName: profile?.name || (user?.email ? user.email.split('@')[0] : 'Velion Lab'),
+        completedDays: completedCount,
+        level: gamification.level || 1,
+        controlIndex: finalScore != null
+          ? {
+              initialScore,
+              finalScore,
+              delta: initialScore != null ? finalScore - initialScore : null
+            }
+          : null
+      })
+    } catch (e) {
+      console.warn('[Velion] certificate generation failed:', e?.message)
+    } finally {
+      setCertBusy(false)
+    }
+  }
   const sharePayload = useMemo(() => {
     if (!userId) return null
     const profile = getCachedProfile(userId)
@@ -456,6 +490,63 @@ export default function StatsScreen() {
                 </div>
               )
             })}
+          </div>
+        </motion.div>
+
+        {/* CERTIFICATE BLOCK — visible always; locked CTA below day 60 */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="rounded-3xl border border-forest-line bg-forest-card/70 px-5 py-5 mb-4 relative overflow-hidden"
+        >
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: isProtocolComplete
+                ? 'radial-gradient(circle at 90% 10%, rgba(255,213,110,0.18), transparent 60%)'
+                : 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.04), transparent 60%)'
+            }}
+          />
+          <div className="relative flex items-start gap-4">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: isProtocolComplete
+                  ? 'rgba(255,213,110,0.18)'
+                  : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${isProtocolComplete ? 'rgba(255,213,110,0.55)' : 'rgba(255,255,255,0.08)'}`
+              }}
+            >
+              {isProtocolComplete ? (
+                <FileText size={20} strokeWidth={2.2} style={{ color: '#FFD56E' }} />
+              ) : (
+                <Lock size={18} strokeWidth={2.3} className="text-ink-dim" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display text-[10px] tracking-[0.14em] uppercase mb-1" style={{ color: isProtocolComplete ? '#FFD56E' : '#9CA3AF' }}>
+                {isProtocolComplete ? 'Отключено' : `Остават ${TOTAL_DAYS - completedCount} дни`}
+              </div>
+              <div className="font-display font-bold text-ink text-[15px] tracking-display uppercase leading-[1.2]">
+                Сертификат за завършване
+              </div>
+              <div className="text-ink-muted text-[12px] leading-[1.45] mt-1">
+                {isProtocolComplete
+                  ? 'PDF с твоето име, индекса delta и завършеното ниво.'
+                  : `Завърши пълните ${TOTAL_DAYS} дни, за да отключиш персоналния PDF сертификат.`}
+              </div>
+              {isProtocolComplete && (
+                <button
+                  onClick={handleDownloadCertificate}
+                  disabled={certBusy}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-accent text-forest-deep font-display text-[11.5px] font-bold tracking-display uppercase disabled:opacity-60 active:scale-[0.98] shadow-[0_0_18px_rgba(255,106,0,0.35)]"
+                >
+                  <Download size={13} strokeWidth={2.5} />
+                  {certBusy ? 'Генерираме…' : 'Свали PDF'}
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
 
