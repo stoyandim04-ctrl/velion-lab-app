@@ -1,12 +1,13 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Screen from '../components/layout/Screen.jsx'
 import { useOnboarding } from '../state/OnboardingContext.jsx'
 import { useAuth } from '../state/AuthContext.jsx'
 import { PRICE } from '../data/prices.js'
 import { ROUTES } from '../lib/routes.js'
+import { calculateControlIndex } from '../lib/controlIndex.js'
 
 // Profile resolution based on quiz answers.
 // Q1 = frequency (id 1), Q3 = anxiety (id 3), Q5 = presence (id 5)
@@ -52,11 +53,72 @@ function resolveProfile(answers) {
   return PROFILES.full
 }
 
+// Circular gauge that animates from 0 to `score` over ~1.4s. Renders an
+// SVG ring whose stroke-dashoffset is driven by a framer-motion value, so
+// the digit and the ring stay perfectly in sync. The tier color is
+// applied to both the ring and the digit text-shadow glow.
+function ControlIndexGauge({ score, tierColor }) {
+  const size = 168
+  const stroke = 10
+  const radius = (size - stroke) / 2
+  const circumference = 2 * Math.PI * radius
+
+  const motionValue = useMotionValue(0)
+  const displayed = useTransform(motionValue, (v) => Math.round(v))
+  const dashOffset = useTransform(motionValue, (v) => circumference * (1 - v / 100))
+
+  useEffect(() => {
+    const controls = animate(motionValue, score, {
+      duration: 1.4,
+      ease: [0.22, 1, 0.36, 1]
+    })
+    return controls.stop
+  }, [motionValue, score])
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="absolute inset-0" style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={stroke}
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={tierColor}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          style={{ strokeDashoffset: dashOffset, filter: `drop-shadow(0 0 12px ${tierColor}99)` }}
+        />
+      </svg>
+      <div className="relative flex flex-col items-center pointer-events-none">
+        <motion.span
+          className="font-display font-bold text-[56px] leading-none tracking-display"
+          style={{ color: tierColor, textShadow: `0 0 24px ${tierColor}66` }}
+        >
+          {displayed}
+        </motion.span>
+        <span className="font-display text-ink-dim text-[10px] tracking-[0.18em] uppercase mt-1">
+          / 100
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function ResultsScreen() {
   const navigate = useNavigate()
   const { answers } = useOnboarding()
   const { isAuthenticated, hasPaidAccess, accessLoading } = useAuth()
   const profile = useMemo(() => resolveProfile(answers || {}), [answers])
+  const controlIndex = useMemo(() => calculateControlIndex(answers || {}), [answers])
 
   // If user has already paid, send them straight to dashboard.
   useEffect(() => {
@@ -86,6 +148,45 @@ export default function ResultsScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
+          <div className="font-display text-accent text-[10.5px] tracking-[0.18em] uppercase mb-4 text-center">
+            Контрол индекс
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="flex justify-center mb-5"
+          >
+            <ControlIndexGauge score={controlIndex.score} tierColor={controlIndex.tier.color} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-center mb-6"
+          >
+            <div
+              className="inline-block px-4 py-1.5 rounded-full border font-display text-[11px] font-bold tracking-[0.14em] uppercase mb-3"
+              style={{
+                color: controlIndex.tier.color,
+                borderColor: `${controlIndex.tier.color}66`,
+                background: `${controlIndex.tier.color}14`
+              }}
+            >
+              {controlIndex.tier.label}
+            </div>
+            <h2 className="font-display font-bold text-ink text-[18px] sm:text-[20px] leading-[1.2] tracking-display uppercase max-w-[320px] mx-auto mb-3">
+              {controlIndex.tier.headline}
+            </h2>
+            <p className="text-ink-muted text-[13.5px] leading-[1.55] max-w-[340px] mx-auto">
+              {controlIndex.tier.description}
+            </p>
+          </motion.div>
+
+          <div className="h-px w-full bg-forest-line mb-7" />
+
           <div className="font-display text-ink-muted text-[10.5px] tracking-[0.18em] uppercase mb-3">
             Твоят Velion профил
           </div>
